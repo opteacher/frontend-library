@@ -131,23 +131,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="less" scoped>
-.w-full {
-  width: 100%;
-}
-
-.mt-10 {
-  margin-top: 10px;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-right {
-  text-align: right;
-}
-
+<style scoped>
 .hover-grey:hover {
   background-color: #ededed;
 }

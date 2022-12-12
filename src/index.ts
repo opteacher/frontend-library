@@ -1,10 +1,12 @@
 import { App } from 'vue'
 import ColorSelect from './components/ColorSelect.vue'
 import UploadFile from './components/UploadFile.vue'
+import IconField from './components/IconField.vue'
 
 const components = [
     ColorSelect,
-    UploadFile
+    UploadFile,
+    IconField
 ]
 
 function install(app: App) {
@@ -13,7 +15,8 @@ function install(app: App) {
 
 export {
     ColorSelect,
-    UploadFile
+    UploadFile,
+    IconField
 }
 
 export default install

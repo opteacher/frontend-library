@@ -425,11 +425,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="less">
-.w-full {
-  width: 100%;
-}
-
+<style>
 .dynamic-delete-button {
   cursor: pointer;
   position: relative;
