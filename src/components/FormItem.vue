@@ -37,7 +37,7 @@
         }}
       </template>
       <template v-else-if="valState.type === 'EditList'">
-        <ul class="unstyled-list">
+        <ul class="pl-0 list-none mb-0">
           <li v-for="item in getProp(formState, skey)" :key="item">{{ item }}</li>
         </ul>
       </template>
@@ -67,7 +67,7 @@
       />
       <a-input-number
         v-else-if="valState.type === 'Number'"
-        class="w-100"
+        class="w-full"
         type="number"
         :value="getProp(formState, skey)"
         :placeholder="valState.placeholder || '请输入'"
@@ -85,7 +85,7 @@
       />
       <a-select
         v-else-if="valState.type === 'Select'"
-        class="w-100"
+        class="w-full"
         :options="valState.options"
         :value="getProp(formState, skey)"
         :placeholder="valState.placeholder || '请选择'"
@@ -136,7 +136,7 @@
       <a-tooltip v-else-if="valState.type === 'Button'">
         <template #title>{{ valState.placeholder || '请点击' }}</template>
         <a-button
-          class="w-100"
+          class="w-full"
           :disabled="validConds(formState, valState.disabled) || !editable"
           :danger="valState.danger"
           :type="valState.primary ? 'primary' : 'default'"
@@ -149,7 +149,7 @@
       </a-tooltip>
       <a-date-picker
         v-else-if="valState.type === 'DateTime'"
-        class="w-100"
+        class="w-full"
         show-time
         :placeholder="valState.placeholder || '请选择'"
         :disabled="validConds(formState, valState.disabled) || !editable"
@@ -177,7 +177,7 @@
           </a-typography-text>
         </a-space>
         <a-table
-          class="mt-5"
+          class="mt-1.5"
           v-show="getProp(formState, skey) && getProp(formState, skey).length"
           :columns="valState.columns.concat([new Column('操作', 'opera', { width: 80 })])"
           :data-source="getProp(formState, skey)"
@@ -426,7 +426,7 @@ export default defineComponent({
 </script>
 
 <style lang="less">
-.w-100 {
+.w-full {
   width: 100%;
 }
 

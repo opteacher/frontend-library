@@ -1,12 +1,25 @@
 <script setup lang="ts">
-import ComUploadFile from '@/components/UploadFile.vue'
 import { reactive } from 'vue'
 import { getProp } from '@/utils'
-import { UploadChangeParam, UploadFile } from 'ant-design-vue'
+import { UploadChangeParam } from 'ant-design-vue'
+import Mapper from '@/types/mapper'
+import Field from '@/types/field'
+const mapper = Mapper.createByFields([
+  Field.copy({
+    refer: 'file',
+    ftype: 'Upload',
+    extra: {
+      path: '/server-package/api/v1/temp/file',
+      headers: {},
+      onBeforeUpload,
+      onChange
+    }
+  })
+])
 const form = reactive({
   file: []
 })
-function onBeforeUpload(file: UploadFile, fileList: UploadFile[]) {
+function onBeforeUpload(file: any, fileList: any[]) {
   console.log(file, fileList)
 }
 function onChange(_form: any, upldInfo: UploadChangeParam) {
@@ -15,14 +28,5 @@ function onChange(_form: any, upldInfo: UploadChangeParam) {
 </script>
 
 <template>
-  <ComUploadFile
-    :field="{
-      path: '',
-      headers: {},
-      onBeforeUpload,
-      onChange
-    }"
-    :form="form"
-    :value="getProp(form, 'file')"
-  />
+  <UploadFile :field="mapper['file']" :form="form" :value="getProp(form, 'file')" />
 </template>

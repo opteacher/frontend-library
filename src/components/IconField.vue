@@ -1,5 +1,5 @@
 <template>
-  <a-button class="w-100" :size="size" @click="visible = true">
+  <a-button class="w-full" :size="size" @click="visible = true">
     <template #icon>
       <keep-alive v-if="icon">
         <component :is="icon" />
@@ -132,7 +132,7 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
-.w-100 {
+.w-full {
   width: 100%;
 }
 

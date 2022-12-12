@@ -430,4 +430,24 @@ export default class Mapper {
     }
     return tgt
   }
+
+  static createByFields(fields: Field[]): Mapper {
+    return new Mapper(
+      Object.fromEntries(
+        fields.map(field => [
+          field.refer,
+          Object.assign(
+            {
+              type: field.ftype,
+              label: field.label,
+              desc: field.desc,
+              rules: field.rules,
+              placeholder: field.placeholder
+            },
+            field.extra || {}
+          )
+        ])
+      )
+    )
+  }
 }

@@ -35,7 +35,7 @@
             {{ column.title }}&nbsp;
             <arrow-down-outlined />
             <a-select
-              class="mt-0.5 min-w-100"
+              class="mt-0.5 min-w-full"
               size="small"
               allowClear
               placeholder="填入……"

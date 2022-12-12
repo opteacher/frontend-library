@@ -1,5 +1,5 @@
 <template>
-  <a-dropdown class="w-100" :disabled="validConds(valState, field.disabled) || !editable">
+  <a-dropdown class="w-full" :disabled="validConds(form, field.disabled) || !editable">
     <a-button>
       <template #icon><UploadOutlined /></template>
       选择上传的文件或文件夹
