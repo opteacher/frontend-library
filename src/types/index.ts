@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getProperty } from '@/utils'
+import dayjs from 'dayjs'
 
 export class Cond {
   key: string
@@ -116,6 +117,33 @@ export const cmpLblMap = {
   Unknown: '未知'
 } as Record<string, string>
 
+export function compoDftVal(ctype: CompoType) {
+  switch (ctype) {
+    case 'Number':
+      return 0
+    case 'DateTime':
+      return dayjs()
+    case 'Checkbox':
+    case 'Switch':
+      return false
+    case 'Table':
+    case 'Upload':
+    case 'Cascader':
+    case 'ListSelect':
+    case 'EditList':
+      return []
+    case 'Input':
+    case 'Password':
+    case 'Select':
+    case 'Textarea':
+    case 'Delable':
+    case 'SelOrIpt':
+    case 'CodeEditor':
+    default:
+      return ''
+  }
+}
+
 export type OpnType = {
   label: string
   subLabel?: string
@@ -151,3 +179,27 @@ export type BaseTypes =
   | 'Array'
   | 'Object'
   | 'Any'
+
+export function bsTpDefault(bsTp: BaseTypes) {
+  switch (bsTp) {
+    case 'Id':
+    case 'Any':
+      return null
+    case 'Number':
+      return 0
+    case 'String':
+    case 'LongStr':
+      return ''
+    case 'Boolean':
+      return false
+    case 'DateTime':
+      return dayjs()
+    case 'Array':
+      return []
+    case 'Object':
+      return {}
+    case 'Unknown':
+    default:
+      return undefined
+  }
+}

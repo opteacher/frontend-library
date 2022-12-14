@@ -11,5 +11,13 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    proxy: {
+      '^/frontend-library/(mdl|api)': {
+        target: 'http://opteacher.top',
+        changeOrigin: true
+      }
+    }
   }
 })

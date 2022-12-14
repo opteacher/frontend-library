@@ -424,17 +424,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style>
-.dynamic-delete-button {
-  cursor: pointer;
-  position: relative;
-  top: 4px;
-  font-size: 24px;
-  color: #999;
-  transition: all 0.3s;
-}
-.dynamic-delete-button:hover {
-  color: #777;
-}
-</style>

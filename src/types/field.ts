@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { BaseTypes, CompoType } from "."
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default class Field {
   key: string
   label: string
   desc: string
-  ftype: string // 表单组件类型
+  vtype: BaseTypes // 绑定值的类型
+  default: any // 默认值
+  ftype: CompoType // 表单组件类型
   rules: any[]
   refer: string
   placeholder: string
@@ -15,7 +19,9 @@ export default class Field {
     this.key = ''
     this.label = ''
     this.desc = ''
-    this.ftype = ''
+    this.vtype = 'Unknown'
+    this.default = undefined
+    this.ftype = 'Unknown'
     this.rules = []
     this.refer = ''
     this.placeholder = ''
@@ -26,7 +32,9 @@ export default class Field {
     this.key = ''
     this.label = ''
     this.desc = ''
-    this.ftype = ''
+    this.vtype = 'Unknown'
+    this.default = undefined
+    this.ftype = 'Unknown'
     this.rules = []
     this.refer = ''
     this.placeholder = ''
@@ -39,6 +47,8 @@ export default class Field {
     tgt.key = force ? srcKey : srcKey || tgt.key
     tgt.label = force ? src.label : src.label || tgt.label
     tgt.desc = force ? src.desc : src.desc || tgt.desc
+    tgt.vtype = force ? src.vtype : src.vtype || tgt.vtype
+    tgt.default = force ? src.default : src.default || tgt.default
     tgt.ftype = force ? src.ftype : src.ftype || tgt.ftype
     tgt.rules = force ? src.rules : src.rules || tgt.rules
     tgt.refer = force ? src.refer : src.refer || tgt.refer
