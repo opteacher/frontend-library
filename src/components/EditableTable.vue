@@ -51,6 +51,9 @@
       </template>
       <template v-else-if="typeof text === 'undefined' || text === null">-</template>
       <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
+      <template v-else-if="column.key in mapper">
+        <pre v-if="mapper[column.key].type === 'Textarea'" class="mb-0">{{ text }}</pre>
+      </template>
       <template v-else>{{ text }}</template>
     </template>
     <template v-if="hasExpand()" #expandedRowRender="{ record }">

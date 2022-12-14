@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/VwHome.vue'
-import ColorSelect from '../views/VwColorSelect.vue'
-import UploadFile from '../views/VwUploadFile.vue'
+import Component from '../views/VwCompo.vue'
 
 const router = createRouter({
   history: createWebHistory('frontend-library'),
@@ -12,14 +11,9 @@ const router = createRouter({
       component: Home
     },
     {
-      path: '/color-select',
-      name: 'ColorSelect',
-      component: ColorSelect
-    },
-    {
-      path: '/upload-file',
-      name: 'UploadFile',
-      component: UploadFile
+      path: '/component',
+      name: 'Component',
+      component: Component
     }
   ]
 })

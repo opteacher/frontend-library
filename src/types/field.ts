@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { pickOrIgnore } from '@/utils'
-import Compo from './compo'
-import { getCopy, MapperType } from './mapper'
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export const mgnBtm = 24
-
 export default class Field {
   key: string
   label: string
@@ -51,18 +45,5 @@ export default class Field {
     tgt.placeholder = force ? src.placeholder : src.placeholder || tgt.placeholder
     tgt.extra = force ? src.extra : src.extra || tgt.extra
     return tgt
-  }
-
-  static cpyFmCmp(src: Compo, tgt?: Field): Field {
-    tgt = tgt || new Field()
-    tgt.ftype = src.name
-    tgt.extra = src.extra
-    return tgt
-  }
-
-  toMapper(): MapperType {
-    const ret = pickOrIgnore(this, ['label', 'desc', 'rules', 'placeholder'], false)
-    ret.type = this.ftype
-    return getCopy(Object.assign(ret, this.extra))
   }
 }

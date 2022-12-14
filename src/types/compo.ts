@@ -6,14 +6,14 @@ export default class Compo {
   name: string
   ctype: string // 绑定类型
   category: string
-  extra: Field[]
+  props: Field[]
 
   constructor() {
     this.key = ''
     this.name = ''
     this.ctype = 'Unknown'
     this.category = ''
-    this.extra = []
+    this.props = []
   }
 
   reset() {
@@ -21,7 +21,7 @@ export default class Compo {
     this.name = ''
     this.ctype = 'Unknown'
     this.category = ''
-    this.extra = []
+    this.props = []
   }
 
   static copy(src: any, tgt?: Compo): Compo {
@@ -30,7 +30,7 @@ export default class Compo {
     tgt.name = src.name || tgt.name
     tgt.ctype = src.ctype || tgt.ctype
     tgt.category = src.category || tgt.category
-    tgt.extra = src.extra ? src.extra.map((field: any) => Field.copy(field)) : tgt.extra
+    tgt.props = src.props ? src.props.map((field: any) => Field.copy(field)) : tgt.props
     return tgt
   }
 }
