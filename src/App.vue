@@ -13,18 +13,12 @@ import {
   ProfileOutlined,
   GithubOutlined
 } from '@ant-design/icons-vue'
-import { onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 
-const selKey = ref([] as string[])
 const route = useRoute()
 const router = useRouter()
-
-onMounted(() => {
-  if (route.query.name) {
-    selKey.value = [route.query.name as string]
-  }
-})
+const selKeys = computed<string[]>(() => [route.query.name as string])
 
 function onSdMuItmClick({ key }: { key: string }) {
   router.push('/component?name=' + key)
@@ -51,7 +45,7 @@ function onSdMuItmClick({ key }: { key: string }) {
         <a-menu
           class="h-full border-r-0"
           theme="dark"
-          v-model:selectedKeys="selKey"
+          :selectedKeys="selKeys"
           @click="onSdMuItmClick"
         >
           <a-menu-item key="ColorSelect" class="flex items-baseline mt-0">
@@ -122,7 +116,7 @@ function onSdMuItmClick({ key }: { key: string }) {
           </a-menu-item>
         </a-menu>
       </a-layout-sider>
-      <a-layout-content class="h-full"><RouterView /></a-layout-content>
+      <a-layout-content class="h-full overflow-hidden"><RouterView /></a-layout-content>
     </a-layout>
   </a-layout>
 </template>

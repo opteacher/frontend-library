@@ -163,6 +163,7 @@ export const baseTypes = [
   'Boolean',
   'Array',
   'Object',
+  'Function',
   'Any'
 ]
 
@@ -178,6 +179,7 @@ export type BaseTypes =
   | 'DateTime'
   | 'Array'
   | 'Object'
+  | 'Function'
   | 'Any'
 
 export function bsTpDefault(bsTp: BaseTypes) {
@@ -198,6 +200,8 @@ export function bsTpDefault(bsTp: BaseTypes) {
       return []
     case 'Object':
       return {}
+    case 'Function':
+      return () => ({})
     case 'Unknown':
     default:
       return undefined

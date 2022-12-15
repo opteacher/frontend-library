@@ -2,36 +2,15 @@
   <a-button v-if="!addMod" class="w-full" type="primary" ghost @click="onEdtLstShow">
     添加{{ label }}
   </a-button>
-  <a-row v-else type="flex" :gutter="8">
-    <a-col flex="auto">
-      <template v-if="fldNum === 1">
-        <a-select
-          v-if="field.modes[0] === 'select'"
-          :options="field.options"
-          v-model:value="addState[0]"
-        />
-        <a-input v-else v-model:value="addState[0]" />
-      </template>
-      <a-input-group v-else>
-        <a-row :gutter="8">
-          <a-col v-for="idx of fldNum" :key="idx">
-            <a-select
-              v-if="field.modes[idx] === 'select'"
-              :options="field.options"
-              v-model:value="addState[idx]"
-            />
-            <a-input v-else v-model:value="addState[idx]" />
-          </a-col>
-        </a-row>
-      </a-input-group>
-    </a-col>
-    <a-col>
-      <a-space class="h-full" align="center">
-        <a class="hover:text-primary" @click="onEdtLstAdd">确定</a>
-        <a class="hover:text-secondary" @click="onEdtLstCcl">取消</a>
-      </a-space>
-    </a-col>
-  </a-row>
+  <a-form v-else layout="inline" :model="addState" @finish="onEdtLstAdd">
+    <template v-for="(value, key) in field.mapper">
+      <slot name="formItem" v-bind="{ form: addState, skey: key, value }" />
+    </template>
+    <a-form-item>
+      <a class="hover:text-primary" @click="onEdtLstAdd">确定</a>
+      <a class="hover:text-secondary" @click="onEdtLstCcl">取消</a>
+    </a-form-item>
+  </a-form>
   <template v-if="list && list.length">
     <a-divider class="my-2.5 mx-0" />
     <a-list size="small" :data-source="list">
@@ -40,7 +19,7 @@
           <template #actions>
             <a class="hover:text-error" @click="onEdtLstDel(index)">删除</a>
           </template>
-          {{ opnMap[item] || item }}
+          {{ field.lblProp ? item[field.lblProp] : item }}
         </a-list-item>
       </template>
     </a-list>
@@ -48,9 +27,9 @@
 </template>
 
 <script lang="ts">
-import ARow from 'ant-design-vue/lib/grid/Row'
+import { EdtLstMapper } from '@/types/mapper'
 import list from 'ant-design-vue/lib/list'
-import { computed, defineComponent, reactive, ref } from 'vue'
+import { defineComponent, reactive, ref } from 'vue'
 
 export default defineComponent({
   name: 'EditList',
@@ -58,34 +37,32 @@ export default defineComponent({
   props: {
     label: { type: String, default: '项' },
     value: { type: Array, required: true },
-    field: { type: Object, required: true }
+    field: { type: EdtLstMapper, required: true }
   },
   setup(props, { emit }) {
     const addMod = ref(false)
-    const fldNum = computed(() => props.field.modes.length)
-    const addState = reactive(new Array(fldNum.value).fill(''))
+    const addState = reactive(props.field.copy({}))
     const list = reactive(props.value)
-    const opnMap = computed(() =>
-      props.field.options
-        ? Object.fromEntries(props.field.options.map((opn: any) => [opn.value, opn.label]))
-        : {}
-    )
 
     function onEdtLstAdd() {
-      if (!addState.every((val: string) => val)) {
-        return
-      }
-      const item = fldNum.value === 1 ? addState[0] : Array.from(addState)
-      list.push(item)
+      list.push(props.field.copy(addState))
       addMod.value = false
       emit('update:value', list)
     }
     function onEdtLstCcl() {
-      addState.fill('')
+      if (addState.reset) {
+        addState.reset()
+      } else {
+        props.field.copy({}, addState)
+      }
       addMod.value = false
     }
     function onEdtLstShow() {
-      addState.fill('')
+      if (addState.reset) {
+        addState.reset()
+      } else {
+        props.field.copy({}, addState)
+      }
       addMod.value = true
     }
     function onEdtLstDel(index: number) {
@@ -93,11 +70,9 @@ export default defineComponent({
       emit('update:value', list)
     }
     return {
-      fldNum,
       addMod,
       addState,
       list,
-      opnMap,
 
       onEdtLstShow,
       onEdtLstAdd,

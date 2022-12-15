@@ -664,6 +664,9 @@ export function setProp(
     } else if (i === lstIdx) {
       callback(obj, p, value)
     } else {
+      if (!obj[p]) {
+        obj[p] = {}
+      }
       obj = obj[p]
     }
   }

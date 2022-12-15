@@ -2,7 +2,7 @@
   <div class="b-1 br-4">
     <v-ace-editor
       v-model:value="editing"
-      lang="javascript"
+      :lang="lang"
       theme="chrome"
       style="height: 300px"
       :options="{ tabSize: 2, readOnly: disabled }"
@@ -25,23 +25,30 @@ export default defineComponent({
   },
   emits: ['update:value'],
   props: {
-    value: { type: String, required: true },
+    value: { type: Object, required: true },
+    lang: { type: String, default: 'javascript' },
     disabled: { type: Boolean, default: false }
   },
   setup(props, { emit }) {
-    const editing = ref(props.value)
+    const editing = ref('')
 
-    watch(
-      () => editing.value,
-      () => emit('update:value', editing.value)
-    )
-    watch(
-      () => props.value,
-      () => {
-        editing.value = props.value
-      }
-    )
+    updFmVal()
+    watch(() => editing.value, updToVal)
+    watch(() => props.value, updFmVal)
 
+    function updFmVal() {
+      try {
+        editing.value = props.value instanceof Object ? JSON.stringify(props.value) : props.value
+      } catch (e) {}
+    }
+    function updToVal() {
+      try {
+        emit(
+          'update:value',
+          props.value instanceof Object ? JSON.parse(editing.value) : editing.value
+        )
+      } catch (e) {}
+    }
     return {
       editing
     }

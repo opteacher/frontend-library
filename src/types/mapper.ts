@@ -284,20 +284,26 @@ export class LstSelMapper extends BaseMapper {
 }
 
 export class EdtLstMapper extends BaseMapper {
-  modes: ('select' | 'input')[]
-  options: OpnType[]
+  lblProp: string
+  mapper: Mapper
+  emitter: Emitter
+  copy: (src: any, tgt?: any) => any
 
   constructor() {
     super()
-    this.modes = []
-    this.options = []
+    this.lblProp = ''
+    this.mapper = new Mapper()
+    this.emitter = new Emitter()
+    this.copy = () => console.log()
   }
 
   static copy(src: any, tgt?: EdtLstMapper): EdtLstMapper {
     tgt = tgt || new EdtLstMapper()
     BaseMapper.copy(src, tgt)
-    tgt.modes = src.modes || tgt.modes
-    tgt.options = src.options || tgt.options
+    tgt.lblProp = src.lblProp || tgt.lblProp
+    tgt.mapper = src.mapper || tgt.mapper
+    tgt.emitter = src.emitter || tgt.emitter
+    tgt.copy = src.copy || tgt.copy
     return tgt
   }
 }
@@ -432,22 +438,42 @@ export default class Mapper {
   }
 
   static createByFields(fields: Field[]): Mapper {
-    return new Mapper(
-      Object.fromEntries(
-        fields.map(field => [
-          field.refer,
-          Object.assign(
-            {
-              type: field.ftype,
-              label: field.label,
-              desc: field.desc,
-              rules: field.rules,
-              placeholder: field.placeholder
-            },
-            field.extra || {}
-          )
-        ])
+    const data = {} as Record<string, GroupMapper>
+    for (const field of fields) {
+      const mpItm = Object.assign(
+        {
+          type: field.ftype,
+          label: field.label,
+          desc: field.desc,
+          rules: field.rules,
+          placeholder: field.placeholder
+        },
+        field.extra || {}
       )
-    )
+      if (field.refer.indexOf('.') === -1) {
+        data[field.refer] = mpItm
+      } else {
+        const [group, item] = field.refer.split('.')
+        let grpLabel = group + '组'
+        let itmLabel = mpItm.label
+        if (mpItm.label.indexOf('/')) {
+          ;[grpLabel, itmLabel] = mpItm.label.split('/')
+        }
+        const upMpItm = Object.assign(mpItm, { label: itmLabel })
+        if (group in data) {
+          data[group].items[item] = upMpItm
+        } else {
+          data[group] = GroupMapper.copy({
+            label: grpLabel,
+            type: 'Group',
+            items: {
+              [item]: upMpItm
+            }
+          })
+        }
+      }
+    }
+    console.log(data)
+    return new Mapper(data)
   }
 }
