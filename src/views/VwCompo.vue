@@ -6,16 +6,19 @@ import apis from '../apis'
 import { useRoute } from 'vue-router'
 import { bsTpDefault } from '@/types'
 import FormItem from '../components/FormItem.vue'
-import Mapper from '@/types/mapper'
+import { createByFields } from '@/types/mapper'
 import { setProp } from '@/utils'
 
 const route = useRoute()
 const compo = reactive(new Component())
 const attrs = reactive({} as Record<string, any>)
-const mapper = computed(() => Mapper.createByFields(compo.props))
+const mapper = computed(() => createByFields(compo.props))
 
 onMounted(refresh)
 watch(() => route.query.name, refresh)
+watch(() => attrs.mapper, () => {
+  console.log(attrs)
+})
 
 async function refresh() {
   const cmpName = route.query.name as string

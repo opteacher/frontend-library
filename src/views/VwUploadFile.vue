@@ -2,9 +2,9 @@
 import { reactive } from 'vue'
 import { getProp } from '@/utils'
 import { UploadChangeParam } from 'ant-design-vue'
-import Mapper from '@/types/mapper'
+import { createByFields } from '@/types/mapper'
 import Field from '@/types/field'
-const mapper = Mapper.createByFields([
+const mapper = createByFields([
   Field.copy({
     refer: 'file',
     ftype: 'Upload',

@@ -1,5 +1,5 @@
 <template>
-  <a-form-item v-show="validConds(formState, valState.display)" :ref="skey" :name="skey">
+  <a-form-item v-show="validConds(formState, valState.display)" :ref="skey" :name="skey" :rules="valState.rules">
     <template v-if="valState.label" #label>
       {{ valState.label }}&nbsp;
       <a-tooltip v-if="valState.desc">
@@ -292,9 +292,9 @@
       </a-form-item-rest>
       <EditList
         v-else-if="valState.type === 'EditList'"
-        :field="(valState as EdtLstMapper)"
+        :field="valState"
         :value="getProp(formState, skey)"
-        @update:value="(val: any[]) => setProp(formState, skey, val)"
+        @update:value="onFieldChanged"
       >
         <template #formItem="{ form, skey, value }">
           <FormItem :form="form" :skey="skey" :value="value" />
@@ -341,7 +341,6 @@ import UploadFile from './UploadFile.vue'
 import TagList from './TagList.vue'
 import EditList from './EditList.vue'
 import { validConds, getProp, setProp } from '@/utils'
-import { EdtLstMapper } from '@/types/mapper'
 
 export default defineComponent({
   name: 'FormItem',

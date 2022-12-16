@@ -285,6 +285,7 @@ export class LstSelMapper extends BaseMapper {
 
 export class EdtLstMapper extends BaseMapper {
   lblProp: string
+  inline: boolean
   mapper: Mapper
   emitter: Emitter
   copy: (src: any, tgt?: any) => any
@@ -292,6 +293,7 @@ export class EdtLstMapper extends BaseMapper {
   constructor() {
     super()
     this.lblProp = ''
+    this.inline = true
     this.mapper = new Mapper()
     this.emitter = new Emitter()
     this.copy = () => console.log()
@@ -301,6 +303,7 @@ export class EdtLstMapper extends BaseMapper {
     tgt = tgt || new EdtLstMapper()
     BaseMapper.copy(src, tgt)
     tgt.lblProp = src.lblProp || tgt.lblProp
+    tgt.inline = typeof src.inline !== 'undefined' ? src.inline : tgt.inline
     tgt.mapper = src.mapper || tgt.mapper
     tgt.emitter = src.emitter || tgt.emitter
     tgt.copy = src.copy || tgt.copy
@@ -436,51 +439,55 @@ export default class Mapper {
     }
     return tgt
   }
+}
 
-  static createByFields(fields: Field[]): Mapper {
-    const data = {} as Record<string, any>
-    for (const field of fields) {
-      const mpItm = Object.assign(
-        {
-          type: field.ftype,
-          label: field.label,
-          desc: field.desc,
-          rules: field.rules,
-          placeholder: field.placeholder
-        },
-        Object.fromEntries(
-          Object.entries(field.extra || {}).map(([key, val]) => {
-            if (typeof val === 'string' && val.startsWith('return ')) {
-              console.log(`(function {${val}})()`)
-              val = eval(`(function {${val}})()`)
-            }
-            return [key, val]
-          })
-        )
+export function createByFields(fields: Field[]): Mapper {
+  const adjExtra = (value: any): any => {
+    if (typeof value === 'string' && value.startsWith('return ')) {
+      return eval(`(function () {${value}})()`)
+    } else if (value instanceof Array) {
+      return value.map(itm => adjExtra(itm))
+    } else if (value instanceof Object) {
+      return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, adjExtra(val)]))
+    }
+    return value
+  }
+  const data = {} as Record<string, any>
+  for (const field of fields) {
+    const mpItm = Object.assign(
+      {
+        type: field.ftype,
+        label: field.label,
+        desc: field.desc,
+        rules: field.rules,
+        placeholder: field.placeholder
+      },
+      Object.fromEntries(
+        Object.entries(field.extra || {}).map(([key, val]) => [key, adjExtra(val)])
       )
-      if (field.refer.indexOf('.') === -1) {
-        data[field.refer] = mpItm
+    )
+    if (field.refer.indexOf('.') === -1) {
+      data[field.refer] = mpItm
+    } else {
+      const [group] = field.refer.split('.')
+      let grpLabel = group + '组'
+      let itmLabel = mpItm.label
+      if (mpItm.label.indexOf('/')) {
+        ;[grpLabel, itmLabel] = mpItm.label.split('/')
+      }
+      const upMpItm = Object.assign(mpItm, { label: itmLabel })
+      if (group in data) {
+        data[group].items[field.refer] = upMpItm
       } else {
-        const [group] = field.refer.split('.')
-        let grpLabel = group + '组'
-        let itmLabel = mpItm.label
-        if (mpItm.label.indexOf('/')) {
-          ;[grpLabel, itmLabel] = mpItm.label.split('/')
-        }
-        const upMpItm = Object.assign(mpItm, { label: itmLabel })
-        if (group in data) {
-          data[group].items[field.refer] = upMpItm
-        } else {
-          data[group] = GroupMapper.copy({
-            label: grpLabel,
-            type: 'Group',
-            items: {
-              [field.refer]: upMpItm
-            }
-          })
-        }
+        data[group] = GroupMapper.copy({
+          label: grpLabel,
+          type: 'Group',
+          items: {
+            [field.refer]: upMpItm
+          }
+        })
       }
     }
-    return new Mapper(data)
   }
+  return new Mapper(data)
 }

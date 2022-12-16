@@ -2,22 +2,22 @@
   <a-button v-if="!addMod" class="w-full" type="primary" ghost @click="onEdtLstShow">
     添加{{ label }}
   </a-button>
-  <a-form v-else layout="inline" :model="addState" @finish="onEdtLstAdd">
+  <a-form v-else :layout="field.inline ? 'inline' : 'horizontal'" :model="addState" @finish="onEdtLstAdd">
     <template v-for="(value, key) in field.mapper">
       <slot name="formItem" v-bind="{ form: addState, skey: key, value }" />
     </template>
-    <a-form-item>
-      <a class="hover:text-primary" @click="onEdtLstAdd">确定</a>
-      <a class="hover:text-secondary" @click="onEdtLstCcl">取消</a>
-    </a-form-item>
+    <div class="flex justify-end space-x-2">
+      <a-button class="bg-primary" type="primary" html-type="submit">确定</a-button>
+      <a-button @click="onEdtLstCcl">取消</a-button>
+    </div>
   </a-form>
   <template v-if="list && list.length">
-    <a-divider class="my-2.5 mx-0" />
+    <a-divider class="my-2 mx-0" />
     <a-list size="small" :data-source="list">
       <template #renderItem="{ item, index }">
         <a-list-item class="p-0">
           <template #actions>
-            <a class="hover:text-error" @click="onEdtLstDel(index)">删除</a>
+            <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
           {{ field.lblProp ? item[field.lblProp] : item }}
         </a-list-item>

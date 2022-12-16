@@ -11,8 +11,15 @@ module.exports = {
     },
     textColor: theme => ({
       ...theme('colors'),
+      primary: '#1890ff',
+      error: '#f5222d',
+      secondary: 'rgba(0, 0, 0, 0.45)',
       menu: 'rgba(255, 255, 255, 0.75)'
-    })
+    }),
+    backgroundColor: theme => ({
+      ...theme('colors'),
+      primary: '#1890ff'
+     })
   },
   plugins: [],
 }
