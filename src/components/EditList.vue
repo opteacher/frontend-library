@@ -27,7 +27,6 @@
 </template>
 
 <script lang="ts">
-import { EdtLstMapper } from '@/types/mapper'
 import list from 'ant-design-vue/lib/list'
 import { defineComponent, reactive, ref } from 'vue'
 
@@ -37,7 +36,7 @@ export default defineComponent({
   props: {
     label: { type: String, default: '项' },
     value: { type: Array, required: true },
-    field: { type: EdtLstMapper, required: true }
+    field: { type: Object, required: true }
   },
   setup(props, { emit }) {
     const addMod = ref(false)

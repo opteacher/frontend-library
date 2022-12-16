@@ -61,26 +61,12 @@ async function refresh() {
             </p>
             <FormItem
               v-for="(v, k) in (value.items as Record<string, any>)"
-              class="mb-3"
               :key="k"
+              class="mb-3"
               :form="attrs"
-              :skey="k.toString()"
+              :skey="k"
               :value="(v as Object)"
-            >
-              <template #FormDialog>
-                <FormDialog
-                  v-model:show="v.show"
-                  :mapper="v.mapper"
-                  :copy="v.copy"
-                  :emitter="v.emitter"
-                  :object="v.editing"
-                  @submit="(form: any) => v.onSaved(form, attrs[k])"
-                />
-              </template>
-              <template v-if="$slots[k]" #[k]="{ formState }">
-                <slot :name="k" v-bind="{ formState }" />
-              </template>
-            </FormItem>
+            />
           </div>
           <FormItem v-else class="mb-3" :form="attrs" :skey="(key as string)" :value="value" />
         </template>

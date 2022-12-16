@@ -438,7 +438,7 @@ export default class Mapper {
   }
 
   static createByFields(fields: Field[]): Mapper {
-    const data = {} as Record<string, GroupMapper>
+    const data = {} as Record<string, any>
     for (const field of fields) {
       const mpItm = Object.assign(
         {
@@ -448,12 +448,20 @@ export default class Mapper {
           rules: field.rules,
           placeholder: field.placeholder
         },
-        field.extra || {}
+        Object.fromEntries(
+          Object.entries(field.extra || {}).map(([key, val]) => {
+            if (typeof val === 'string' && val.startsWith('return ')) {
+              console.log(`(function {${val}})()`)
+              val = eval(`(function {${val}})()`)
+            }
+            return [key, val]
+          })
+        )
       )
       if (field.refer.indexOf('.') === -1) {
         data[field.refer] = mpItm
       } else {
-        const [group, item] = field.refer.split('.')
+        const [group] = field.refer.split('.')
         let grpLabel = group + '组'
         let itmLabel = mpItm.label
         if (mpItm.label.indexOf('/')) {
@@ -461,19 +469,18 @@ export default class Mapper {
         }
         const upMpItm = Object.assign(mpItm, { label: itmLabel })
         if (group in data) {
-          data[group].items[item] = upMpItm
+          data[group].items[field.refer] = upMpItm
         } else {
           data[group] = GroupMapper.copy({
             label: grpLabel,
             type: 'Group',
             items: {
-              [item]: upMpItm
+              [field.refer]: upMpItm
             }
           })
         }
       }
     }
-    console.log(data)
     return new Mapper(data)
   }
 }
