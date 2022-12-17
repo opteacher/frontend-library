@@ -1,5 +1,5 @@
 <template>
-  <a-form-item v-show="validConds(formState, valState.display)" :ref="skey" :name="skey" :rules="valState.rules">
+  <a-form-item v-show="display" :ref="skey" :name="skey" :rules="valState.rules">
     <template v-if="valState.label" #label>
       {{ valState.label }}&nbsp;
       <a-tooltip v-if="valState.desc">
@@ -59,11 +59,12 @@
         v-if="valState.type === 'Input'"
         :value="getProp(formState, skey)"
         :type="valState.iptType || 'text'"
-        :disabled="validConds(formState, valState.disabled) || !editable"
+        :disabled="disabled"
         :addon-before="valState.prefix"
         :addon-after="valState.suffix"
         :placeholder="valState.placeholder || '请输入'"
         @change="(e: any) => onFieldChanged(e.target.value)"
+        @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
       />
       <a-input-number
         v-else-if="valState.type === 'Number'"
@@ -71,17 +72,19 @@
         type="number"
         :value="getProp(formState, skey)"
         :placeholder="valState.placeholder || '请输入'"
-        :disabled="validConds(formState, valState.disabled) || !editable"
+        :disabled="disabled"
         :addon-before="valState.prefix"
         :addon-after="valState.suffix"
         @change="(val: any) => onFieldChanged(val)"
+        @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
       />
       <a-input-password
         v-else-if="valState.type === 'Password'"
         :value="getProp(formState, skey)"
         :placeholder="valState.placeholder || '请输入'"
-        :disabled="validConds(formState, valState.disabled) || !editable"
+        :disabled="disabled"
         @change="(e: any) => onFieldChanged(e.target.value)"
+        @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
       />
       <a-select
         v-else-if="valState.type === 'Select'"
@@ -89,7 +92,7 @@
         :options="valState.options"
         :value="getProp(formState, skey)"
         :placeholder="valState.placeholder || '请选择'"
-        :disabled="validConds(formState, valState.disabled) || !editable"
+        :disabled="disabled"
         @dropdownVisibleChange="valState.onDropdown"
         @change="(val: any) => onFieldChanged(val)"
       >
@@ -102,7 +105,7 @@
         <a-checkbox
           :name="skey"
           :checked="getProp(formState, skey)"
-          :disabled="validConds(formState, valState.disabled) || !editable"
+          :disabled="disabled"
           @change="(e: any) => onFieldChanged(e.target.checked)"
         >
           {{
@@ -121,8 +124,9 @@
         :value="getProp(formState, skey)"
         :rows="valState.maxRows"
         :placeholder="valState.placeholder || '请输入'"
-        :disabled="validConds(formState, valState.disabled) || !editable"
+        :disabled="disabled"
         @change="(e: any) => onFieldChanged(e.target.value)"
+        @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
       />
       <a-cascader
         v-else-if="valState.type === 'Cascader'"
@@ -130,14 +134,14 @@
         :placeholder="valState.placeholder || '请选择'"
         :value="getProp(formState, skey)"
         change-on-select
-        :disabled="validConds(formState, valState.disabled) || !editable"
+        :disabled="disabled"
         @change="(e: any) => onFieldChanged(e)"
       />
       <a-tooltip v-else-if="valState.type === 'Button'">
         <template #title>{{ valState.placeholder || '请点击' }}</template>
         <a-button
           class="w-full"
-          :disabled="validConds(formState, valState.disabled) || !editable"
+          :disabled="disabled"
           :danger="valState.danger"
           :type="valState.primary ? 'primary' : 'default'"
           ghost
@@ -152,7 +156,7 @@
         class="w-full"
         show-time
         :placeholder="valState.placeholder || '请选择'"
-        :disabled="validConds(formState, valState.disabled) || !editable"
+        :disabled="disabled"
         :value="getProp(formState, skey)"
       />
       <template v-else-if="valState.type === 'Table'">
@@ -226,7 +230,7 @@
             :options="valState.options"
             :value="getProp(formState, skey)"
             :placeholder="valState.placeholder || '请选择'"
-            :disabled="validConds(formState, valState.disabled) || !editable"
+            :disabled="disabled"
             @change="(val: any) => onFieldChanged(val)"
           />
           <a-input
@@ -234,7 +238,7 @@
             style="width: 98%"
             :placeholder="valState.placeholder || '请输入'"
             :value="getProp(formState, skey)"
-            :disabled="validConds(formState, valState.disabled) || !editable"
+            :disabled="disabled"
             @change="(e: any) => onFieldChanged(e.target.value)"
           />
         </a-col>
@@ -245,7 +249,7 @@
                 valState.mode = valState.mode === 'select' ? 'input' : 'select'
               }
             "
-            :disabled="validConds(formState, valState.disabled) || !editable"
+            :disabled="disabled"
           >
             <template #icon>
               <SelectOutlined v-if="valState.mode === 'select'" />
@@ -305,7 +309,7 @@
         :lang="valState.lang"
         :value="getProp(formState, skey)"
         @update:value="(val: string) => setProp(formState, skey, val)"
-        :disabled="validConds(formState, valState.disabled) || !editable"
+        :disabled="disabled"
       />
       <TagList
         v-else-if="valState.type === 'TagList'"
@@ -327,7 +331,7 @@
 <script lang="ts">
 import type { OpnType } from '@/types'
 import Column from '@/types/column'
-import { defineComponent, reactive, watch } from 'vue'
+import { computed, defineComponent, reactive, watch } from 'vue'
 import {
   InfoCircleOutlined,
   CloseCircleOutlined,
@@ -366,6 +370,8 @@ export default defineComponent({
   setup(props) {
     const formState = reactive(props.form)
     const valState = reactive(props.value)
+    const display = computed(() => validConds(formState, valState.display, true))
+    const disabled = computed(() => validConds(formState, valState.disabled) || !props.editable)
 
     watch(
       () => props.value,
@@ -411,13 +417,17 @@ export default defineComponent({
     }
     function onFieldChanged(newVal: any) {
       setProp(formState, props.skey, newVal)
-      valState.onChange(formState, newVal)
+      if (valState.onChange) {
+        valState.onChange(formState, newVal)
+      }
     }
     return {
       Column,
 
       formState,
       valState,
+      display,
+      disabled,
 
       getProp,
       setProp,

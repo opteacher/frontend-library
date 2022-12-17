@@ -65,12 +65,14 @@ export class InputMapper extends BaseMapper {
   iptType: string
   prefix: string
   suffix: string
+  onBlur: (record: any, to: any) => void
 
   constructor() {
     super()
     this.iptType = ''
     this.prefix = ''
     this.suffix = ''
+    this.onBlur = () => undefined
   }
 
   static copy(src: any, tgt?: InputMapper): InputMapper {
@@ -79,22 +81,26 @@ export class InputMapper extends BaseMapper {
     tgt.iptType = src.iptType || tgt.iptType
     tgt.prefix = src.prefix || tgt.prefix
     tgt.suffix = src.suffix || tgt.suffix
+    tgt.onBlur = src.onBlur || tgt.onBlur
     return tgt
   }
 }
 
 export class TextareaMapper extends BaseMapper {
   maxRows: number
+  onBlur: (record: any, to: any) => void
 
   constructor() {
     super()
     this.maxRows = 3
+    this.onBlur = () => undefined
   }
 
   static copy(src: any, tgt?: TextareaMapper): TextareaMapper {
     tgt = tgt || new TextareaMapper()
     BaseMapper.copy(src, tgt)
     tgt.maxRows = src.maxRows || tgt.maxRows
+    tgt.onBlur = src.onBlur || tgt.onBlur
     return tgt
   }
 }
@@ -286,6 +292,7 @@ export class LstSelMapper extends BaseMapper {
 export class EdtLstMapper extends BaseMapper {
   lblProp: string
   inline: boolean
+  flatItem: boolean // 抹平单元素表单列表：[{ key: 'abc' }] => ['abc']，（注意：会抹去元素的键信息）
   mapper: Mapper
   emitter: Emitter
   copy: (src: any, tgt?: any) => any
@@ -294,6 +301,7 @@ export class EdtLstMapper extends BaseMapper {
     super()
     this.lblProp = ''
     this.inline = true
+    this.flatItem = false
     this.mapper = new Mapper()
     this.emitter = new Emitter()
     this.copy = () => console.log()
@@ -304,6 +312,7 @@ export class EdtLstMapper extends BaseMapper {
     BaseMapper.copy(src, tgt)
     tgt.lblProp = src.lblProp || tgt.lblProp
     tgt.inline = typeof src.inline !== 'undefined' ? src.inline : tgt.inline
+    tgt.flatItem = typeof src.flatItem !== 'undefined' ? src.flatItem : tgt.flatItem
     tgt.mapper = src.mapper || tgt.mapper
     tgt.emitter = src.emitter || tgt.emitter
     tgt.copy = src.copy || tgt.copy

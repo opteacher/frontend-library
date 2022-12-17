@@ -544,9 +544,12 @@ export function genDspRecords(formState: Batch) {
 
 export function validConds(
   formState: any,
-  value: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  value: boolean | Cond[] | { [cmpRel: string]: Cond[] } | undefined,
+  valUndRet = false
 ): boolean {
-  if (typeof value === 'boolean') {
+  if (typeof value === 'undefined') {
+    return valUndRet
+  } else if (typeof value === 'boolean') {
     return value as boolean
   } else if (value && value.length) {
     return (value as Cond[])

@@ -16,9 +16,6 @@ const mapper = computed(() => createByFields(compo.props))
 
 onMounted(refresh)
 watch(() => route.query.name, refresh)
-watch(() => attrs.mapper, () => {
-  console.log(attrs)
-})
 
 async function refresh() {
   const cmpName = route.query.name as string

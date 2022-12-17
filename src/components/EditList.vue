@@ -2,7 +2,12 @@
   <a-button v-if="!addMod" class="w-full" type="primary" ghost @click="onEdtLstShow">
     添加{{ label }}
   </a-button>
-  <a-form v-else :layout="field.inline ? 'inline' : 'horizontal'" :model="addState" @finish="onEdtLstAdd">
+  <a-form
+    v-else
+    :layout="field.inline ? 'inline' : 'horizontal'"
+    :model="addState"
+    @finish="onEdtLstAdd"
+  >
     <template v-for="(value, key) in field.mapper">
       <slot name="formItem" v-bind="{ form: addState, skey: key, value }" />
     </template>
@@ -28,7 +33,7 @@
 
 <script lang="ts">
 import list from 'ant-design-vue/lib/list'
-import { defineComponent, reactive, ref } from 'vue'
+import { computed, defineComponent, onMounted, reactive, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'EditList',
@@ -41,12 +46,22 @@ export default defineComponent({
   setup(props, { emit }) {
     const addMod = ref(false)
     const addState = reactive(props.field.copy({}))
-    const list = reactive(props.value)
+    const list = reactive([] as any[])
+    const fstKey = computed(() => Object.keys(props.field.mapper)[0])
 
+    onMounted(refresh)
+    watch(() => props.value, refresh)
+
+    function refresh() {
+      list.splice(0, list.length, ...props.value.map((item: any) => ({ [fstKey.value]: item })))
+    }
     function onEdtLstAdd() {
       list.push(props.field.copy(addState))
       addMod.value = false
-      emit('update:value', list)
+      emit(
+        'update:value',
+        list.map(item => item[fstKey.value])
+      )
     }
     function onEdtLstCcl() {
       if (addState.reset) {
@@ -66,7 +81,10 @@ export default defineComponent({
     }
     function onEdtLstDel(index: number) {
       list.splice(index, 1)
-      emit('update:value', list)
+      emit(
+        'update:value',
+        list.map(item => item[fstKey.value])
+      )
     }
     return {
       addMod,
