@@ -1,5 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  corePlugins: {
+    preflight: false
+  },
   important: true,
   purge: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   content: [],
@@ -19,7 +22,12 @@ module.exports = {
     backgroundColor: theme => ({
       ...theme('colors'),
       primary: '#1890ff'
-     })
+    }),
+    borderColor: theme => ({
+      ...theme('colors'),
+      DEFAULT: '#d9d9d9',
+      primary: '#1890ff'
+    })
   },
-  plugins: [],
+  plugins: []
 }

@@ -125,13 +125,8 @@ export default defineComponent({
 
     let alpha = ref(1)
 
-    onMounted(() => {
-      let { r, g, b, a } = parseColor(props.color)
-      red.value = r
-      green.value = g
-      blue.value = b
-      alpha.value = a
-    })
+    onMounted(refresh)
+    watch(() => props.color, refresh)
 
     watch([red, green, blue], () => {
       context.emit('update:color', rgba2hex(red.value, green.value, blue.value, alpha.value))
@@ -173,6 +168,17 @@ export default defineComponent({
         hsl: ``
       }
     })
+
+    function refresh() {
+      let { r, g, b, a } = parseColor(props.color)
+      if (r === -1) {
+        return
+      }
+      red.value = r
+      green.value = g
+      blue.value = b
+      alpha.value = a
+    }
 
     // 输入框值变化,限制输入的值
     function hexChange(e: any) {
@@ -328,6 +334,8 @@ export default defineComponent({
         if (typeof color === 'string') {
           if (/^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{8}|[0-9a-fA-F]{3}|[0-9a-fA-F]{4})$/.test(color)) {
             return hex2rgba(color)
+          } else {
+            return { r: -1 }
           }
         } else {
           r = color.r > 255 ? 255 : color.r < 0 ? 0 : color.r

@@ -1,11 +1,11 @@
 <template>
-  <a-button class="w-full" :size="size" @click="visible = true">
+  <a-button class="w-full" @click="visible = true">
     <template #icon>
       <keep-alive v-if="icon">
         <component :is="icon" />
       </keep-alive>
     </template>
-    {{ icon || placeholder || '请选择图标' }}
+    {{ icon || '请选择图标' }}
   </a-button>
   <a-modal v-model:visible="visible" title="选择图标" width="60vw" @ok="onIconSelect">
     <a-input v-model:value="search" placeholder="筛选图标" />
@@ -14,36 +14,31 @@
         <a-row v-for="group in icons.slice(begIdx, begIdx + 4)" :key="group[0]">
           <a-col
             :span="6"
-            class="text-center hover-grey"
+            class="text-center hover:bg-gray-300 border-2 border-solid py-2 cursor-pointer"
+            :class="selIcon === icon ? 'border-primary' : 'border-white'"
             v-for="icon of group"
             :key="icon"
-            :style="{ border: selIcon === icon ? '2px solid #1890ff' : '2px solid white' }"
             @click="selIcon = icon"
           >
             <keep-alive>
               <component
                 :is="icon"
-                v-bind="{ style: { 'font-size': '32px', 'margin-top': '10px' } }"
+                v-bind="{ class: 'text-4xl' }"
               />
             </keep-alive>
-            <p>{{ icon }}</p>
+            <p class="mb-0">{{ icon }}</p>
           </a-col>
         </a-row>
         <a-divider />
-        <a-row>
-          <a-col :span="12" style="line-height: 42px; vertical-align: middle">
-            选中图标：{{ selIcon }}
-          </a-col>
-          <a-col :span="12" class="text-right">
-            <a-pagination
-              v-if="pages.num"
-              class="mt-10"
-              v-model:current="pages.cur"
-              :total="pages.num"
-              show-less-items
-            />
-          </a-col>
-        </a-row>
+        <div class="flex justify-between items-center">
+          <div>选中图标：{{ selIcon }}</div>
+          <a-pagination
+            v-if="pages.num"
+            v-model:current="pages.cur"
+            :total="pages.num"
+            show-less-items
+          />
+        </div>
       </a-tab-pane>
     </a-tabs>
   </a-modal>
@@ -63,9 +58,7 @@ export default defineComponent({
   name: 'IconField',
   emits: ['select'],
   props: {
-    size: { type: String, default: 'default' },
-    icon: { type: String, default: '' },
-    placeholder: { type: String, default: '' }
+    icon: { type: String, default: '' }
   },
   components: antdIcons,
   setup(_props, { emit }) {
@@ -132,10 +125,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.hover-grey:hover {
-  background-color: #ededed;
-}
-
 :deep(.ant-pagination-options) {
   display: none !important;
 }
