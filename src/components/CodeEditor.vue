@@ -1,17 +1,18 @@
 <template>
-  <div class="b-1 br-4">
+  <div class="border border-solid border-gray-300 rounded">
     <v-ace-editor
       v-model:value="editing"
       :lang="lang"
       theme="chrome"
       style="height: 300px"
-      :options="{ tabSize: 2, readOnly: disabled }"
+      :readonly="disabled"
+      :options="{ tabSize: 2 }"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watch } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 import { VAceEditor } from 'vue3-ace-editor'
 import 'ace-builds/src-min-noconflict/theme-chrome'
 import 'ace-builds/src-min-noconflict/mode-javascript'
@@ -19,7 +20,7 @@ import 'ace-builds/src-min-noconflict/mode-json'
 import 'ace-builds/src-min-noconflict/ext-language_tools'
 
 export default defineComponent({
-  name: 'VueAceEditor',
+  name: 'CodeEditor',
   components: {
     VAceEditor
   },
@@ -31,7 +32,12 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const editing = ref<string>('')
-    const vtype = computed(() => {
+
+    updFmVal()
+    watch(() => editing.value, updToVal)
+    watch(() => props.value, updFmVal)
+
+    function vtype() {
       if (typeof props.value === 'string') {
         return String
       } else if (props.value instanceof Function) {
@@ -39,15 +45,10 @@ export default defineComponent({
       } else {
         return Object
       }
-    })
-
-    updFmVal()
-    watch(() => editing.value, updToVal)
-    watch(() => props.value, updFmVal)
-
+    }
     function updFmVal() {
       try {
-        switch (vtype.value) {
+        switch (vtype()) {
           case Object:
             editing.value = JSON.stringify(props.value)
             break
@@ -62,7 +63,7 @@ export default defineComponent({
     }
     function updToVal() {
       try {
-        switch (vtype.value) {
+        switch (vtype()) {
           case Object:
             emit('update:value', JSON.parse(editing.value))
             break

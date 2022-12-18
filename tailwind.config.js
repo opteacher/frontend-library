@@ -25,7 +25,7 @@ module.exports = {
     }),
     borderColor: theme => ({
       ...theme('colors'),
-      DEFAULT: '#d9d9d9',
+      DEFAULT: theme('border-gray-300', 'currentColor'),
       primary: '#1890ff'
     })
   },

@@ -1,5 +1,5 @@
 <template>
-  <a-dropdown class="w-full" :disabled="validConds(form, field.disabled) || !editable">
+  <a-dropdown class="w-full" :disabled="disabled">
     <a-button>
       <template #icon><UploadOutlined /></template>
       选择上传的文件或文件夹
@@ -11,10 +11,10 @@
         :directory="uploadDir"
         :showUploadList="false"
         v-model:file-list="valState"
-        :action="field.path || path"
-        :headers="field.headers"
+        :action="path"
+        :headers="headers"
         :progress="progress"
-        :beforeUpload="field.onBeforeUpload"
+        :beforeUpload="onBeforeUpload"
         @change="onUploadChange"
       >
         <a-menu @click="onUploadClicked">
@@ -54,11 +54,13 @@ export default defineComponent({
   },
   emits: ['update:value'],
   props: {
-    field: { type: Object, required: true },
     form: { type: Object, required: true },
     path: { type: String, default: '' },
+    headers: { type: Object, default: undefined},
     value: { type: Array, required: true },
-    editable: { type: Boolean, default: true }
+    onBeforeUpload: { type: Function, default: () => () => true },
+    onChange: { type: Function, default: () => () => undefined },
+    disabled: { type: Boolean, default: false }
   },
   setup(props, { emit }) {
     const uploadDir = ref(false)
@@ -84,9 +86,7 @@ export default defineComponent({
       uploadDir.value = item.key === 'folder'
     }
     function onUploadChange(info: UploadChangeParam) {
-      if (props.field.onChange) {
-        props.field.onChange(props.form, info)
-      }
+      props.onChange(props.form, info)
       if (
         info.fileList.reduce(
           (prev: boolean, file: UploadFile) => prev && file.status === 'done',

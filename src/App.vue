@@ -30,14 +30,16 @@ function onSdMuItmClick({ key }: { key: string }) {
     <a-layout-header class="p-0 flex items-center justify-between">
       <RouterLink class="w-50 px-5 py-4 flex space-x-2" to="/">
         <img class="w-10" src="@/assets/logo.svg" />
-        <p class="text-white text-xl mb-0 font-mono">前端组件库</p>
+        <div class="text-xl inline-block align-middle">
+          <p class="text-white mb-0 font-mono inline-block align-middle">前端组件库</p>
+        </div>
       </RouterLink>
       <a
-        class="mr-5 text-white hover:text-gray-300"
+        class="mr-5 text-white hover:text-gray-300 text-3xl"
         href="https://github.com/opteacher/frontend-library"
         target="_blank"
       >
-        <github-outlined class="text-3xl" />
+        <github-outlined />
       </a>
     </a-layout-header>
     <a-layout>
@@ -66,7 +68,7 @@ function onSdMuItmClick({ key }: { key: string }) {
             </template>
             上传文件/夹
           </a-menu-item>
-          <a-menu-item key="AceEditor" class="flex items-center">
+          <a-menu-item key="CodeEditor" class="flex items-center">
             <template #icon>
               <code-sandbox-outlined class="icon-lg" />
             </template>

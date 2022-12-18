@@ -5,6 +5,7 @@ import IconField from './components/IconField.vue'
 import EditList from './components/EditList.vue'
 import FormItem from './components/FormItem.vue'
 import FormDialog from './components/FormDialog.vue'
+import CodeEditor from './components/CodeEditor.vue'
 
 const components = [
     ColorSelect,
@@ -12,7 +13,8 @@ const components = [
     IconField,
     EditList,
     FormItem,
-    FormDialog
+    FormDialog,
+    CodeEditor
 ]
 
 function install(app: App) {
@@ -25,7 +27,8 @@ export {
     IconField,
     EditList,
     FormItem,
-    FormDialog
+    FormDialog,
+    CodeEditor
 }
 
 export default install

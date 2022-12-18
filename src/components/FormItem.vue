@@ -212,10 +212,13 @@
       </template>
       <UploadFile
         v-else-if="valState.type === 'Upload'"
-        :field="valState"
         :form="formState"
-        path="/server-package/api/v1/temp/file"
+        :path="valState.path"
+        :headers="valState.headers"
         :value="getProp(formState, skey)"
+        :onBeforeUpload="valState.onBeforeUpload"
+        :onChange="valState.onChange"
+        :disabled="disabled"
         @update:value="(val: any) => setProp(formState, skey, val)"
       />
       <a-space v-else-if="valState.type === 'Delable'">
@@ -304,7 +307,7 @@
           <FormItem :form="form" :skey="skey" :value="value" />
         </template>
       </EditList>
-      <VueAceEditor
+      <CodeEditor
         v-else-if="valState.type === 'CodeEditor'"
         :lang="valState.lang"
         :value="getProp(formState, skey)"
@@ -340,7 +343,7 @@ import {
   AppstoreOutlined
 } from '@ant-design/icons-vue'
 import { getCopy } from '@/types/mapper'
-import VueAceEditor from './VueAceEditor.vue'
+import CodeEditor from './CodeEditor.vue'
 import UploadFile from './UploadFile.vue'
 import TagList from './TagList.vue'
 import EditList from './EditList.vue'
@@ -356,7 +359,7 @@ export default defineComponent({
     AppstoreOutlined,
 
     UploadFile,
-    VueAceEditor,
+    CodeEditor,
     TagList,
     EditList
   },

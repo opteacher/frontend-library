@@ -56,7 +56,7 @@ const iconsMapper = {
 
 export default defineComponent({
   name: 'IconField',
-  emits: ['select'],
+  emits: ['update:icon'],
   props: {
     icon: { type: String, default: '' }
   },
@@ -106,7 +106,7 @@ export default defineComponent({
       }
     }
     function onIconSelect() {
-      emit('select', selIcon.value)
+      emit('update:icon', selIcon.value)
       visible.value = false
     }
     return {

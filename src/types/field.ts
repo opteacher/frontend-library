@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { BaseTypes, CompoType } from "."
+import { BaseTypes, CompoType } from '.'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default class Field {
@@ -13,6 +13,7 @@ export default class Field {
   rules: any[]
   refer: string
   placeholder: string
+  vModel: boolean
   extra: any
 
   constructor() {
@@ -25,6 +26,7 @@ export default class Field {
     this.rules = []
     this.refer = ''
     this.placeholder = ''
+    this.vModel = false
     this.extra = {}
   }
 
@@ -38,6 +40,7 @@ export default class Field {
     this.rules = []
     this.refer = ''
     this.placeholder = ''
+    this.vModel = false
     this.extra = {}
   }
 
@@ -53,6 +56,7 @@ export default class Field {
     tgt.rules = force ? src.rules : src.rules || tgt.rules
     tgt.refer = force ? src.refer : src.refer || tgt.refer
     tgt.placeholder = force ? src.placeholder : src.placeholder || tgt.placeholder
+    tgt.vModel = force ? src.vModel : typeof src.vModel !== 'undefined' ? src.vModel : tgt.vModel
     tgt.extra = force ? src.extra : src.extra || tgt.extra
     return tgt
   }

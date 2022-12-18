@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ControlOutlined } from '@ant-design/icons-vue'
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import Component from '../types/compo'
 import apis from '../apis'
 import { useRoute } from 'vue-router'
@@ -12,6 +12,7 @@ import { setProp } from '@/utils'
 const route = useRoute()
 const compo = reactive(new Component())
 const attrs = reactive({} as Record<string, any>)
+const vmAttr = ref('')
 const mapper = computed(() => createByFields(compo.props))
 
 onMounted(refresh)
@@ -31,6 +32,9 @@ async function refresh() {
     delete attrs[key.substring(key.indexOf('.') !== -1 ? key.indexOf('.') : 0)]
   }
   for (const prop of compo.props) {
+    if (prop.vModel) {
+      vmAttr.value = prop.refer
+    }
     setProp(attrs, prop.refer, prop.default || bsTpDefault(prop.vtype))
   }
 }
@@ -40,7 +44,7 @@ async function refresh() {
   <a-layout class="h-full">
     <a-layout-content class="p-3">
       <keep-alive v-if="compo.name">
-        <component :is="compo.name" v-bind="attrs">
+        <component :is="compo.name" v-bind="attrs" v-model:[vmAttr]="attrs[vmAttr]">
           {{ compo.inner }}
         </component>
       </keep-alive>
