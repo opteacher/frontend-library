@@ -51,7 +51,11 @@ export default class Field {
     tgt.label = force ? src.label : src.label || tgt.label
     tgt.desc = force ? src.desc : src.desc || tgt.desc
     tgt.vtype = force ? src.vtype : src.vtype || tgt.vtype
-    tgt.default = force ? src.default : src.default || tgt.default
+    tgt.default = force
+      ? cvtValByType(src.default, tgt.vtype)
+      : src.default
+      ? cvtValByType(src.default, tgt.vtype)
+      : tgt.default
     tgt.ftype = force ? src.ftype : src.ftype || tgt.ftype
     tgt.rules = force ? src.rules : src.rules || tgt.rules
     tgt.refer = force ? src.refer : src.refer || tgt.refer
@@ -59,5 +63,14 @@ export default class Field {
     tgt.vModel = force ? src.vModel : typeof src.vModel !== 'undefined' ? src.vModel : tgt.vModel
     tgt.extra = force ? src.extra : src.extra || tgt.extra
     return tgt
+  }
+}
+
+function cvtValByType(value: any, type: BaseTypes) {
+  switch (type) {
+    case 'Object':
+      return JSON.parse(value)
+    default:
+      return value
   }
 }

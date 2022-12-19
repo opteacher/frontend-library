@@ -9,6 +9,7 @@ export default class Compo {
   category: string
   props: Field[]
   inner: string
+  components: Compo[]
 
   constructor() {
     this.key = ''
@@ -17,6 +18,7 @@ export default class Compo {
     this.category = ''
     this.props = []
     this.inner = ''
+    this.components = []
   }
 
   reset() {
@@ -26,6 +28,7 @@ export default class Compo {
     this.category = ''
     this.props = []
     this.inner = ''
+    this.components = []
   }
 
   static copy(src: any, tgt?: Compo, force = false): Compo {
@@ -40,6 +43,11 @@ export default class Compo {
       tgt.props = []
     }
     tgt.inner = force ? src.inner : src.inner || tgt.inner
+    if (src.components) {
+      tgt.components = src.components.map((compo: any) => Compo.copy(compo))
+    } else if (force) {
+      tgt.components = []
+    }
     return tgt
   }
 }
