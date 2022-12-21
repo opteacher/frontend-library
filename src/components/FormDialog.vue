@@ -16,105 +16,17 @@
         <a-button type="primary" @click="onOkClick">确定</a-button>
       </template>
     </template>
-    <a-form
+    <FormGroup
       ref="formRef"
-      :model="formState"
+      :copy="copy"
+      :object="object"
+      :mapper="formMapper"
+      :form="formState"
       :rules="formRules"
-      :label-col="{ span: column[0] }"
-      :wrapper-col="{ span: column[1] }"
-    >
-      <template v-for="(value, key) in formMapper" :key="key">
-        <template v-if="value.type === 'Group' && validConds(formState, value.display)">
-          <div v-if="value.fold" class="border pt-7 px-2.5 my-7 relative border-r-4">
-            <a-button
-              type="link"
-              size="small"
-              class="absolute bg-white"
-              :style="{ left: '5px', top: '-11px' }"
-              @click="value.fold = !value.fold"
-              :disabled="validConds(formState, value.disabled)"
-            >
-              {{ value.label }}
-            </a-button>
-            <a-button
-              type="link"
-              size="small"
-              class="absolute bg-white"
-              :style="{ right: '-12px', top: '-12px' }"
-              @click="value.fold = !value.fold"
-              :disabled="validConds(formState, value.disabled)"
-            >
-              <template #icon><minus-outlined /></template>
-            </a-button>
-            <FormItem
-              v-for="(v, k) in value.items"
-              :key="k"
-              :form="formState"
-              :skey="k.toString()"
-              :value="(v as Object)"
-              :editable="editable"
-              :viewOnly="viewOnly"
-            >
-              <template #FormDialog>
-                <FormDialog
-                  v-model:show="v.show"
-                  :mapper="v.mapper"
-                  :copy="v.copy"
-                  :emitter="v.emitter"
-                  :object="v.editing"
-                  @submit="(form: any) => v.onSaved(form, formState[k])"
-                />
-              </template>
-              <template v-if="$slots[k]" #[k]="{ formState }">
-                <slot :name="k" v-bind="{ formState }" />
-              </template>
-            </FormItem>
-          </div>
-          <div v-else class="border-b my-7 relative">
-            <a-button
-              type="link"
-              size="small"
-              class="absolute bg-white"
-              :style="{ left: '5px', top: '-11px' }"
-              @click="value.fold = !value.fold"
-            >
-              {{ value.label }}
-            </a-button>
-            <a-button
-              type="link"
-              size="small"
-              class="absolute bg-white"
-              :style="{ right: '-12px', top: '-12px' }"
-              @click="value.fold = !value.fold"
-            >
-              <template #icon><plus-outlined /></template>
-            </a-button>
-          </div>
-        </template>
-        <FormItem
-          v-else
-          :form="formState"
-          :skey="(key as string)"
-          :value="value"
-          :editable="editable"
-          :viewOnly="viewOnly"
-        >
-          <template #FormDialog>
-            <FormDialog
-              v-model:show="value.show"
-              :mapper="value.mapper"
-              :copy="value.copy"
-              :emitter="value.emitter"
-              :object="value.editing"
-              @submit="(form: any) => value.onSaved(form, formState[key])"
-            />
-          </template>
-          <template v-if="$slots[key]" #[key]="{ formState }">
-            <slot :name="key" v-bind="{ formState }" />
-          </template>
-        </FormItem>
-      </template>
-    </a-form>
+      :editable="editable"
+      :viewOnly="viewOnly"
+      :column="column"
+    />
   </a-modal>
 </template>
 
@@ -123,18 +35,13 @@
 import Column from '@/types/column'
 import Mapper from '@/types/mapper'
 import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
-import FormItem from './FormItem.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
-import { validConds } from '@/utils'
+import FormGroup from './FormGroup.vue'
 
 export default defineComponent({
   name: 'FormDialog',
   components: {
-    FormItem,
-
-    PlusOutlined,
-    MinusOutlined
+    FormGroup
   },
   props: {
     show: { type: Boolean, default: false },
@@ -149,17 +56,17 @@ export default defineComponent({
   emits: ['initialize', 'update:show', 'submit'],
   setup(props, { emit }) {
     const visible = ref(props.show)
+    const editable = ref(true)
+    const viewOnly = ref(false)
+    const okLoading = ref(false)
     const formRef = ref()
+    const formMapper = reactive(props.mapper)
     const formState = reactive(props.copy(props.object || {}))
     const formRules = Object.fromEntries(
       Object.entries(props.mapper).map(entry => {
         return [entry[0], entry[1].rules]
       })
     )
-    const formMapper = reactive(props.mapper)
-    const editable = ref(true)
-    const viewOnly = ref(false)
-    const okLoading = ref(false)
 
     if (props.emitter) {
       props.emitter.on('editable', (edtb: boolean) => {
@@ -211,10 +118,10 @@ export default defineComponent({
     async function onOkClick() {
       try {
         okLoading.value = true
-        await formRef.value.validate()
+        await formRef.value.refer.validate()
         emit('submit', formState, () => {
           okLoading.value = false
-          formRef.value.resetFields()
+          formRef.value.refer.resetFields()
           formState.reset && formState.reset()
           visible.value = false
           emit('update:show', false)
@@ -224,7 +131,7 @@ export default defineComponent({
       }
     }
     function onCclClick() {
-      formRef.value.resetFields()
+      formRef.value.refer.resetFields()
       formState.reset && formState.reset()
       visible.value = false
       emit('update:show', false)
@@ -242,8 +149,7 @@ export default defineComponent({
       okLoading,
 
       onOkClick,
-      onCclClick,
-      validConds
+      onCclClick
     }
   }
 })

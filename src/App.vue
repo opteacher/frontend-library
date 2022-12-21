@@ -11,14 +11,17 @@ import {
   SmileOutlined,
   FormOutlined,
   ProfileOutlined,
-  GithubOutlined
+  GithubOutlined,
+  GroupOutlined
 } from '@ant-design/icons-vue'
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
-const selKeys = computed<string[]>(() => [route.query.name as string])
+const selKeys = computed<string[]>(() => [
+  route.query.name ? (route.query.name as string) : (route.path.split('/').pop() as string)
+])
 
 function onSdMuItmClick({ key }: { key: string }) {
   router.push('/component?name=' + key)
@@ -109,6 +112,12 @@ function onSdMuItmClick({ key }: { key: string }) {
               <form-outlined class="icon-lg" />
             </template>
             表单项
+          </a-menu-item>
+          <a-menu-item key="FormGroup" class="flex items-center">
+            <template #icon>
+              <group-outlined class="icon-lg" />
+            </template>
+            表单组
           </a-menu-item>
           <a-menu-item key="FormDialog" class="flex items-center">
             <template #icon>
