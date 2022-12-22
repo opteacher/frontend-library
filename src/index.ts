@@ -4,6 +4,7 @@ import UploadFile from './components/UploadFile.vue'
 import IconField from './components/IconField.vue'
 import EditList from './components/EditList.vue'
 import FormItem from './components/FormItem.vue'
+import FormGroup from './components/FormGroup.vue'
 import FormDialog from './components/FormDialog.vue'
 import CodeEditor from './components/CodeEditor.vue'
 
@@ -13,6 +14,7 @@ const components = [
     IconField,
     EditList,
     FormItem,
+    FormGroup,
     FormDialog,
     CodeEditor
 ]
@@ -27,6 +29,7 @@ export {
     IconField,
     EditList,
     FormItem,
+    FormGroup,
     FormDialog,
     CodeEditor
 }

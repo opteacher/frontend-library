@@ -1,10 +1,10 @@
 <template>
   <template v-for="item in valState" :key="item">
-    <a-tag class="mb-2" closable @close="onRmvTagClick(item)">
+    <a-tag closable @close="onRmvTagClick(item)">
       {{ fldState.lvMapper[item] || item }}
     </a-tag>
   </template>
-  <a-button class="mb-2" type="dashed" size="small" @click="onNewTagClick">
+  <a-button type="dashed" size="small" @click="onNewTagClick">
     <template #icon><plus-outlined /></template>
     添加
   </a-button>

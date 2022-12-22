@@ -14,7 +14,7 @@ export default defineComponent({
     MinusOutlined
   },
   props: {
-    column: { type: Array, default: () => [4, 20] }, // [0]标题宽度 [1]表单项宽度
+    lblWid: { type: Number, default: 4 },
     copy: { type: Function, required: true },
     object: { type: Object, default: null },
     mapper: { type: Mapper, required: true },
@@ -38,8 +38,8 @@ export default defineComponent({
     ref="refer"
     :model="form"
     :rules="rules"
-    :label-col="{ span: column[0] }"
-    :wrapper-col="{ span: column[1] }"
+    :label-col="{ span: lblWid }"
+    :wrapper-col="{ span: 24 - lblWid }"
   >
     <template v-for="(value, key) in mapper" :key="key">
       <template v-if="value.type === 'Group' && validConds(form, value.display)">
@@ -118,14 +118,7 @@ export default defineComponent({
         :viewOnly="viewOnly"
       >
         <template #FormDialog>
-          <FormDialog
-            v-model:show="value.show"
-            :mapper="value.mapper"
-            :copy="value.copy"
-            :emitter="value.emitter"
-            :object="value.editing"
-            @submit="(form: any) => value.onSaved(form, form[key])"
-          />
+          <slot name="FormDialog" v-bind="{ value, key }" />
         </template>
         <template v-if="$slots[key]" #[key]="{ form }">
           <slot :name="key" v-bind="{ form }" />

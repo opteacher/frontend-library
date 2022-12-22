@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { BaseTypes, CompoType } from '.'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export default class Field {
   key: string
   label: string
@@ -69,7 +69,9 @@ export default class Field {
 function cvtValByType(value: any, type: BaseTypes) {
   switch (type) {
     case 'Object':
-      return JSON.parse(value)
+      return typeof value === 'string' ? JSON.parse(value) : value
+    case 'Function':
+      return typeof value === 'string' ? eval(`(function () {${value}})()`) : value
     default:
       return value
   }

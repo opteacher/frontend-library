@@ -25,8 +25,19 @@
       :rules="formRules"
       :editable="editable"
       :viewOnly="viewOnly"
-      :column="column"
-    />
+      :column="[lblWid, 24 - lblWid]"
+    >
+      <template #FormDialog="{ value, key }">
+        <FormDialog
+          v-model:show="value.show"
+          :mapper="value.mapper"
+          :copy="value.copy"
+          :emitter="value.emitter"
+          :object="value.editing"
+          @submit="(form: any) => value.onSaved(form, form[key])"
+        />
+      </template>
+    </FormGroup>
   </a-modal>
 </template>
 
@@ -47,7 +58,7 @@ export default defineComponent({
     show: { type: Boolean, default: false },
     copy: { type: Function, required: true },
     width: { type: String, default: '50vw' },
-    column: { type: Array, default: () => [4, 20] }, // [0]标题宽度 [1]表单项宽度
+    lblWid: { type: Number, default: 4 },
     title: { type: String, default: 'Form Dialog' },
     object: { type: Object, default: null },
     mapper: { type: Mapper, required: true },

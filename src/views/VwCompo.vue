@@ -24,9 +24,9 @@ async function refresh() {
   if (!cmpName) {
     return
   }
-  if (cmpName === 'FormDialog') {
-    router.push('/' + cmpName)
-  }
+  // if (cmpName === 'FormDialog') {
+  //   router.push('/' + cmpName)
+  // }
   const result = await apis.component.get(cmpName)
   if (!result) {
     return
@@ -46,10 +46,16 @@ async function refresh() {
 
 <template>
   <a-layout class="h-full">
-    <a-layout-content class="p-3">
+    <a-layout-content class="p-3 overflow-auto">
       <keep-alive v-if="compo.name">
         <component :is="compo.name" v-bind="attrs" v-model:[vmAttr]="attrs[vmAttr]">
-          {{ compo.inner }}
+          <component
+            v-if="compo.components.length"
+            v-for="subCmp in compo.components"
+            :key="subCmp.name"
+            :is="subCmp.name"
+          />
+          <template v-else>{{ compo.inner }}</template>
         </component>
       </keep-alive>
     </a-layout-content>

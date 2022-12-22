@@ -30,7 +30,7 @@
       </a-upload>
     </template>
   </a-dropdown>
-  <a-list v-show="valState.length" style="margin-top: 5px" size="small" :data-source="valState">
+  <a-list v-show="valState.length" class="mt-1.5" size="small" :data-source="valState">
     <template #renderItem="{ item: file }">
       <a-list-item>
         {{ file.originFileObj.webkitRelativePath || file.name }}
@@ -56,7 +56,7 @@ export default defineComponent({
   props: {
     form: { type: Object, required: true },
     path: { type: String, default: '' },
-    headers: { type: Object, default: undefined},
+    headers: { type: Object, default: undefined },
     value: { type: Array, required: true },
     onBeforeUpload: { type: Function, default: () => () => true },
     onChange: { type: Function, default: () => () => undefined },
@@ -64,7 +64,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const uploadDir = ref(false)
-    const valState = ref(props.value)
+    const valState = ref(props.value || [])
     const progress: UploadProps['progress'] = {
       strokeColor: {
         '0%': '#108ee9',

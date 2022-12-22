@@ -119,6 +119,14 @@
           }}
         </a-checkbox>
       </a-tooltip>
+      <a-tooltip v-else-if="valState.type === 'Switch'">
+        <a-switch
+          :checked="getProp(formState, skey)"
+          :checked-children="valState.chkLabels ? valState.chkLabels[1] : ''"
+          :un-checked-children="valState.chkLabels ? valState.chkLabels[0] : ''"
+          @change="onFieldChanged"
+        />
+      </a-tooltip>
       <a-textarea
         v-else-if="valState.type === 'Textarea'"
         :value="getProp(formState, skey)"
@@ -225,42 +233,38 @@
         {{ getProp(formState, skey) || '-' }}
         <CloseCircleOutlined @click="valState.onDeleted(formState.key)" />
       </a-space>
-      <a-row v-else-if="valState.type === 'SelOrIpt'" type="flex" :gutter="8">
-        <a-col flex="auto">
-          <a-select
-            v-if="valState.mode === 'select'"
-            style="width: 98%"
-            :options="valState.options"
-            :value="getProp(formState, skey)"
-            :placeholder="valState.placeholder || '请选择'"
-            :disabled="disabled"
-            @change="(val: any) => onFieldChanged(val)"
-          />
-          <a-input
-            v-else
-            style="width: 98%"
-            :placeholder="valState.placeholder || '请输入'"
-            :value="getProp(formState, skey)"
-            :disabled="disabled"
-            @change="(e: any) => onFieldChanged(e.target.value)"
-          />
-        </a-col>
-        <a-col flex="32px">
-          <a-button
-            @click="
-              () => {
-                valState.mode = valState.mode === 'select' ? 'input' : 'select'
-              }
-            "
-            :disabled="disabled"
-          >
-            <template #icon>
-              <SelectOutlined v-if="valState.mode === 'select'" />
-              <EditOutlined v-else />
-            </template>
-          </a-button>
-        </a-col>
-      </a-row>
+      <a-input-group v-else-if="valState.type === 'SelOrIpt'" compact class="flex">
+        <a-select
+          v-if="valState.mode === 'select'"
+          class="flex-auto"
+          :options="valState.options"
+          :value="getProp(formState, skey)"
+          :placeholder="valState.placeholder || '请选择'"
+          :disabled="disabled"
+          @change="(val: any) => onFieldChanged(val)"
+        />
+        <a-input
+          v-else
+          class="flex-auto"
+          :placeholder="valState.placeholder || '请输入'"
+          :value="getProp(formState, skey)"
+          :disabled="disabled"
+          @change="(e: any) => onFieldChanged(e.target.value)"
+        />
+        <a-button
+          @click="
+            () => {
+              valState.mode = valState.mode === 'select' ? 'input' : 'select'
+            }
+          "
+          :disabled="disabled"
+        >
+          <template #icon>
+            <SelectOutlined v-if="valState.mode === 'select'" />
+            <EditOutlined v-else />
+          </template>
+        </a-button>
+      </a-input-group>
       <a-form-item-rest v-else-if="valState.type === 'ListSelect'">
         <a-list
           item-layout="horizontal"

@@ -5,6 +5,7 @@ import { CompoType, Cond, OpnType } from '.'
 import Column from './column'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import Field from './field'
+import dayjs from 'dayjs'
 
 export class BaseMapper {
   label: string
@@ -465,7 +466,7 @@ export function createByFields(fields: Field[]): Mapper {
       const [group] = field.refer.split('.')
       let grpLabel = group + '组'
       let itmLabel = mpItm.label
-      if (mpItm.label.indexOf('/')) {
+      if (mpItm.label.indexOf('/') !== -1) {
         ;[grpLabel, itmLabel] = mpItm.label.split('/')
       }
       const upMpItm = Object.assign(mpItm, { label: itmLabel })
