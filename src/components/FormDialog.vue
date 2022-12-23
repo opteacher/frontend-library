@@ -125,6 +125,10 @@ export default defineComponent({
         }
       }
     )
+    watch(
+      () => visible.value,
+      () => emit('update:show', visible.value)
+    )
 
     async function onOkClick() {
       try {
