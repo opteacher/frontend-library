@@ -1,7 +1,7 @@
 import { message } from 'ant-design-vue'
 import axios, { AxiosRequestConfig } from 'axios'
 import qs from 'qs'
-import { CompoType, Cond } from './types'
+import { Cond } from './types'
 import Batch from './types/batch'
 import Column from './types/column'
 
@@ -24,7 +24,7 @@ export interface RequestOptions {
   orgRes?: boolean
 }
 
-export const DefaultProject = 'frontend-library'
+const DefaultProject = process.env.VUE_APP_PJT || 'frontend-library'
 
 export async function makeRequest(pms: Promise<any>, options?: RequestOptions): Promise<any> {
   if (!options) {

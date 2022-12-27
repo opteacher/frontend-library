@@ -1,5 +1,5 @@
 <template>
-  <a-row class="mb-10" type="flex">
+  <a-row class="mb-2.5" type="flex">
     <a-col flex="auto">
       <a-space>
         <h3 class="mb-0">{{ title }}</h3>

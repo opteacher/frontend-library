@@ -7,8 +7,9 @@ import FormItem from './components/FormItem.vue'
 import FormGroup from './components/FormGroup.vue'
 import FormDialog from './components/FormDialog.vue'
 import CodeEditor from './components/CodeEditor.vue'
+import EditableTable from './components/EditableTable.vue'
 
-const components = [
+export const components = {
     ColorSelect,
     UploadFile,
     IconField,
@@ -16,22 +17,10 @@ const components = [
     FormItem,
     FormGroup,
     FormDialog,
-    CodeEditor
-]
-
-function install(app: App) {
-    components.map(component => app.component(component.name, component))
+    CodeEditor,
+    EditableTable
 }
 
-export {
-    ColorSelect,
-    UploadFile,
-    IconField,
-    EditList,
-    FormItem,
-    FormGroup,
-    FormDialog,
-    CodeEditor
+export default function (app: App) {
+    Object.values(components).map(component => app.component(component.name, component))
 }
-
-export default install
