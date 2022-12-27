@@ -50,7 +50,7 @@ export default defineComponent({
       try {
         switch (vtype()) {
           case Object:
-            editing.value = fmtString(JSON.stringify(props.value))
+            editing.value = JSON.stringify(props.value)
             break
           case Function:
             editing.value = props.value.toString()
@@ -75,31 +75,6 @@ export default defineComponent({
             emit('update:value', editing.value)
         }
       } catch (e) {}
-    }
-    function fmtString(str: string) {
-      let tab = 0
-      let ret = ''
-      for (let i = 0; i < str.length; ++i) {
-        switch (str[i]) {
-          case '{':
-            tab++
-            ret += '{\n'.padEnd(tab + 2, '  ')
-            break
-          case ',':
-            ret += ',\n'.padEnd(tab + 2, '  ')
-            break
-          case ':':
-            ret += ': '
-            break
-          case '}':
-            ret += `\n${''.padEnd(tab, '  ')}}`
-            tab--
-            break
-          default:
-            ret += str[i]
-        }
-      }
-      return ret
     }
     return {
       editing
