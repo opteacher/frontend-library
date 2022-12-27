@@ -68,8 +68,7 @@ async function refresh() {
         <template v-for="(value, key) in mapper" :key="key">
           <div v-if="value.type === 'Group'" class="border pt-5 px-2.5 my-5 relative rounded">
             <p
-              class="absolute bg-white text-gray-300 text-base"
-              :style="{ left: '5px', top: '-13px' }"
+              class="absolute bg-white text-gray-300 text-base left-1.5 -top-2.5"
             >
               {{ value.label }}
             </p>

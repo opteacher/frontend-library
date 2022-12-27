@@ -1,7 +1,7 @@
 <script lang="ts">
 import { validConds } from '@/utils'
 import FormItem from './FormItem.vue'
-import Mapper from '@/types/mapper'
+import Mapper from '../types/mapper'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
 import { defineComponent, ref } from 'vue'
 
@@ -23,8 +23,9 @@ export default defineComponent({
     editable: { type: Boolean, default: true },
     viewOnly: { type: Boolean, default: false }
   },
-  setup() {
+  setup(_props, { slots }) {
     const refer = ref()
+    console.log(slots)
     return {
       refer,
       validConds
@@ -43,12 +44,11 @@ export default defineComponent({
   >
     <template v-for="(value, key) in mapper" :key="key">
       <template v-if="value.type === 'Group' && validConds(form, value.display)">
-        <div v-if="value.fold" class="border pt-7 px-2.5 my-7 relative border-r-4">
+        <div v-if="value.fold" class="border border-solid border-gray-300 pt-7 px-2.5 my-7 relative rounded">
           <a-button
             type="link"
             size="small"
-            class="absolute bg-white"
-            :style="{ left: '5px', top: '-11px' }"
+            class="absolute bg-white left-1.5 -top-2.5"
             @click="value.fold = !value.fold"
             :disabled="validConds(form, value.disabled)"
           >
@@ -57,8 +57,7 @@ export default defineComponent({
           <a-button
             type="link"
             size="small"
-            class="absolute bg-white"
-            :style="{ right: '-12px', top: '-12px' }"
+            class="absolute bg-white -right-3 -top-3"
             @click="value.fold = !value.fold"
             :disabled="validConds(form, value.disabled)"
           >
@@ -88,12 +87,11 @@ export default defineComponent({
             </template>
           </FormItem>
         </div>
-        <div v-else class="border-b my-7 relative">
+        <div v-else class="border-t border-b-0 border-solid border-gray-300 my-7 relative">
           <a-button
             type="link"
             size="small"
-            class="absolute bg-white"
-            :style="{ left: '5px', top: '-11px' }"
+            class="absolute bg-white left-1.5 -top-3"
             @click="value.fold = !value.fold"
           >
             {{ value.label }}
@@ -101,8 +99,7 @@ export default defineComponent({
           <a-button
             type="link"
             size="small"
-            class="absolute bg-white"
-            :style="{ right: '-12px', top: '-12px' }"
+            class="absolute bg-white -right-3 -top-3"
             @click="value.fold = !value.fold"
           >
             <template #icon><plus-outlined /></template>
@@ -120,8 +117,8 @@ export default defineComponent({
         <template #FormDialog>
           <slot name="FormDialog" v-bind="{ value, key }" />
         </template>
-        <template v-if="$slots[key]" #[key]="{ form }">
-          <slot :name="key" v-bind="{ form }" />
+        <template v-if="$slots[key]" #[key]="{ formState }">
+          <slot :name="key" v-bind="{ formState }" />
         </template>
       </FormItem>
     </template>

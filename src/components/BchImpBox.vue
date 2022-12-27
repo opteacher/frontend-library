@@ -88,14 +88,12 @@
 import { defineComponent, reactive, ref, watch } from 'vue'
 import FormDialog from './FormDialog.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import Mapper from '@/types/mapper'
+import Mapper from '../types/mapper'
 import { read } from 'xlsx'
-import { Cond } from '@/types'
-import { charInc, upperFirst } from '@/utils'
-import Column from '@/types/column'
+import { Cond } from '../types'
+import { charInc, upperFirst, genDspColumns, genDspRecords } from '../utils'
+import Column from '../types/column'
 import { ImportOutlined, ArrowRightOutlined, ArrowDownOutlined } from '@ant-design/icons-vue'
-import { genDspColumns, genDspRecords } from '@/utils'
-import Device from '@/types/device'
 
 export default defineComponent({
   name: 'BatchImportBox',
@@ -157,7 +155,7 @@ export default defineComponent({
       if (!info.form.worksheet) {
         return
       }
-      const ignKeys = Object.keys(new Device()).map(prop => `col${upperFirst(prop)}`)
+      const ignKeys = cols.map((col: Column) => `col${upperFirst(col.dataIndex)}`)
       const usdVals = Object.values(info.form).filter(val => val)
       let begColNo = info.startCol
       for (const colKey of Object.keys(info.form).filter(

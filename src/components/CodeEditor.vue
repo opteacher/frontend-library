@@ -4,7 +4,7 @@
       v-model:value="editing"
       :lang="lang"
       theme="chrome"
-      style="height: 300px"
+      class="h-80"
       :readonly="disabled"
       :options="{ tabSize: 2 }"
     />
@@ -59,7 +59,9 @@ export default defineComponent({
           default:
             editing.value = props.value as string
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(e)
+      }
     }
     function updToVal() {
       try {
@@ -74,7 +76,9 @@ export default defineComponent({
           default:
             emit('update:value', editing.value)
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(e)
+      }
     }
     return {
       editing

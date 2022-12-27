@@ -3,7 +3,7 @@
     <a-col flex="auto">
       <a-space>
         <h3 class="mb-0">{{ title }}</h3>
-        <span style="color: rgba(0, 0, 0, 0.45)">{{ description }}</span>
+        <span class="text-gray-400">{{ description }}</span>
       </a-space>
     </a-col>
     <a-col class="text-right" v-if="addable" flex="100px">
@@ -33,18 +33,20 @@
     </template>
     <template #bodyCell="{ text, column, record }">
       <template v-if="column.key === 'opera'">
-        <a v-if="disabled(record, 'edit')" class="mr-5" disabled @click.stop="">编辑</a>
-        <a v-else-if="edtable" class="mr-5" @click.stop="onEditClicked(record)">编辑</a>
-        <a v-if="disabled(record, 'delete')" disabled @click.stop="">删除</a>
-        <a-popconfirm
-          v-else-if="delable"
-          title="确定删除该记录吗？"
-          ok-text="确定"
-          cancel-text="取消"
-          @confirm="onRecordDel(record.key)"
-        >
-          <a style="color: #ff4d4f" @click.stop="">删除</a>
-        </a-popconfirm>
+        <div class="flex space-x-1.5">
+          <a v-if="disabled(record, 'edit')" disabled @click.stop="">编辑</a>
+          <a v-else-if="edtable" @click.stop="onEditClicked(record)">编辑</a>
+          <a v-if="disabled(record, 'delete')" disabled @click.stop="">删除</a>
+          <a-popconfirm
+            v-else-if="delable"
+            title="确定删除该记录吗？"
+            ok-text="确定"
+            cancel-text="取消"
+            @confirm="onRecordDel(record.key)"
+          >
+            <a class="text-error" @click.stop="">删除</a>
+          </a-popconfirm>
+        </div>
       </template>
       <template v-else-if="$slots[column.key]">
         <slot :name="column.key" v-bind="{ record }" />
@@ -60,10 +62,16 @@
       <slot name="expandedRowRender" v-bind="{ record }" />
     </template>
     <template #expandIcon="{ record }">
-      <a-button class="w-5 h-5 text-8xl px-1.5" @click.stop="onRowExpand(record)">
-        <template v-if="expRowKeys.includes(record.key)">-</template>
-        <template v-else>+</template>
-      </a-button>
+      <minus-square-outlined
+        v-if="expRowKeys.includes(record.key)"
+        class="cursor-pointer hover:text-primary"
+        @click.stop="onRowExpand(record)"
+      />
+      <plus-square-outlined
+        v-else
+        class="cursor-pointer hover:text-primary"
+        @click.stop="onRowExpand(record)"
+      />
     </template>
   </a-table>
   <FormDialog
@@ -89,14 +97,17 @@
 import { defineComponent, onMounted, reactive } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
-import Column from '@/types/column'
-import Mapper from '@/types/mapper'
+import Column from '../types/column'
+import Mapper from '../types/mapper'
+import { MinusSquareOutlined, PlusSquareOutlined } from '@ant-design/icons-vue'
 
 export default defineComponent({
-  name: 'edtableTable',
+  name: 'EditableTable',
   emits: ['add', 'edit', 'before-save', 'save', 'delete', 'refresh'],
   components: {
-    FormDialog
+    FormDialog,
+    MinusSquareOutlined,
+    PlusSquareOutlined
   },
   props: {
     api: { type: Object /* ComAPI */, required: true },

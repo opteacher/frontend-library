@@ -300,12 +300,21 @@ export class EdtLstMapper extends BaseMapper {
 
   constructor() {
     super()
-    this.lblProp = ''
+    this.lblProp = 'value'
     this.inline = true
-    this.flatItem = false
-    this.mapper = new Mapper()
+    this.flatItem = true
+    this.mapper = new Mapper({
+      value: {
+        type: 'Input',
+        placeholder: '请输入'
+      }
+    })
     this.emitter = new Emitter()
-    this.copy = () => console.log()
+    this.copy = (src: any, tgt?: { value: any }) => {
+      tgt = tgt || { value: '' }
+      tgt.value = src.value || tgt.value
+      return tgt
+    }
   }
 
   static copy(src: any, tgt?: EdtLstMapper): EdtLstMapper {

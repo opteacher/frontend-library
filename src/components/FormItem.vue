@@ -271,9 +271,9 @@
           :data-source="valState.options"
           size="small"
           bordered
+          class="overflow-y-auto"
           :style="{
-            'max-height': `${valState.height}px`,
-            'overflow-y': 'auto'
+            'max-height': `${valState.height}px`
           }"
         >
           <template #renderItem="{ item: option }">
@@ -337,7 +337,7 @@
 
 <script lang="ts">
 import type { OpnType } from '@/types'
-import Column from '@/types/column'
+import Column from '../types/column'
 import { computed, defineComponent, reactive, watch } from 'vue'
 import {
   InfoCircleOutlined,
@@ -346,7 +346,7 @@ import {
   EditOutlined,
   AppstoreOutlined
 } from '@ant-design/icons-vue'
-import { getCopy } from '@/types/mapper'
+import { getCopy } from '../types/mapper'
 import CodeEditor from './CodeEditor.vue'
 import UploadFile from './UploadFile.vue'
 import TagList from './TagList.vue'

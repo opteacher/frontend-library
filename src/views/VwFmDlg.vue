@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ControlOutlined } from '@ant-design/icons-vue'
-import Mapper from '@/types/mapper'
+import Mapper from '@lib/types/mapper'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { reactive } from 'vue'
 

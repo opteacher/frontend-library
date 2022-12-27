@@ -29,7 +29,7 @@
               <a-select
                 size="small"
                 placeholder="等于……"
-                style="width: 75%"
+                class="w-9/12"
                 allowClear
                 :options="cols.map((col: Column) => ({ label: col.title, value: col.dataIndex }))"
                 @select="(selected: string) => onAsIdenSelect(formState, selected, column.dataIndex)"
@@ -59,16 +59,16 @@
 </template>
 
 <script lang="ts">
-import Mapper from '@/types/mapper'
+import Mapper from '../types/mapper'
 import { computed, defineComponent, onMounted, reactive, ref, watch } from 'vue'
 import FormDialog from './FormDialog.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { ExportOutlined, EllipsisOutlined } from '@ant-design/icons-vue'
-import Column from '@/types/column'
+import Column from '../types/column'
 import { read } from 'xlsx'
 import { Cond } from '@/types'
 import { upperFirst } from '@/utils'
-import { genDspColumns, genDspRecords } from './utils'
+import { genDspColumns, genDspRecords } from '../utils'
 
 export default defineComponent({
   name: 'BatchExportBox',

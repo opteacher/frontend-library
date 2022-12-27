@@ -25,7 +25,7 @@
       :rules="formRules"
       :editable="editable"
       :viewOnly="viewOnly"
-      :column="[lblWid, 24 - lblWid]"
+      :lblWid="lblWid"
     >
       <template #FormDialog="{ value, key }">
         <FormDialog
@@ -37,14 +37,17 @@
           @submit="(form: any) => value.onSaved(form, form[key])"
         />
       </template>
+      <template v-for="key in Object.keys(mapper)" #[key]="{ formState }">
+        <slot :name="key" v-bind="{ formState }" />
+      </template>
     </FormGroup>
   </a-modal>
 </template>
 
 <script lang="ts">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Column from '@/types/column'
-import Mapper from '@/types/mapper'
+import Column from '../types/column'
+import Mapper from '../types/mapper'
 import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormGroup from './FormGroup.vue'
@@ -85,7 +88,7 @@ export default defineComponent({
       })
       props.emitter.on(
         'update:show',
-        (args: { show: boolean; cpyRcd?: (tgt: any) => void; viewOnly?: boolean }) => {
+        (args: { show: boolean; cpyRcd?: Function; viewOnly?: boolean }) => {
           if (!args.show) {
             visible.value = false
             return

@@ -32,7 +32,6 @@
 </template>
 
 <script lang="ts">
-import list from 'ant-design-vue/lib/list'
 import { computed, defineComponent, onMounted, reactive, ref, watch } from 'vue'
 
 export default defineComponent({
