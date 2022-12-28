@@ -219,7 +219,7 @@
         </a-table>
       </template>
       <UploadFile
-        v-else-if="valState.type === 'Upload'"
+        v-else-if="valState.type === 'UploadFile'"
         :form="formState"
         :path="valState.path"
         :headers="valState.headers"
