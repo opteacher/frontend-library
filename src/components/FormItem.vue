@@ -51,7 +51,7 @@
         />
       </template>
     </template>
-    <template v-else-if="$slots[skey]">
+    <template v-else-if="chkInSlot()">
       <slot :name="skey" v-bind="{ formState }" />
     </template>
     <template v-else>
@@ -336,7 +336,7 @@
 </template>
 
 <script lang="ts">
-import type { OpnType } from '@/types'
+import type { OpnType } from '../types'
 import Column from '../types/column'
 import { computed, defineComponent, reactive, watch } from 'vue'
 import {
@@ -351,7 +351,7 @@ import CodeEditor from './CodeEditor.vue'
 import UploadFile from './UploadFile.vue'
 import TagList from './TagList.vue'
 import EditList from './EditList.vue'
-import { validConds, getProp, setProp } from '@/utils'
+import { validConds, getProp, setProp } from '../utils'
 
 export default defineComponent({
   name: 'FormItem',
@@ -374,7 +374,7 @@ export default defineComponent({
     editable: { type: Boolean, default: true },
     viewOnly: { type: Boolean, default: false }
   },
-  setup(props) {
+  setup(props, { slots }) {
     const formState = reactive(props.form)
     const valState = reactive(props.value)
     const display = computed(() => validConds(formState, valState.display, true))
@@ -428,6 +428,12 @@ export default defineComponent({
         valState.onChange(formState, newVal)
       }
     }
+    function chkInSlot() {
+      if (slots[props.skey]) {
+        console.log('FormItem', props.skey, slots[props.skey])
+      }
+      return slots[props.skey] && props.skey !== 'default'
+    }
     return {
       Column,
 
@@ -441,7 +447,8 @@ export default defineComponent({
       validConds,
       fmtDrpdwnValue,
       onLstSelChecked,
-      onFieldChanged
+      onFieldChanged,
+      chkInSlot
     }
   }
 })

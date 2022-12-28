@@ -48,7 +48,7 @@
           </a-popconfirm>
         </div>
       </template>
-      <template v-else-if="$slots[column.key]">
+      <template v-else-if="chkInSlot(column.key)">
         <slot :name="column.key" v-bind="{ record }" />
       </template>
       <template v-else-if="typeof text === 'undefined' || text === null">-</template>
@@ -86,7 +86,7 @@
     @submit="onRecordSave"
   >
     <template
-      v-for="pname in Object.keys(editMapper).filter((key: any) => $slots[key + 'EDT'])"
+      v-for="pname in Object.keys(editMapper).filter((key: any) => chkInSlot(key + 'EDT'))"
       :key="pname"
       #[pname]="{ formState }"
     >
@@ -130,7 +130,7 @@ export default defineComponent({
     delable: { type: Boolean, default: true },
     disabled: { type: Function, default: () => false }
   },
-  setup(props, { emit }) {
+  setup(props, { emit, slots }) {
     const cols =
       props.edtable || props.delable
         ? props.columns.concat(new Column('操作', 'opera', { width: 100 }))
@@ -230,7 +230,14 @@ export default defineComponent({
         return value
       }
     }
+    function chkInSlot(key: string) {
+      if (slots[key]) {
+        console.log('EditableTable', key, slots[key])
+      }
+      return slots[key]
+    }
     return {
+      slots,
       cols,
       editMapper,
       records,
@@ -245,7 +252,8 @@ export default defineComponent({
       onRowExpand,
       isCustomEmpty,
       onRowClick,
-      genLstItmLbl
+      genLstItmLbl,
+      chkInSlot
     }
   }
 })

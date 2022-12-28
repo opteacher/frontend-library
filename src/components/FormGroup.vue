@@ -1,5 +1,5 @@
 <script lang="ts">
-import { validConds } from '@/utils'
+import { validConds } from '../utils'
 import FormItem from './FormItem.vue'
 import Mapper from '../types/mapper'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
@@ -23,11 +23,18 @@ export default defineComponent({
     editable: { type: Boolean, default: true },
     viewOnly: { type: Boolean, default: false }
   },
-  setup() {
+  setup(props, { slots }) {
     const refer = ref()
+    function chkInSlot(key: string) {
+      if (slots[key]) {
+        console.log('FormGroup', key, slots[key])
+      }
+      return slots[key]
+    }
     return {
       refer,
-      validConds
+      validConds,
+      chkInSlot
     }
   }
 })
@@ -81,7 +88,7 @@ export default defineComponent({
                 @submit="(form: any) => v.onSaved(form, form[k])"
               />
             </template>
-            <template v-if="$slots[k]" #[k]="{ form }">
+            <template v-if="chkInSlot(k.toString())" #[k]="{ form }">
               <slot :name="k" v-bind="{ form }" />
             </template>
           </FormItem>
@@ -116,7 +123,7 @@ export default defineComponent({
         <template #FormDialog>
           <slot name="FormDialog" v-bind="{ value, key }" />
         </template>
-        <template v-if="$slots[key]" #[key]="{ formState }">
+        <template v-if="chkInSlot(key as string)" #[key]="{ formState }">
           <slot :name="key" v-bind="{ formState }" />
         </template>
       </FormItem>
