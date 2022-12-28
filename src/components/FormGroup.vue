@@ -23,9 +23,8 @@ export default defineComponent({
     editable: { type: Boolean, default: true },
     viewOnly: { type: Boolean, default: false }
   },
-  setup(_props, { slots }) {
+  setup() {
     const refer = ref()
-    console.log(slots)
     return {
       refer,
       validConds
@@ -43,7 +42,7 @@ export default defineComponent({
     :wrapper-col="{ span: 24 - lblWid }"
   >
     <template v-for="(value, key) in mapper" :key="key">
-      <template v-if="value.type === 'Group' && validConds(form, value.display)">
+      <template v-if="value.type === 'FormGroup' && validConds(form, value.display)">
         <div v-if="value.fold" class="border border-solid border-gray-300 pt-7 px-2.5 my-7 relative rounded">
           <a-button
             type="link"

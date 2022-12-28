@@ -55,6 +55,9 @@
       <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
       <template v-else-if="column.key in mapper">
         <pre v-if="mapper[column.key].type === 'Textarea'" class="mb-0">{{ text }}</pre>
+        <template v-else-if="mapper[column.key].type === 'Select'">
+          {{ genLstItmLbl(mapper[column.key], text) }}
+        </template>
       </template>
       <template v-else>{{ text }}</template>
     </template>
@@ -98,7 +101,7 @@ import { defineComponent, onMounted, reactive } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
 import Column from '../types/column'
-import Mapper from '../types/mapper'
+import Mapper, { MapperType } from '../types/mapper'
 import { MinusSquareOutlined, PlusSquareOutlined } from '@ant-design/icons-vue'
 
 export default defineComponent({
@@ -220,6 +223,13 @@ export default defineComponent({
       props.emitter.emit('update:data', record)
       editing.show = true
     }
+    function genLstItmLbl(mapItm: MapperType, value: string) {
+      if (mapItm.options.map((option: any) => option.value).includes(value)) {
+        return mapItm.options.find((option: any) => option.value === value).label
+      } else {
+        return value
+      }
+    }
     return {
       cols,
       editMapper,
@@ -234,7 +244,8 @@ export default defineComponent({
       hasExpand,
       onRowExpand,
       isCustomEmpty,
-      onRowClick
+      onRowClick,
+      genLstItmLbl
     }
   }
 })

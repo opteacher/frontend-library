@@ -35,10 +35,12 @@ export class Cond {
 export const cmpLblMap = {
   Text: '文本框',
   Block: '块',
-  Group: '组',
+  FormDialog: '表单对话框',
+  FormGroup: '表单组',
+  FormItem: '表单项',
   Input: '输入框',
   Password: '密码框',
-  Icon: '图标框',
+  IconField: '图标框',
   Number: '数字框',
   Button: '按钮',
   Select: '选择框',
@@ -49,9 +51,10 @@ export const cmpLblMap = {
   Textarea: '多行输入框',
   Delable: '可删除',
   SelOrIpt: '可选可输入',
-  Upload: '上传',
+  UploadFile: '上传',
   Cascader: '层级选择框',
   ListSelect: '列表选择框',
+  TagList: '标签列表',
   CodeEditor: '代码编辑框',
   EditList: '可编辑列表',
   Carousel: '滚动展示框',
@@ -76,10 +79,11 @@ export function compoDftVal(ctype: CompoType) {
     case 'Switch':
       return false
     case 'Table':
-    case 'Upload':
+    case 'UploadFile':
     case 'Cascader':
     case 'ListSelect':
     case 'EditList':
+    case 'TagList':
       return []
     case 'Input':
     case 'Password':
@@ -88,6 +92,7 @@ export function compoDftVal(ctype: CompoType) {
     case 'Delable':
     case 'SelOrIpt':
     case 'CodeEditor':
+    case 'IconField':
     default:
       return ''
   }
@@ -115,6 +120,8 @@ export const bsTpMap = {
   Any: '任意',
   Unknown: '未知'
 }
+
+export const bsTpOpns = Object.entries(bsTpMap).map(([value, label]) => ({ label, value }))
 
 export const baseTypes = Object.keys(bsTpMap)
 

@@ -37,9 +37,6 @@
           @submit="(form: any) => value.onSaved(form, form[key])"
         />
       </template>
-      <template v-for="key in Object.keys(mapper)" #[key]="{ formState }">
-        <slot :name="key" v-bind="{ formState }" />
-      </template>
     </FormGroup>
   </a-modal>
 </template>

@@ -105,7 +105,7 @@ export default defineComponent({
       }
     }
   },
-  setup(props: any, context: { emit: (evet: string, params?: any) => void }) {
+  setup(props: any, context: { emit: Function }) {
     const refs = {
       saturation_value: ref(),
       hue_slider: ref(),
