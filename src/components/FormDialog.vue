@@ -37,8 +37,8 @@
           @submit="(form: any) => value.onSaved(form, form[key])"
         />
       </template>
-      <template v-for="key in Object.keys(formMapper)">
-        <slot :name="key" v-bind="{ formState }" />
+      <template v-for="(_, name) in $slots" :key="name" #[name]>
+        <slot :name="name" v-bind="{ formState }" />
       </template>
     </FormGroup>
   </a-modal>
@@ -68,7 +68,7 @@ export default defineComponent({
     emitter: { type: Emitter, default: null }
   },
   emits: ['initialize', 'update:show', 'submit'],
-  setup(props, { emit, slots }) {
+  setup(props, { emit }) {
     const visible = ref(props.show)
     const editable = ref(true)
     const viewOnly = ref(false)
@@ -154,13 +154,6 @@ export default defineComponent({
       visible.value = false
       emit('update:show', false)
     }
-    function chkInSlot(key: string) {
-      console.log('FormDialog', Object.keys(slots))
-      if (slots[key]) {
-        console.log('FormDialog', key, slots[key])
-      }
-      return slots[key]
-    }
     return {
       Column,
 
@@ -174,8 +167,7 @@ export default defineComponent({
       okLoading,
 
       onOkClick,
-      onCclClick,
-      chkInSlot
+      onCclClick
     }
   }
 })

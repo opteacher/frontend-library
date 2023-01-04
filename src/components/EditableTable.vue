@@ -1,15 +1,17 @@
 <template>
-  <a-row class="mb-2.5" type="flex">
-    <a-col flex="auto">
-      <a-space>
-        <h3 class="mb-0">{{ title }}</h3>
-        <span class="text-gray-400">{{ description }}</span>
-      </a-space>
-    </a-col>
-    <a-col class="text-right" v-if="addable" flex="100px">
-      <a-button type="primary" @click="onEditClicked()">添加</a-button>
-    </a-col>
-  </a-row>
+  <div class="flex justify-between mb-2.5">
+    <h3 class="mb-0">
+      <keep-alive v-if="icon">
+        <component
+          :is="icon"
+          v-bind="{ class: 'text-4xl' }"
+        />
+      </keep-alive>
+      {{ title }}
+      <span class="text-gray-400">{{ description }}</span>
+    </h3>
+    <a-button v-if="addable" type="primary" @click="onEditClicked()">添加</a-button>
+  </div>
   <a-table
     :columns="cols"
     :data-source="records.data"
@@ -48,9 +50,7 @@
           </a-popconfirm>
         </div>
       </template>
-      <template v-else-if="chkInSlot(column.key)">
-        <slot :name="column.key" v-bind="{ record }" />
-      </template>
+      <slot v-else-if="chkInSlot(column.key)" :name="column.key" v-bind="{ record }" />
       <template v-else-if="typeof text === 'undefined' || text === null">-</template>
       <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
       <template v-else-if="column.key in mapper">
@@ -102,17 +102,16 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
 import Column from '../types/column'
 import Mapper, { MapperType } from '../types/mapper'
-import { MinusSquareOutlined, PlusSquareOutlined } from '@ant-design/icons-vue'
+import * as antdIcons from '@ant-design/icons-vue/lib/icons'
 
 export default defineComponent({
   name: 'EditableTable',
   emits: ['add', 'edit', 'before-save', 'save', 'delete', 'refresh'],
-  components: {
-    FormDialog,
-    MinusSquareOutlined,
-    PlusSquareOutlined
-  },
+  components: Object.assign({
+    FormDialog
+  }, antdIcons),
   props: {
+    icon: { type: String, default: '' },
     api: { type: Object /* ComAPI */, required: true },
     columns: { type: Array, required: true },
     mapper: { type: Mapper, default: new Mapper() },
@@ -231,13 +230,9 @@ export default defineComponent({
       }
     }
     function chkInSlot(key: string) {
-      if (slots[key]) {
-        console.log('EditableTable', key, slots[key])
-      }
       return slots[key]
     }
     return {
-      slots,
       cols,
       editMapper,
       records,

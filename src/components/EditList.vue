@@ -39,7 +39,7 @@ export default defineComponent({
   emits: ['update:value'],
   props: {
     label: { type: String, default: '项' },
-    value: { type: Array, required: true },
+    value: { type: Array, default: () => [] },
     field: { type: Object, required: true }
   },
   setup(props, { emit }) {

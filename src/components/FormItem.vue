@@ -50,10 +50,9 @@
           size="small"
         />
       </template>
+      <template v-else>{{ getProp(formState, skey) }}</template>
     </template>
-    <template v-else-if="chkInSlot()">
-      <slot :name="skey" v-bind="{ formState }" />
-    </template>
+    <slot v-else-if="chkInSlot()" :name="skey" v-bind="{ formState }" />
     <template v-else>
       <a-input
         v-if="valState.type === 'Input'"

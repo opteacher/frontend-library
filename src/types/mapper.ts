@@ -444,31 +444,36 @@ export default class Mapper {
   }
 }
 
-export function createByFields(fields: Field[]): Mapper {
-  const adjExtra = (value: any): any => {
-    if (typeof value === 'string' && value.startsWith('return ')) {
-      return eval(`(function () {${value}})()`)
-    } else if (value instanceof Array) {
-      return value.map(itm => adjExtra(itm))
-    } else if (value instanceof Object) {
-      return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, adjExtra(val)]))
-    }
-    return value
+function adjExtra(value: any): any {
+  if (typeof value === 'string' && value.startsWith('return ')) {
+    return eval(`(function () {${value}})()`)
+  } else if (value instanceof Array) {
+    return value.map(itm => adjExtra(itm))
+  } else if (value instanceof Object) {
+    return Object.fromEntries(Object.entries(value).map(([key, val]) => [key, adjExtra(val)]))
   }
+  return value
+}
+
+export function createByField(field: Field): MapperType {
+  return Object.assign(
+    {
+      type: field.ftype,
+      label: field.label,
+      desc: field.desc,
+      rules: field.rules,
+      placeholder: field.placeholder
+    },
+    Object.fromEntries(
+      Object.entries(field.extra || {}).map(([key, val]) => [key, adjExtra(val)])
+    )
+  ) as MapperType
+}
+
+export function createByFields(fields: Field[]): Mapper {
   const data = {} as Record<string, any>
   for (const field of fields) {
-    const mpItm = Object.assign(
-      {
-        type: field.ftype,
-        label: field.label,
-        desc: field.desc,
-        rules: field.rules,
-        placeholder: field.placeholder
-      },
-      Object.fromEntries(
-        Object.entries(field.extra || {}).map(([key, val]) => [key, adjExtra(val)])
-      )
-    )
+    const mpItm = createByField(field)
     if (field.refer.indexOf('.') === -1) {
       data[field.refer] = mpItm
     } else {

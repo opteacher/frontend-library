@@ -23,18 +23,11 @@ export default defineComponent({
     editable: { type: Boolean, default: true },
     viewOnly: { type: Boolean, default: false }
   },
-  setup(props, { slots }) {
+  setup() {
     const refer = ref()
-    function chkInSlot(key: string) {
-      if (slots[key]) {
-        console.log('FormGroup', key, slots[key])
-      }
-      return slots[key]
-    }
     return {
       refer,
-      validConds,
-      chkInSlot
+      validConds
     }
   }
 })
@@ -78,18 +71,8 @@ export default defineComponent({
             :editable="editable"
             :viewOnly="viewOnly"
           >
-            <template #FormDialog>
-              <FormDialog
-                v-model:show="v.show"
-                :mapper="v.mapper"
-                :copy="v.copy"
-                :emitter="v.emitter"
-                :object="v.editing"
-                @submit="(form: any) => v.onSaved(form, form[k])"
-              />
-            </template>
-            <template v-if="chkInSlot(k.toString())" #[k]="{ form }">
-              <slot :name="k" v-bind="{ form }" />
+            <template v-if="k in $slots" #[k]>
+              <slot :name="k" v-bind="{ formState: form }" />
             </template>
           </FormItem>
         </div>
@@ -120,11 +103,8 @@ export default defineComponent({
         :editable="editable"
         :viewOnly="viewOnly"
       >
-        <template #FormDialog>
-          <slot name="FormDialog" v-bind="{ value, key }" />
-        </template>
-        <template v-if="chkInSlot(key as string)" #[key]="{ formState }">
-          <slot :name="key" v-bind="{ formState }" />
+        <template v-if="key in $slots" #[key]>
+          <slot :name="key" v-bind="{ formState: form }" />
         </template>
       </FormItem>
     </template>
