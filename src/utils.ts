@@ -366,6 +366,10 @@ export function fixStartsWith(text: string, prefix: string) {
   return (text.substring(0, prefix.length) !== prefix ? prefix : '') + text
 }
 
+export function rmvStartsOf(text: string, prefix: string) {
+  return text.substring(0, prefix.length) === prefix ? text.substring(prefix.length) : text
+}
+
 export function endsWith(text: string, suffix: string) {
   return text.toString().slice(-suffix.length) === suffix
 }

@@ -71,7 +71,7 @@ import { upperFirst } from '@/utils'
 import { genDspColumns, genDspRecords } from '../utils'
 
 export default defineComponent({
-  name: 'BatchExportBox',
+  name: 'BchExpBox',
   components: {
     FormDialog,
     ExportOutlined,

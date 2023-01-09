@@ -8,6 +8,8 @@ import FormGroup from './components/FormGroup.vue'
 import FormDialog from './components/FormDialog.vue'
 import CodeEditor from './components/CodeEditor.vue'
 import EditableTable from './components/EditableTable.vue'
+import BchExpBox from './components/BchExpBox.vue'
+import BchImpBox from './components/BchImpBox.vue'
 
 export const components = {
     ColorSelect,
@@ -18,7 +20,9 @@ export const components = {
     FormGroup,
     FormDialog,
     CodeEditor,
-    EditableTable
+    EditableTable,
+    BchExpBox,
+    BchImpBox
 }
 
 export default function (app: App) {

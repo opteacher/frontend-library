@@ -96,7 +96,7 @@ import Column from '../types/column'
 import { ImportOutlined, ArrowRightOutlined, ArrowDownOutlined } from '@ant-design/icons-vue'
 
 export default defineComponent({
-  name: 'BatchImportBox',
+  name: 'BchImpBox',
   components: {
     FormDialog,
     ImportOutlined,

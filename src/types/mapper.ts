@@ -292,6 +292,7 @@ export class LstSelMapper extends BaseMapper {
 
 export class EdtLstMapper extends BaseMapper {
   lblProp: string
+  lblMapper: Record<any, string>
   inline: boolean
   flatItem: boolean // 抹平单元素表单列表：[{ key: 'abc' }] => ['abc']，（注意：会抹去元素的键信息）
   mapper: Mapper
@@ -300,7 +301,8 @@ export class EdtLstMapper extends BaseMapper {
 
   constructor() {
     super()
-    this.lblProp = 'value'
+    this.lblProp = ''
+    this.lblMapper = {}
     this.inline = true
     this.flatItem = true
     this.mapper = new Mapper({
@@ -321,6 +323,7 @@ export class EdtLstMapper extends BaseMapper {
     tgt = tgt || new EdtLstMapper()
     BaseMapper.copy(src, tgt)
     tgt.lblProp = src.lblProp || tgt.lblProp
+    tgt.lblMapper = src.lblMapper || tgt.lblMapper
     tgt.inline = typeof src.inline !== 'undefined' ? src.inline : tgt.inline
     tgt.flatItem = typeof src.flatItem !== 'undefined' ? src.flatItem : tgt.flatItem
     tgt.mapper = src.mapper || tgt.mapper

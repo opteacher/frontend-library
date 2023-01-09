@@ -24,7 +24,11 @@
           <template #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
-          {{ field.lblProp ? item[field.lblProp] : item }}
+          <template v-if="field.lblProp && item[field.lblProp]">{{ item[field.lblProp] }}</template>
+          <template v-else-if="field.lblMapper && field.lblMapper[item]">
+            {{ field.lblMapper[item] }}
+          </template>
+          <template v-else>{{ item }}</template>
         </a-list-item>
       </template>
     </a-list>
@@ -32,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, reactive, ref, watch } from 'vue'
+import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'EditList',
@@ -46,21 +50,21 @@ export default defineComponent({
     const addMod = ref(false)
     const addState = reactive(props.field.copy({}))
     const list = reactive([] as any[])
-    const fstKey = computed(() => Object.keys(props.field.mapper)[0])
 
     onMounted(refresh)
     watch(() => props.value, refresh)
 
     function refresh() {
-      list.splice(0, list.length, ...props.value.map((item: any) => ({ [fstKey.value]: item })))
+      list.splice(0, list.length, ...props.value)
     }
     function onEdtLstAdd() {
-      list.push(props.field.copy(addState))
+      let newItm = props.field.copy(addState)
+      if (props.field.flatItem) {
+        newItm = newItm[Object.keys(props.field.mapper)[0]]
+      }
+      list.push(newItm)
       addMod.value = false
-      emit(
-        'update:value',
-        list.map(item => item[fstKey.value])
-      )
+      emit('update:value', list)
     }
     function onEdtLstCcl() {
       if (addState.reset) {
@@ -80,10 +84,7 @@ export default defineComponent({
     }
     function onEdtLstDel(index: number) {
       list.splice(index, 1)
-      emit(
-        'update:value',
-        list.map(item => item[fstKey.value])
-      )
+      emit('update:value', list)
     }
     return {
       addMod,
