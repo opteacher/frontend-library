@@ -428,9 +428,6 @@ export default defineComponent({
       }
     }
     function chkInSlot() {
-      if (slots[props.skey]) {
-        console.log('FormItem', props.skey, slots[props.skey])
-      }
       return slots[props.skey] && props.skey !== 'default'
     }
     return {
