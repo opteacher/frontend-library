@@ -679,3 +679,7 @@ export function setProp(
   }
   return ret
 }
+
+export function revsKeyVal(obj: any) {
+  return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
+}

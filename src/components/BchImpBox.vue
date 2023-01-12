@@ -91,7 +91,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import Mapper from '../types/mapper'
 import { read } from 'xlsx'
 import { Cond } from '../types'
-import { charInc, upperFirst, genDspColumns, genDspRecords } from '../utils'
+import { charInc, upperFirst, genDspColumns, genDspRecords, revsKeyVal } from '../utils'
 import Column from '../types/column'
 import { ImportOutlined, ArrowRightOutlined, ArrowDownOutlined } from '@ant-design/icons-vue'
 
@@ -148,8 +148,7 @@ export default defineComponent({
       orderFill.emitter.emit('update:data', { form: formState })
     }
     function getSelCol(formState: any, selColKey: string) {
-      const selCol = Object.entries(formState).find(([_, colKey]) => colKey === selColKey)
-      return selCol ? selCol[0] : undefined
+      return revsKeyVal(formState)[selColKey]
     }
     function onOrderFillSubmit(info: any, next: () => void) {
       if (!info.form.worksheet) {
