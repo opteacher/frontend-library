@@ -1,82 +1,83 @@
 <template>
-  <div class="flex justify-between mb-2.5">
-    <h3 class="mb-0">
-      <keep-alive v-if="icon">
-        <component
-          :is="icon"
-          v-bind="{ class: 'text-4xl' }"
-        />
-      </keep-alive>
-      {{ title }}
-      <span class="text-gray-400">{{ description }}</span>
-    </h3>
-    <a-button v-if="addable" type="primary" @click="onEditClicked()">添加</a-button>
-  </div>
-  <a-table
-    :columns="cols"
-    :data-source="records.data"
-    :size="size"
-    :rowClassName="() => 'bg-white'"
-    :pagination="false"
-    v-model:expandedRowKeys="expRowKeys"
-    bordered
-    :scroll="sclHeight ? { y: sclHeight } : undefined"
-    :custom-row="
+  <div class="h-full flex flex-col">
+    <div class="flex justify-between mb-2.5">
+      <h3 class="mb-0">
+        <keep-alive v-if="icon">
+          <component :is="icon" v-bind="{ class: 'text-4xl' }" />
+        </keep-alive>
+        {{ title }}
+        <span class="text-gray-400">{{ description }}</span>
+      </h3>
+      <a-button v-if="addable" type="primary" @click="onEditClicked()">添加</a-button>
+    </div>
+    <a-table
+      class="flex-auto"
+      :columns="cols"
+      :data-source="records.data"
+      :size="size"
+      :rowClassName="() => 'bg-white'"
+      :pagination="false"
+      v-model:expandedRowKeys="expRowKeys"
+      bordered
+      :scroll="sclHeight ? { y: sclHeight } : undefined"
+      :custom-row="
       (record: any) => ({
         onClick: () => onRowClick(record)
       })
     "
-    @expand="(_expanded: unknown, record: any) => onRowExpand(record)"
-  >
-    <template #headerCell="{ column }">
-      <template v-if="$slots[column.key + 'HD']">
-        <slot :name="column.key + 'HD'" v-bind="{ column }" />
-      </template>
-    </template>
-    <template #bodyCell="{ text, column, record }">
-      <template v-if="column.key === 'opera'">
-        <div class="flex space-x-1.5">
-          <a v-if="disabled(record, 'edit')" disabled @click.stop="">编辑</a>
-          <a v-else-if="edtable" @click.stop="onEditClicked(record)">编辑</a>
-          <a v-if="disabled(record, 'delete')" disabled @click.stop="">删除</a>
-          <a-popconfirm
-            v-else-if="delable"
-            title="确定删除该记录吗？"
-            ok-text="确定"
-            cancel-text="取消"
-            @confirm="onRecordDel(record.key)"
-          >
-            <a class="text-error" @click.stop="">删除</a>
-          </a-popconfirm>
-        </div>
-      </template>
-      <slot v-else-if="chkInSlot(column.key)" :name="column.key" v-bind="{ record }" />
-      <template v-else-if="typeof text === 'undefined' || text === null">-</template>
-      <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
-      <template v-else-if="column.key in mapper">
-        <pre v-if="mapper[column.key].type === 'Textarea'" class="mb-0">{{ text }}</pre>
-        <template v-else-if="mapper[column.key].type === 'Select'">
-          {{ genLstItmLbl(mapper[column.key], text) }}
+      @expand="(_expanded: unknown, record: any) => onRowExpand(record)"
+    >
+      <template #headerCell="{ column }">
+        <template v-if="$slots[column.key + 'HD']">
+          <slot :name="column.key + 'HD'" v-bind="{ column }" />
         </template>
       </template>
-      <template v-else>{{ text }}</template>
-    </template>
-    <template v-if="hasExpand()" #expandedRowRender="{ record }">
-      <slot name="expandedRowRender" v-bind="{ record }" />
-    </template>
-    <template #expandIcon="{ record }">
-      <minus-square-outlined
-        v-if="expRowKeys.includes(record.key)"
-        class="cursor-pointer hover:text-primary"
-        @click.stop="onRowExpand(record)"
-      />
-      <plus-square-outlined
-        v-else
-        class="cursor-pointer hover:text-primary"
-        @click.stop="onRowExpand(record)"
-      />
-    </template>
-  </a-table>
+      <template #bodyCell="{ text, column, record }">
+        <template v-if="column.key === 'opera'">
+          <div class="flex space-x-1.5">
+            <a v-if="disabled(record, 'edit')" disabled @click.stop="">编辑</a>
+            <a v-else-if="edtable" @click.stop="onEditClicked(record)">编辑</a>
+            <a v-if="disabled(record, 'delete')" disabled @click.stop="">删除</a>
+            <a-popconfirm
+              v-else-if="delable"
+              title="确定删除该记录吗？"
+              ok-text="确定"
+              cancel-text="取消"
+              @confirm="onRecordDel(record.key)"
+            >
+              <a class="text-error" @click.stop="">删除</a>
+            </a-popconfirm>
+          </div>
+        </template>
+        <slot v-else-if="chkInSlot(column.key)" :name="column.key" v-bind="{ record }" />
+        <template v-else-if="typeof text === 'undefined' || text === null">-</template>
+        <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
+        <template v-else-if="column.key in mapper">
+          <pre v-if="mapper[column.key].type === 'Textarea'" class="mb-0">{{ text }}</pre>
+          <template v-else-if="mapper[column.key].type === 'Select'">
+            {{ genLstItmLbl(mapper[column.key], text) }}
+          </template>
+        </template>
+        <template v-else>{{ text }}</template>
+      </template>
+      <template v-if="hasExpand()" #expandedRowRender="{ record }">
+        <slot name="expandedRowRender" v-bind="{ record }" />
+      </template>
+      <template #expandIcon="{ record }">
+        <minus-square-outlined
+          v-if="expRowKeys.includes(record.key)"
+          class="cursor-pointer hover:text-primary"
+          @click.stop="onRowExpand(record)"
+        />
+        <plus-square-outlined
+          v-else
+          class="cursor-pointer hover:text-primary"
+          @click.stop="onRowExpand(record)"
+        />
+      </template>
+    </a-table>
+  </div>
+
   <FormDialog
     v-model:show="editing.show"
     :copy="copy"
@@ -107,9 +108,12 @@ import * as antdIcons from '@ant-design/icons-vue/lib/icons'
 export default defineComponent({
   name: 'EditableTable',
   emits: ['add', 'edit', 'before-save', 'save', 'delete', 'refresh'],
-  components: Object.assign({
-    FormDialog
-  }, antdIcons),
+  components: Object.assign(
+    {
+      FormDialog
+    },
+    antdIcons
+  ),
   props: {
     icon: { type: String, default: '' },
     api: { type: Object /* ComAPI */, required: true },
