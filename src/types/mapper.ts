@@ -184,7 +184,6 @@ export class ButtonMapper extends BaseMapper {
 }
 
 export class TableMapper extends BaseMapper {
-  show: boolean
   mapper: Mapper
   columns: Column[]
   emitter: Emitter
@@ -198,7 +197,6 @@ export class TableMapper extends BaseMapper {
 
   constructor() {
     super()
-    this.show = false
     this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
@@ -214,7 +212,6 @@ export class TableMapper extends BaseMapper {
   static copy(src: any, tgt?: TableMapper): TableMapper {
     tgt = tgt || new TableMapper()
     BaseMapper.copy(src, tgt)
-    tgt.show = src.show || tgt.show
     tgt.mapper = src.mapper ? Mapper.copy(src.mapper, tgt.mapper) : tgt.mapper
     tgt.columns = src.columns || tgt.columns
     tgt.emitter = src.emitter || tgt.emitter
@@ -298,6 +295,7 @@ export class EdtLstMapper extends BaseMapper {
   mapper: Mapper
   emitter: Emitter
   copy: (src: any, tgt?: any) => any
+  onSaved: (record: any) => void
 
   constructor() {
     super()
@@ -317,6 +315,9 @@ export class EdtLstMapper extends BaseMapper {
       tgt.value = src.value || tgt.value
       return tgt
     }
+    this.onSaved = () => {
+      this.emitter.emit('update:show', { show: false })
+    }
   }
 
   static copy(src: any, tgt?: EdtLstMapper): EdtLstMapper {
@@ -329,6 +330,7 @@ export class EdtLstMapper extends BaseMapper {
     tgt.mapper = src.mapper || tgt.mapper
     tgt.emitter = src.emitter || tgt.emitter
     tgt.copy = src.copy || tgt.copy
+    tgt.onSaved = src.onSaved || tgt.onSaved
     return tgt
   }
 }

@@ -29,7 +29,6 @@
     >
       <template #FormDialog="{ value, key }">
         <FormDialog
-          v-model:show="value.show"
           :mapper="value.mapper"
           :copy="value.copy"
           :emitter="value.emitter"

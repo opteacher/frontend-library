@@ -74,6 +74,9 @@ export default defineComponent({
             <template v-if="k in $slots" #[k]>
               <slot :name="k" v-bind="{ formState: form }" />
             </template>
+            <template #FormDialog>
+              <slot name="FormDialog" v-bind="{ value: v, key: k }" />
+            </template>
           </FormItem>
         </div>
         <div v-else class="border-t border-b-0 border-solid border-gray-300 my-7 relative">
@@ -105,6 +108,9 @@ export default defineComponent({
       >
         <template v-if="key in $slots" #[key]>
           <slot :name="key" v-bind="{ formState: form }" />
+        </template>
+        <template #FormDialog>
+          <slot name="FormDialog" v-bind="{ value, key }" />
         </template>
       </FormItem>
     </template>

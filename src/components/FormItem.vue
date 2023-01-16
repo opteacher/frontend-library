@@ -174,7 +174,7 @@
             @click="
               () => {
                 valState.emitter.emit('viewOnly', false)
-                valState.show = true
+                valState.emitter.emit('update:show', { show: true })
                 valState.onEdit(formState)
               }
             "
@@ -198,7 +198,7 @@
                   (record: any) => ({
                     onClick: () => {
                       valState.emitter.emit('viewOnly', !valState.edtable)
-                      valState.show = true
+                      valState.emitter.emit('update:show', { show: true })
                       valState.emitter.emit('update:data', record)
                       valState.onEdit(formState)
                     }
@@ -324,7 +324,7 @@
         @update:value="(val: string) => setProp(formState, skey, val)"
       >
         <template #FormDialog>
-          <slot name="FormDialog" />
+          <slot name="FormDialog" v-bind="{ value: valState, key: skey }" />
         </template>
       </TagList>
       <template v-else>
