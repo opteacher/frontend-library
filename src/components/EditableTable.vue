@@ -107,7 +107,7 @@ import * as antdIcons from '@ant-design/icons-vue/lib/icons'
 
 export default defineComponent({
   name: 'EditableTable',
-  emits: ['add', 'edit', 'before-save', 'save', 'delete', 'refresh'],
+  emits: ['add', 'edit', 'before-save', 'save', 'delete', 'refresh', 'expand'],
   components: Object.assign(
     {
       FormDialog
@@ -215,11 +215,13 @@ export default defineComponent({
       return false
     }
     function onRowExpand(record: { key: string }) {
-      if (expRowKeys.includes(record.key)) {
-        expRowKeys.splice(expRowKeys.indexOf(record.key), 1)
-      } else {
+      const expand = !expRowKeys.includes(record.key)
+      if (expand) {
         expRowKeys.push(record.key)
+      } else {
+        expRowKeys.splice(expRowKeys.indexOf(record.key), 1)
       }
+      emit('expand', { expand, record })
     }
     function onRowClick(record: any) {
       props.emitter.emit('viewOnly', true)
