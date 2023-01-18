@@ -1,5 +1,5 @@
 <template>
-  <a-form-item v-show="display" :ref="skey" :name="skey" :rules="valState.rules">
+  <a-form-item v-show="display" class="flex-auto" :ref="skey" :name="skey" :rules="valState.rules">
     <template v-if="valState.label" #label>
       {{ valState.label }}&nbsp;
       <a-tooltip v-if="valState.desc">

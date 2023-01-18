@@ -22,7 +22,7 @@
       :scroll="sclHeight ? { y: sclHeight } : undefined"
       :custom-row="
       (record: any) => ({
-        onClick: () => onRowClick(record)
+        onClick: clkable ? () => onRowClick(record) : undefined
       })
     "
       @expand="(_expanded: unknown, record: any) => onRowExpand(record)"
@@ -131,7 +131,8 @@ export default defineComponent({
     edtable: { type: Boolean, default: true },
     addable: { type: Boolean, default: true },
     delable: { type: Boolean, default: true },
-    disabled: { type: Function, default: () => false }
+    disabled: { type: Function, default: () => false },
+    clkable: { type: Boolean, default: true }
   },
   setup(props, { emit, slots }) {
     const cols =

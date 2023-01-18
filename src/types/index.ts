@@ -14,12 +14,23 @@ export class Cond {
   }
 
   isValid(object: Record<string, any>) {
+    if (this.key === 'key') {
+      console.log(object, this.val)
+    }
     switch (this.cmp) {
       case '!=':
-        return getProperty(object, this.key) !== this.val
+        if (this.val === 'undefined') {
+          return typeof getProperty(object, this.key) !== 'undefined'
+        } else {
+          return getProperty(object, this.key) !== this.val
+        }
       case '=':
       default:
+        if (this.val === 'undefined') {
+          return typeof getProperty(object, this.key) === 'undefined'
+        } else {
         return getProperty(object, this.key) === this.val
+        }
     }
   }
 

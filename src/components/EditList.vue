@@ -4,6 +4,7 @@
   </a-button>
   <a-form
     v-else
+    class="flex"
     :layout="field.inline ? 'inline' : 'horizontal'"
     :model="addState"
     @finish="onEdtLstAdd"
