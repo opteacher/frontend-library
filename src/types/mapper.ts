@@ -192,7 +192,7 @@ export class TableMapper extends BaseMapper {
   onSaved: (record: any, extra?: any) => void
   onDeleted: (key: any, extra?: any) => void
   addable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
-  edtable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  editable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   delable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
 
   constructor() {
@@ -205,7 +205,7 @@ export class TableMapper extends BaseMapper {
     this.onSaved = () => undefined
     this.onDeleted = () => undefined
     this.addable = true
-    this.edtable = true
+    this.editable = true
     this.delable = true
   }
 
@@ -220,7 +220,7 @@ export class TableMapper extends BaseMapper {
     tgt.onSaved = src.onSaved || tgt.onSaved
     tgt.onDeleted = src.onDeleted || tgt.onDeleted
     tgt.addable = typeof src.addable != 'undefined' ? src.addable : tgt.addable
-    tgt.edtable = typeof src.edtable != 'undefined' ? src.edtable : tgt.edtable
+    tgt.editable = typeof src.editable != 'undefined' ? src.editable : tgt.editable
     tgt.delable = typeof src.delable != 'undefined' ? src.delable : tgt.delable
     return tgt
   }

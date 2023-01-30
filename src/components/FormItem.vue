@@ -197,7 +197,7 @@
           :custom-row="
                   (record: any) => ({
                     onClick: () => {
-                      valState.emitter.emit('viewOnly', !valState.edtable)
+                      valState.emitter.emit('viewOnly', !valState.editable)
                       valState.emitter.emit('update:show', { show: true })
                       valState.emitter.emit('update:data', record)
                       valState.onEdit(formState)
