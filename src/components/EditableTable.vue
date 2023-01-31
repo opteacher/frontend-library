@@ -9,16 +9,16 @@
         <span class="text-gray-400">{{ description }}</span>
       </h3>
       <a-space>
-        <SelColBox v-model:columns="cols" />
+        <SelColBox v-model:columns="colsState" />
         <template v-if="addable">
           <a-space v-if="imExpable">
             <BchExpBox
-              :columns="cols"
+              :columns="colsState"
               :copyFun="genCpyFun(BchExport, () => ({ column: '', compare: '=' }))"
               @submit="(info: any) => onBatchSubmit(info, 'export')"
             />
             <BchImpBox
-              :columns="cols"
+              :columns="colsState"
               :copyFun="genCpyFun(BchImport, () => '')"
               @submit="(info: any) => onBatchSubmit(info, 'import')"
             />
@@ -29,16 +29,16 @@
     </div>
     <RefreshBox v-if="refOptions.length" :tblRfsh="refOptions" @click="refresh" />
     <a-table
-      class="flex-auto"
-      :columns="cols"
+      class="flex-auto overflow-hidden"
+      :columns="colsState"
       :data-source="records.data"
       :size="size"
       :rowClassName="() => 'bg-white'"
-      :pagination="false"
+      :pagination="pagable ? { total: records.total, pageSize: records.limit } : false"
       v-model:expandedRowKeys="expRowKeys"
       :loading="loading"
       bordered
-      :scroll="sclHeight ? { y: sclHeight } : undefined"
+      :scroll="{ y: '100%' }"
       :custom-row="
       (record: any) => ({
         onClick: clkable ? () => onRowClick(record) : undefined
@@ -112,7 +112,7 @@
               </a-button>
             </a-popconfirm>
           </div>
-          <div v-if="operaStyle === 'link'" class="flex space-x-1.5">
+          <div v-else-if="operaStyle === 'link'" class="flex space-x-1.5">
             <a
               v-if="editable"
               :disabled="disabled(record, 'edit')"
@@ -171,15 +171,15 @@
     :copy="copy"
     :title="title"
     :emitter="emitter"
-    :mapper="editMapper"
+    :mapper="mapperState"
     @submit="onRecordSave"
   >
     <template
-      v-for="pname in Object.keys(editMapper).filter((key: any) => chkInSlot(key + 'EDT'))"
+      v-for="pname in Object.keys(mapperState).filter((key: any) => chkInSlot(key + 'EDT'))"
       :key="pname"
       #[pname]="{ formState }"
     >
-      <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: editMapper[pname] }" />
+      <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: mapperState[pname] }" />
     </template>
   </FormDialog>
 </template>
@@ -224,9 +224,7 @@ export default defineComponent({
     title: { type: String, default: '' },
     description: { type: String, default: '' },
     size: { type: String, default: 'default' },
-    pagable: { type: Boolean, default: true },
-    numPerPg: { type: Number, default: 100 },
-    sclHeight: { type: Number, default: 0 },
+    pagable: { type: Boolean, default: false },
     filter: { type: Function, default: () => true },
     editable: { type: Boolean, default: true },
     addable: { type: Boolean, default: true },
@@ -238,16 +236,13 @@ export default defineComponent({
     operaStyle: { type: String, default: 'link' }
   },
   setup(props, { emit, slots }) {
-    const cols = reactive(
-      props.editable || props.delable
-        ? props.columns.concat(new Column('操作', 'opera', { width: 100, fixed: 'right' }))
-        : props.columns
-    )
-    const editMapper = reactive(props.mapper)
+    const colsState = reactive<Column[]>([])
+    const mapperState = reactive<Mapper>(props.mapper)
     const records = reactive({
       data: [] as unknown[],
+      total: 0,
       offset: 0,
-      limit: props.numPerPg
+      limit: 10 // 跟antd一致
     })
     const expRowKeys = reactive([] as string[])
     const editing = reactive({
@@ -264,15 +259,25 @@ export default defineComponent({
     if (props.emitter) {
       props.emitter.on('refresh', refresh)
       props.emitter.on('update:mapper', (mapper: any) => {
-        Mapper.copy(mapper, editMapper)
+        Mapper.copy(mapper, mapperState)
       })
     }
+    fmtColumns()
 
-    async function refresh(data?: any[], params?: object) {
+    async function refresh(data?: any[], params?: any) {
+      records.total = await props.api.count()
+      if (params && params.pagination) {
+        records.limit = params.pagination.pageSize || records.limit
+        if (params.pagination.current) {
+          records.offset = params.pagination.current * records.limit
+        }
+      }
       records.data = (
         data ||
         (await props.api.all({
-          axiosConfig: { params: Object.assign(pickOrIgnore(records, ['data']), params || {}) }
+          axiosConfig: {
+            params: pickOrIgnore(records, ['data', 'total'])
+          }
         }))
       ).filter(props.filter)
       emit('refresh', records.data, (pcsData: any) => {
@@ -281,6 +286,8 @@ export default defineComponent({
       editing.key = ''
       editing.show = false
       loading.value = false
+      Mapper.copy(props.mapper, mapperState)
+      fmtColumns()
     }
     function onEditClicked(record?: any) {
       emit('add', record)
@@ -315,7 +322,7 @@ export default defineComponent({
       await refresh()
     }
     function hasExpand() {
-      for (const value of Object.values(editMapper)) {
+      for (const value of Object.values(mapperState)) {
         if (value.expanded) {
           return true
         }
@@ -323,7 +330,7 @@ export default defineComponent({
       return false
     }
     function isCustomEmpty() {
-      for (const value of Object.values(editMapper)) {
+      for (const value of Object.values(mapperState)) {
         if (value.empty) {
           return true
         }
@@ -397,14 +404,50 @@ export default defineComponent({
         ? dist[(text || '').toString()]
         : (text || '').toString()
     }
+    function fmtColumns() {
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d') as CanvasRenderingContext2D
+      context.font = '14px Microsoft YaHei'
+      const columns = props.columns as Column[]
+      colsState.splice(
+        0,
+        colsState.length,
+        ...(props.editable || props.delable
+          ? columns.concat(new Column('操作', 'opera', { width: 100, fixed: 'right' }))
+          : columns
+        )
+          .filter((column: Column) => !column.notDisplay)
+          .map((column: Column) => {
+            const textmetrics = context.measureText(column.title)
+            column.width = textmetrics.width << 1
+            column.customHeaderCell = () => ({
+              style: { 'min-width': `${column.width}px` }
+            })
+            column.customCell = () => ({
+              style: {
+                'min-width': `${column.width}px`,
+                'white-space': 'nowrap',
+                'text-overflow': 'ellipsis',
+                overflow: 'hidden'
+              }
+            })
+            if (column.searchable) {
+              column.onFilter = (value, record) =>
+                record[column.dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+            }
+            return column
+          })
+      )
+      canvas.remove()
+    }
     return {
       Cells,
       BchExport,
       BchImport,
 
-      cols,
+      colsState,
       loading,
-      editMapper,
+      mapperState,
       records,
       expRowKeys,
       editing,
@@ -431,3 +474,25 @@ export default defineComponent({
   }
 })
 </script>
+
+<style>
+.ant-spin-nested-loading {
+  @apply h-full;
+}
+
+.ant-spin-container {
+  @apply h-full flex flex-col;
+}
+
+.ant-table {
+  @apply flex-1;
+}
+
+.ant-table-container {
+  @apply h-full relative;
+}
+
+.ant-table-body {
+  @apply absolute top-10 bottom-0 left-0 right-0;
+}
+</style>
