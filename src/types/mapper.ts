@@ -438,6 +438,12 @@ export default class Mapper {
 
   static copy(src: any, tgt?: Mapper): Mapper {
     tgt = tgt || new Mapper()
+    const srcKeys = Object.keys(src)
+    for (const key of Object.keys(tgt)) {
+      if (!srcKeys.includes(key)) {
+        delete tgt[key]
+      }
+    }
     for (const [key, val] of Object.entries(src)) {
       const value = val as BaseMapper
       if (!value.type) {

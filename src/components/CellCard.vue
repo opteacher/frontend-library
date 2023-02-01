@@ -1,10 +1,6 @@
 <template>
   <a v-if="pcsCell.ctype === 'Link'" @click.stop="$router.push(fmtHref)">
-    <HighLight
-      v-if="search.text && search.column === pcsCell.refer"
-      :text="fmtTxt"
-      :search="search.text"
-    />
+    <HighLight v-if="column.filteredValue" :text="fmtTxt" :search="column.filteredValue" />
     <template v-else>{{ fmtTxt }}</template>
   </a>
   <span
@@ -13,11 +9,7 @@
       color: selected ? '@primary-color' : pcsCell.color
     }"
   >
-    <HighLight
-      v-if="search.text && search.column === pcsCell.refer"
-      :text="fmtTxt"
-      :search="search.text"
-    />
+    <HighLight v-if="column.filteredValue" :text="fmtTxt" :search="column.filteredValue" />
     <template v-else>{{ fmtTxt }}</template>
   </span>
 </template>
@@ -27,7 +19,8 @@ import { endsWith, fmtStrByObj } from '../utils'
 import { computed, defineComponent } from 'vue'
 import dayjs from 'dayjs'
 import HighLight from './HighLight.vue'
-import Cell from '../types/cell'
+import Cell, { Cells } from '../types/cell'
+import Column from '../types/column'
 
 export default defineComponent({
   name: 'CellCard',
@@ -35,11 +28,11 @@ export default defineComponent({
     HighLight
   },
   props: {
-    cell: { type: Object, required: true },
+    column: { type: Column, required: true },
+    cell: { type: Cells, required: true },
     text: { type: String, required: true },
     selected: { type: Boolean, default: false },
-    record: { type: Object, default: null },
-    search: { type: Object, default: {} }
+    record: { type: Object, default: null }
   },
   setup(props) {
     const pcsCell = computed<Cell>((): Cell => {

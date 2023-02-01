@@ -76,7 +76,9 @@
             <template #icon><SearchOutlined /></template>
             搜索
           </a-button>
-          <a-button class="w-23" size="small" @click="onSchReset(clearFilters)">重置</a-button>
+          <a-button class="w-23" size="small" @click="onSchReset(clearFilters, column.dataIndex)">
+            重置
+          </a-button>
         </div>
       </template>
       <template #headerCell="{ column }">
@@ -142,10 +144,10 @@
         </template>
         <CellCard
           v-else
+          :column="column"
           :cell="getCells(column.dataIndex)"
           :text="getCellTxt(text, column.dict)"
           :record="record"
-          :search="searchState"
         />
       </template>
       <template v-if="hasExpand()" #expandedRowRender="{ record }">
@@ -237,12 +239,14 @@ export default defineComponent({
   },
   setup(props, { emit, slots }) {
     const colsState = reactive<Column[]>([])
+    const colMapper = ref<Record<string, Column>>({})
     const mapperState = reactive<Mapper>(props.mapper)
     const records = reactive({
       data: [] as unknown[],
       total: 0,
       offset: 0,
-      limit: 10 // 跟antd一致
+      limit: 10, // 跟antd一致
+      filters: undefined as any
     })
     const expRowKeys = reactive([] as string[])
     const editing = reactive({
@@ -250,10 +254,6 @@ export default defineComponent({
       key: ''
     })
     const loading = ref(false)
-    const searchState = reactive({
-      text: '',
-      column: ''
-    })
 
     onMounted(refresh)
     if (props.emitter) {
@@ -265,21 +265,43 @@ export default defineComponent({
     fmtColumns()
 
     async function refresh(data?: any[], params?: any) {
-      records.total = await props.api.count()
-      if (params && params.pagination) {
-        records.limit = params.pagination.pageSize || records.limit
-        if (params.pagination.current) {
-          records.offset = params.pagination.current * records.limit
+      records.offset = 0
+      records.limit = 10
+      records.filters = undefined
+      if (params) {
+        if (params.filters) {
+          for (const [key, val] of Object.entries(params.filters).filter(([_, val]) => val)) {
+            const column = props.columns.find((col: any) => col.key === key)
+            if (!column) {
+              continue
+            }
+            if (!records.filters) {
+              records.filters = {}
+            }
+            records.filters[(column as Column).dataIndex] = val
+          }
+        }
+        if (params.pagination) {
+          records.limit = params.pagination.pageSize || records.limit
+          if (params.pagination.current) {
+            records.offset = params.pagination.current * records.limit
+          }
         }
       }
-      records.data = (
-        data ||
-        (await props.api.all({
-          axiosConfig: {
-            params: pickOrIgnore(records, ['data', 'total'])
-          }
-        }))
-      ).filter(props.filter)
+      records.total = await props.api.count()
+      console.log(records)
+      if (records.filters) {
+        records.data = await props.api.filter(records.filters)
+      } else {
+        records.data = (
+          data ||
+          (await props.api.all({
+            axiosConfig: {
+              params: pickOrIgnore(records, ['data', 'total', 'filters'])
+            }
+          }))
+        ).filter(props.filter)
+      }
       emit('refresh', records.data, (pcsData: any) => {
         records.data = pcsData
       })
@@ -388,13 +410,11 @@ export default defineComponent({
     }
     function onDoSearch(selectedKeys: string[], confirm: () => void, dataIndex: string) {
       confirm()
-      searchState.text = selectedKeys[0]
-      searchState.column = dataIndex
+      colMapper.value[dataIndex].filteredValue = selectedKeys[0]
     }
-
-    function onSchReset(clearFilters: (param: any) => void) {
+    function onSchReset(clearFilters: (param: any) => void, dataIndex: string) {
       clearFilters({ confirm: true })
-      searchState.text = ''
+      colMapper.value[dataIndex].filteredValue = ''
     }
     function getCells(key: string) {
       return (props.cells.find((cell: any) => cell.refer === key) || new Cells()) as Cells
@@ -432,12 +452,18 @@ export default defineComponent({
               }
             })
             if (column.searchable) {
+              column.filteredValue =
+                records.filters && column.dataIndex in records.filters
+                  ? records.filters[column.dataIndex]
+                  : ''
               column.onFilter = (value, record) =>
                 record[column.dataIndex].toString().toLowerCase().includes(value.toLowerCase())
             }
             return column
           })
       )
+      console.log(colsState)
+      colMapper.value = Object.fromEntries(colsState.map(column => [column.dataIndex, column]))
       canvas.remove()
     }
     return {
@@ -451,7 +477,6 @@ export default defineComponent({
       records,
       expRowKeys,
       editing,
-      searchState,
 
       refresh,
       onEditClicked,

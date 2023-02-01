@@ -683,3 +683,23 @@ export function setProp(
 export function revsKeyVal(obj: any) {
   return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
 }
+
+// export function cpyFun(types: Record<string, () => Record<string, any>>, src: any, tgt?: Record<string, any>, force = false): Record<string, any> {
+//   tgt = tgt || types[]()
+//   for (const key of Object.keys(tgt)) {
+//     if (typeof tgt[key] === 'string' || typeof tgt[key] === 'number') {
+//       tgt[key] = force ? src[key] : src[key] || tgt[key]
+//     } else if (typeof tgt[key] === 'boolean'){
+//       tgt[key] = force ? src[key] : typeof src[key] !== 'undefined' ?src[key] : tgt[key]
+//     } else if (tgt[key] instanceof Array) {
+//       if (force && !src[key]) {
+//         tgt[key] = []
+//       } else if (src[key]) {
+//         tgt[key] = src[key].map((ele: any) => cpyFun(types, ele, undefined, force))
+//       }
+//     } else if (tgt[key] instanceof Object) {
+//       cpyFun(types, src[key], tgt[key], force)
+//     }
+//   }
+//   return tgt
+// }
