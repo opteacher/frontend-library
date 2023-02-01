@@ -9,7 +9,7 @@
         <span class="text-gray-400">{{ description }}</span>
       </h3>
       <a-space>
-        <SelColBox v-model:columns="colsState" />
+        <SelColBox v-if="dspCols" v-model:columns="colsState" />
         <template v-if="addable">
           <a-space v-if="imExpable">
             <BchExpBox
@@ -65,13 +65,13 @@
             :placeholder="`搜索${column.title}`"
             :value="selectedKeys[0]"
             @change="(e: any) => setSelectedKeys(e.target.value ? [e.target.value] : [])"
-            @pressEnter="onDoSearch(selectedKeys, confirm, column.dataIndex)"
+            @pressEnter="onDoSearch(selectedKeys, confirm, clearFilters, column.dataIndex)"
           />
           <a-button
             class="w-23 mr-1"
             type="primary"
             size="small"
-            @click="onDoSearch(selectedKeys, confirm, column.dataIndex)"
+            @click="onDoSearch(selectedKeys, confirm, clearFilters, column.dataIndex)"
           >
             <template #icon><SearchOutlined /></template>
             搜索
@@ -133,21 +133,14 @@
             </a-popconfirm>
           </div>
         </template>
-        <slot v-else-if="chkInSlot(column.key)" :name="column.key" v-bind="{ record }" />
-        <template v-else-if="typeof text === 'undefined' || text === null">-</template>
-        <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
-        <template v-else-if="column.key in mapper">
-          <pre v-if="mapper[column.key].type === 'Textarea'" class="mb-0">{{ text }}</pre>
-          <template v-else-if="mapper[column.key].type === 'Select'">
-            {{ genLstItmLbl(mapper[column.key], text) }}
-          </template>
-        </template>
+        <slot v-else-if="$slots[column.key]" :name="column.key" v-bind="{ record }" />
         <CellCard
           v-else
-          :column="column"
           :cell="getCells(column.dataIndex)"
           :text="getCellTxt(text, column.dict)"
+          :mapper="mapper[column.key]"
           :record="record"
+          :keyword="column.dataIndex in searchState ? searchState[column.dataIndex].content : ''"
         />
       </template>
       <template v-if="hasExpand()" #expandedRowRender="{ record }">
@@ -177,7 +170,7 @@
     @submit="onRecordSave"
   >
     <template
-      v-for="pname in Object.keys(mapperState).filter((key: any) => chkInSlot(key + 'EDT'))"
+      v-for="pname in Object.keys(mapperState).filter((key: any) => $slots[key + 'EDT'])"
       :key="pname"
       #[pname]="{ formState }"
     >
@@ -235,11 +228,11 @@ export default defineComponent({
     disabled: { type: Function, default: () => false },
     clkable: { type: Boolean, default: true },
     refOptions: { type: Array, default: [] },
-    operaStyle: { type: String, default: 'link' }
+    operaStyle: { type: String, default: 'link' },
+    dspCols: { type: Boolean, default: true }
   },
-  setup(props, { emit, slots }) {
+  setup(props, { emit }) {
     const colsState = reactive<Column[]>([])
-    const colMapper = ref<Record<string, Column>>({})
     const mapperState = reactive<Mapper>(props.mapper)
     const records = reactive({
       data: [] as unknown[],
@@ -254,6 +247,9 @@ export default defineComponent({
       key: ''
     })
     const loading = ref(false)
+    const searchState = reactive<Record<string, { content: string; reset: (param: any) => void }>>(
+      {}
+    )
 
     onMounted(refresh)
     if (props.emitter) {
@@ -288,20 +284,29 @@ export default defineComponent({
           }
         }
       }
-      records.total = await props.api.count()
-      console.log(records)
-      if (records.filters) {
-        records.data = await props.api.filter(records.filters)
-      } else {
-        records.data = (
-          data ||
-          (await props.api.all({
-            axiosConfig: {
-              params: pickOrIgnore(records, ['data', 'total', 'filters'])
-            }
-          }))
-        ).filter(props.filter)
+      if (!params) {
+        for (const key of Object.keys(searchState)) {
+          onSchReset(searchState[key].reset, key)
+          delete searchState[key]
+        }
+        for (const column of props.columns) {
+          searchState[(column as Column).dataIndex] = {
+            content: '',
+            reset: () => console.log()
+          }
+        }
       }
+      records.total = await props.api.count()
+      const orgData =
+        data ||
+        (records.filters
+          ? await props.api.filter(records.filters)
+          : await props.api.all({
+              axiosConfig: {
+                params: pickOrIgnore(records, ['data', 'total', 'filters'])
+              }
+            }))
+      records.data = orgData.filter(props.filter)
       emit('refresh', records.data, (pcsData: any) => {
         records.data = pcsData
       })
@@ -373,16 +378,6 @@ export default defineComponent({
       props.emitter.emit('update:data', record)
       editing.show = true
     }
-    function genLstItmLbl(mapItm: MapperType, value: string) {
-      if (mapItm.options.map((option: any) => option.value).includes(value)) {
-        return mapItm.options.find((option: any) => option.value === value).label
-      } else {
-        return value
-      }
-    }
-    function chkInSlot(key: string) {
-      return slots[key]
-    }
     async function onBatchSubmit(info: any, opera: 'import' | 'export') {
       loading.value = true
       await props.api.batch[opera](pickOrIgnore(info, ['worksheet']))
@@ -408,21 +403,26 @@ export default defineComponent({
         return tgt
       }
     }
-    function onDoSearch(selectedKeys: string[], confirm: () => void, dataIndex: string) {
+    function onDoSearch(
+      selectedKeys: string[],
+      confirm: () => void,
+      clearFilters: (param: any) => void,
+      dataIndex: string
+    ) {
       confirm()
-      colMapper.value[dataIndex].filteredValue = selectedKeys[0]
+      searchState[dataIndex].content = selectedKeys[0]
+      searchState[dataIndex].reset = clearFilters
     }
     function onSchReset(clearFilters: (param: any) => void, dataIndex: string) {
       clearFilters({ confirm: true })
-      colMapper.value[dataIndex].filteredValue = ''
+      searchState[dataIndex].content = ''
     }
     function getCells(key: string) {
       return (props.cells.find((cell: any) => cell.refer === key) || new Cells()) as Cells
     }
-    function getCellTxt(text: any, dist: Record<string, string>) {
-      return dist && (text || '').toString() in dist
-        ? dist[(text || '').toString()]
-        : (text || '').toString()
+    function getCellTxt(data: any, dist: Record<string, string>) {
+      const text = (data || '').toString()
+      return dist && text in dist ? dist[text] : text
     }
     function fmtColumns() {
       const canvas = document.createElement('canvas')
@@ -452,18 +452,12 @@ export default defineComponent({
               }
             })
             if (column.searchable) {
-              column.filteredValue =
-                records.filters && column.dataIndex in records.filters
-                  ? records.filters[column.dataIndex]
-                  : ''
               column.onFilter = (value, record) =>
                 record[column.dataIndex].toString().toLowerCase().includes(value.toLowerCase())
             }
             return column
           })
       )
-      console.log(colsState)
-      colMapper.value = Object.fromEntries(colsState.map(column => [column.dataIndex, column]))
       canvas.remove()
     }
     return {
@@ -477,6 +471,7 @@ export default defineComponent({
       records,
       expRowKeys,
       editing,
+      searchState,
 
       refresh,
       onEditClicked,
@@ -487,8 +482,6 @@ export default defineComponent({
       onRowExpand,
       isCustomEmpty,
       onRowClick,
-      genLstItmLbl,
-      chkInSlot,
       onBatchSubmit,
       genCpyFun,
       onDoSearch,

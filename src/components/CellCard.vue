@@ -1,16 +1,22 @@
 <template>
   <a v-if="pcsCell.ctype === 'Link'" @click.stop="$router.push(fmtHref)">
-    <HighLight v-if="column.filteredValue" :text="fmtTxt" :search="column.filteredValue" />
-    <template v-else>{{ fmtTxt }}</template>
+    <HighLight :text="fmtTxt" :search="keyword" />
   </a>
+  <template v-else-if="typeof text === 'undefined' || text === null">-</template>
+  <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
+  <pre v-else-if="mapper && mapper.type === 'Textarea'" class="mb-0">{{
+    fmtTxt
+  }}</pre>
+  <template v-else-if="mapper && mapper.type === 'Select'">
+    {{ genLstItmLbl(mapper as MapperType, text) }}
+  </template>
   <span
     v-else
     :style="{
       color: selected ? '@primary-color' : pcsCell.color
     }"
   >
-    <HighLight v-if="column.filteredValue" :text="fmtTxt" :search="column.filteredValue" />
-    <template v-else>{{ fmtTxt }}</template>
+    <HighLight :text="fmtTxt" :search="keyword" />
   </span>
 </template>
 
@@ -20,7 +26,7 @@ import { computed, defineComponent } from 'vue'
 import dayjs from 'dayjs'
 import HighLight from './HighLight.vue'
 import Cell, { Cells } from '../types/cell'
-import Column from '../types/column'
+import { MapperType } from '../types/mapper'
 
 export default defineComponent({
   name: 'CellCard',
@@ -28,11 +34,12 @@ export default defineComponent({
     HighLight
   },
   props: {
-    column: { type: Column, required: true },
     cell: { type: Cells, required: true },
     text: { type: String, required: true },
     selected: { type: Boolean, default: false },
-    record: { type: Object, default: null }
+    mapper: { type: Object, required: true },
+    record: { type: Object, default: null },
+    keyword: { type: String, default: '' }
   },
   setup(props) {
     const pcsCell = computed<Cell>((): Cell => {
@@ -106,11 +113,19 @@ export default defineComponent({
     const fmtHref = computed(() =>
       fmtStrByObj(/\s?@.+?(?=\s)/g, props.record, pcsCell.value.format.href)
     )
+    function genLstItmLbl(mapItm: MapperType, value: string) {
+      if (mapItm.options.map((option: any) => option.value).includes(value)) {
+        return mapItm.options.find((option: any) => option.value === value).label
+      } else {
+        return value
+      }
+    }
     return {
       pcsCell,
       fmtTxt,
       fmtHref,
-      endsWith
+      endsWith,
+      genLstItmLbl
     }
   }
 })

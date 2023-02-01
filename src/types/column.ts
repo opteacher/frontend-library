@@ -14,7 +14,6 @@ export default class Column {
   searchable: boolean
   customFilterDropdown: boolean
   dict: Record<string, string>
-  filteredValue?: string
   onFilter?: (value: string, record: any) => boolean
   customCell: (record: any, rowIndex: number, column: Column) => any
   customHeaderCell: (column: Column) => any
@@ -57,7 +56,6 @@ export default class Column {
     this.searchable = (options && options.searchable) as boolean
     this.customFilterDropdown = this.searchable
     this.dict = options && options.dict ? options.dict : {}
-    this.filteredValue = undefined
     this.onFilter = options && options.filter ? options.filter : undefined
     this.customCell = options && options.customCell ? options.customCell : () => console.log()
     this.customHeaderCell =
@@ -78,7 +76,6 @@ export default class Column {
     this.searchable = false
     this.customFilterDropdown = false
     this.dict = {}
-    this.filteredValue = undefined
     this.onFilter = undefined
     this.customCell = () => console.log()
     this.customHeaderCell = () => console.log()
@@ -109,7 +106,6 @@ export default class Column {
     tgt.searchable = typeof src.searchable !== 'undefined' ? src.searchable : tgt.searchable
     tgt.customFilterDropdown = src.customFilterDropdown || src.searchable || tgt.customFilterDropdown
     tgt.dict = src.dict || tgt.dict
-    tgt.filteredValue = src.filteredValue || tgt.filteredValue
     tgt.onFilter = src.filter || src.onFilter || tgt.onFilter
     tgt.customCell = src.customCell || tgt.customCell
     tgt.customHeaderCell = src.customHeaderCell || tgt.customHeaderCell
