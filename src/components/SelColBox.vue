@@ -11,7 +11,7 @@
     </a-checkbox>
     <a-checkbox-group
       :value="cols.filter((column: Column) => !column.notDisplay).map((column: Column) => column.key)"
-      :options="cols.map((column: Column) => ({ label: column.title, value: column.key }))"
+      :options="cols.map((column: any) => ({ label: column.title, value: column.key }))"
       @change="onDspColSelect"
     />
   </a-modal>
@@ -27,7 +27,7 @@ export default defineComponent({
   components: {
     InsertRowAboveOutlined
   },
-  emits: ['update:columns'],
+  emits: ['change'],
   props: {
     columns: { type: Array, required: true }
   },
@@ -54,17 +54,17 @@ export default defineComponent({
       })
       allSelCols.value = e.target.checked
       indSelCols.value = false
-      emit('update:columns', cols)
+      emit('change', cols)
     }
-    function onDspColSelect(chkVals: string[]) {
+    function onDspColSelect(checkeds: string[]) {
       cols.map((column: Column) => {
-        column.notDisplay = !chkVals.includes(column.key)
+        column.notDisplay = !checkeds.includes(column.key)
       })
       indSelCols.value = cols.reduce(
         (prev: boolean, column: Column) => prev || column.notDisplay,
         false
       )
-      emit('update:columns', cols)
+      emit('change', cols)
     }
     return {
       Column,

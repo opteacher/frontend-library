@@ -9,7 +9,7 @@
         <span class="text-gray-400">{{ description }}</span>
       </h3>
       <a-space>
-        <SelColBox v-if="dspCols" v-model:columns="colsState" />
+        <SelColBox v-if="dspCols" :columns="columns" @change="fmtColumns" />
         <template v-if="addable">
           <a-space v-if="imExpable">
             <BchExpBox
@@ -38,7 +38,7 @@
       v-model:expandedRowKeys="expRowKeys"
       :loading="loading"
       bordered
-      :scroll="{ y: '100%' }"
+      :scroll="{ x: 'max-content', y: '100%' }"
       :custom-row="
       (record: any) => ({
         onClick: clkable ? () => onRowClick(record) : undefined
@@ -138,7 +138,7 @@
           v-else
           :cell="getCells(column.dataIndex)"
           :text="getCellTxt(text, column.dict)"
-          :mapper="mapper[column.key]"
+          :mapper="mapper[column.key] || {}"
           :record="record"
           :keyword="column.dataIndex in searchState ? searchState[column.dataIndex].content : ''"
         />
@@ -185,7 +185,7 @@ import { defineComponent, onMounted, reactive, ref } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
 import Column from '../types/column'
-import Mapper, { MapperType } from '../types/mapper'
+import Mapper from '../types/mapper'
 import * as antdIcons from '@ant-design/icons-vue/lib/icons'
 import SelColBox from './SelColBox.vue'
 import { pickOrIgnore, upperFirst } from '../utils'
@@ -280,7 +280,7 @@ export default defineComponent({
         if (params.pagination) {
           records.limit = params.pagination.pageSize || records.limit
           if (params.pagination.current) {
-            records.offset = params.pagination.current * records.limit
+            records.offset = (params.pagination.current - 1) * records.limit
           }
         }
       }
@@ -424,17 +424,17 @@ export default defineComponent({
       const text = (data || '').toString()
       return dist && text in dist ? dist[text] : text
     }
-    function fmtColumns() {
+    function fmtColumns(columns?: Column[]) {
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d') as CanvasRenderingContext2D
       context.font = '14px Microsoft YaHei'
-      const columns = props.columns as Column[]
+      const cols = (columns || props.columns) as Column[]
       colsState.splice(
         0,
         colsState.length,
         ...(props.editable || props.delable
-          ? columns.concat(new Column('操作', 'opera', { width: 100, fixed: 'right' }))
-          : columns
+          ? cols.concat(new Column('操作', 'opera', { width: 100, fixed: 'right' }))
+          : cols
         )
           .filter((column: Column) => !column.notDisplay)
           .map((column: Column) => {
@@ -451,10 +451,6 @@ export default defineComponent({
                 overflow: 'hidden'
               }
             })
-            if (column.searchable) {
-              column.onFilter = (value, record) =>
-                record[column.dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-            }
             return column
           })
       )
@@ -487,7 +483,8 @@ export default defineComponent({
       onDoSearch,
       onSchReset,
       getCells,
-      getCellTxt
+      getCellTxt,
+      fmtColumns
     }
   }
 })

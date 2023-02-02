@@ -4,10 +4,8 @@
   </a>
   <template v-else-if="typeof text === 'undefined' || text === null">-</template>
   <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
-  <pre v-else-if="mapper && mapper.type === 'Textarea'" class="mb-0">{{
-    fmtTxt
-  }}</pre>
-  <template v-else-if="mapper && mapper.type === 'Select'">
+  <pre v-else-if="mapper.type === 'Textarea'" class="mb-0">{{ fmtTxt }}</pre>
+  <template v-else-if="mapper.type === 'Select'">
     {{ genLstItmLbl(mapper as MapperType, text) }}
   </template>
   <span
@@ -93,6 +91,9 @@ export default defineComponent({
         case 'Number':
           if (pcsCell.value.format.fix > 0) {
             ret = Number.parseFloat(ret).toFixed(pcsCell.value.format.fix)
+          }
+          if (pcsCell.value.format.unit) {
+            ret += pcsCell.value.format.unit
           }
           break
         case 'DateTime':
