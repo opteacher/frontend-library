@@ -261,6 +261,7 @@ export default defineComponent({
     fmtColumns()
 
     async function refresh(data?: any[], params?: any) {
+      loading.value = true
       records.offset = 0
       records.limit = 10
       records.filters = undefined
@@ -315,6 +316,8 @@ export default defineComponent({
       loading.value = false
       Mapper.copy(props.mapper, mapperState)
       fmtColumns()
+
+      loading.value = false
     }
     function onEditClicked(record?: any) {
       emit('add', record)
@@ -439,13 +442,16 @@ export default defineComponent({
           .filter((column: Column) => !column.notDisplay)
           .map((column: Column) => {
             const textmetrics = context.measureText(column.title)
-            column.width = textmetrics.width << 1
+            const minWidth = textmetrics.width << 1
+            if (!records.data.length) {
+              column.width = minWidth
+            }
             column.customHeaderCell = () => ({
-              style: { 'min-width': `${column.width}px` }
+              style: { 'min-width': `${minWidth}px` }
             })
             column.customCell = () => ({
               style: {
-                'min-width': `${column.width}px`,
+                'min-width': `${minWidth}px`,
                 'white-space': 'nowrap',
                 'text-overflow': 'ellipsis',
                 overflow: 'hidden'
