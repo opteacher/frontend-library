@@ -14,14 +14,22 @@
   >
     <template #itfcTable="{ formState }">
       <a-form-item-rest>
-        <a-button
-          class="mb-2.5"
-          :disabled="!formState.worksheet"
-          @click="onOrderFillClick(formState)"
-        >
-          顺序填入
-          <template #icon><arrow-right-outlined /></template>
-        </a-button>
+        <a-space class="mb-2.5">
+          <a-input v-model:value="startCol" placeholder="开始列号" />
+          <a-button
+            :disabled="!formState.worksheet"
+            type="primary"
+            ghost
+            @click="onOrderFill(formState)"
+          >
+            <template #icon><arrow-right-outlined /></template>
+            顺序填入
+          </a-button>
+          <a-button :disabled="!formState.worksheet" danger ghost @click="onClrCols(formState)">
+            <template #icon><close-outlined /></template>
+            清空
+          </a-button>
+        </a-space>
         <a-table
           :columns="genDspColumns(formState)"
           :data-source="genDspRecords(formState)"
@@ -33,7 +41,7 @@
         >
           <template #headerCell="{ column }">
             {{ column.title }}&nbsp;
-            <arrow-down-outlined />
+            <enter-outlined :rotate="-90" />
             <a-select
               class="mt-0.5 min-w-full"
               size="small"
@@ -62,26 +70,6 @@
       </a-form-item-rest>
     </template>
   </FormDialog>
-  <FormDialog
-    title="顺序填入列"
-    v-model:show="orderFill.visible"
-    :copy="(src: any, tgt?: any) => {
-      tgt = tgt || { startCol: 'A', form: null }
-      tgt.startCol = src.startCol || tgt.startCol
-      tgt.form = src.form || tgt.form
-      return tgt
-    }"
-    :emitter="orderFill.emitter"
-    :mapper="
-      new Mapper({
-        startCol: {
-          label: '开始列',
-          type: 'Input'
-        }
-      })
-    "
-    @submit="onOrderFillSubmit"
-  />
 </template>
 
 <script lang="ts">
@@ -93,7 +81,12 @@ import { read } from 'xlsx'
 import { Cond } from '../types'
 import { charInc, upperFirst, genDspColumns, genDspRecords, revsKeyVal } from '../utils'
 import Column from '../types/column'
-import { ImportOutlined, ArrowRightOutlined, ArrowDownOutlined } from '@ant-design/icons-vue'
+import {
+  ImportOutlined,
+  ArrowRightOutlined,
+  EnterOutlined,
+  CloseOutlined
+} from '@ant-design/icons-vue'
 
 export default defineComponent({
   name: 'BchImpBox',
@@ -101,24 +94,24 @@ export default defineComponent({
     FormDialog,
     ImportOutlined,
     ArrowRightOutlined,
-    ArrowDownOutlined
+    EnterOutlined,
+    CloseOutlined
   },
   emits: ['refresh', 'submit'],
   props: {
     columns: { type: Array, required: true },
+    ignCols: { type: Array, default: [] },
     copyFun: { type: Function, required: true }
   },
   setup(props, { emit }) {
     const emitter = new Emitter()
     const visible = ref(false)
     const cols = reactive(props.columns.map(col => Column.copy(col)))
-    const orderFill = reactive({
-      visible: false,
-      emitter: new Emitter()
-    })
+    const startCol = ref('A')
+    console.log(props.copyFun({}))
 
     watch(
-      () => props.columns,
+      () => props.columns.length,
       () => cols.splice(0, cols.length, ...props.columns.map(col => Column.copy(col)))
     )
 
@@ -143,33 +136,33 @@ export default defineComponent({
       //   )
       // )
     }
-    function onOrderFillClick(formState: any) {
-      orderFill.visible = true
-      orderFill.emitter.emit('update:data', { form: formState })
-    }
     function getSelCol(formState: any, selColKey: string) {
       return revsKeyVal(formState)[selColKey]
     }
-    function onOrderFillSubmit(info: any, next: () => void) {
-      if (!info.form.worksheet) {
+    function onOrderFill(formState: any) {
+      if (!formState.worksheet) {
         return
       }
-      const ignKeys = cols.map((col: Column) => `col${upperFirst(col.dataIndex)}`)
-      const usdVals = Object.values(info.form).filter(val => val)
-      let begColNo = info.startCol
-      for (const colKey of Object.keys(info.form).filter(
-        col => col.startsWith('col') && !ignKeys.includes(col)
+      const usdVals = Object.values(formState).filter(val => val)
+      let begColNo = startCol.value
+      for (const colKey of Object.keys(formState).filter(
+        col => col.startsWith('col') && !props.ignCols.includes(col)
       )) {
-        if (!info.form[colKey]) {
+        if (!formState[colKey]) {
           while (usdVals.includes(begColNo)) {
             begColNo = charInc(begColNo)
           }
-          info.form[colKey] = begColNo
+          formState[colKey] = begColNo
           begColNo = charInc(begColNo)
         }
       }
-      console.log(info.form)
-      next()
+    }
+    function onClrCols(formState: any) {
+      for (const key of Object.keys(formState)) {
+        if (key.startsWith('col')) {
+          formState[key] = ''
+        }
+      }
     }
     return {
       Mapper,
@@ -178,7 +171,7 @@ export default defineComponent({
       emitter,
       mapper,
       cols,
-      orderFill,
+      startCol,
 
       onSubmit,
       getSelCol,
@@ -186,8 +179,8 @@ export default defineComponent({
       genDspColumns,
       genDspRecords,
       onBdPropSelect,
-      onOrderFillClick,
-      onOrderFillSubmit
+      onOrderFill,
+      onClrCols
     }
   }
 })
@@ -204,11 +197,11 @@ const mapper = new Mapper({
     ],
     path: '/police-assets/api/v1/excel/upload',
     headers: { authorization: `Bearer ${localStorage.getItem('token')}` },
-    onChange: async (form: any, file: any) => {
+    onChange: async (form: any, info: any) => {
       form.loading = true
-      if (file.status === 'done') {
+      if (info.file.status === 'done') {
         const reader = new FileReader()
-        reader.readAsArrayBuffer(file.originFileObj)
+        reader.readAsArrayBuffer(info.file.originFileObj)
         reader.onload = () => {
           const workbook = read(reader.result)
           form.worksheet = workbook.Sheets[workbook.SheetNames[0]]

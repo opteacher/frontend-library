@@ -14,11 +14,13 @@
           <a-space v-if="imExpable">
             <BchExpBox
               :columns="colsState"
+              :ignCols="fmtIeIgnCols"
               :copyFun="genCpyFun(BchExport, () => ({ column: '', compare: '=' }))"
               @submit="(info: any) => onBatchSubmit(info, 'export')"
             />
             <BchImpBox
               :columns="colsState"
+              :ignCols="fmtIeIgnCols"
               :copyFun="genCpyFun(BchImport, () => '')"
               @submit="(info: any) => onBatchSubmit(info, 'import')"
             />
@@ -92,6 +94,8 @@
             <a-button
               v-if="editable"
               size="small"
+              type="primary"
+              ghost
               :disabled="disabled(record, 'edit')"
               @click.stop="onEditClicked(record)"
             >
@@ -117,6 +121,7 @@
           <div v-else-if="operaStyle === 'link'" class="flex space-x-1.5">
             <a
               v-if="editable"
+              class="text-primary"
               :disabled="disabled(record, 'edit')"
               @click.stop="onEditClicked(record)"
             >
@@ -181,7 +186,7 @@
 
 <script lang="ts">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { defineComponent, onMounted, reactive, ref } from 'vue'
+import { computed, defineComponent, onMounted, reactive, ref } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
 import Column from '../types/column'
@@ -225,6 +230,7 @@ export default defineComponent({
     addable: { type: Boolean, default: true },
     delable: { type: Boolean, default: true },
     imExpable: { type: Boolean, default: false },
+    ieIgnCols: { type: Array, default: [] },
     disabled: { type: Function, default: () => false },
     clkable: { type: Boolean, default: true },
     refOptions: { type: Array, default: [] },
@@ -249,6 +255,9 @@ export default defineComponent({
     const loading = ref(false)
     const searchState = reactive<Record<string, { content: string; reset: (param: any) => void }>>(
       {}
+    )
+    const fmtIeIgnCols = computed(() =>
+      (props.ieIgnCols as string[]).map(col => `col${upperFirst(col)}`)
     )
 
     onMounted(refresh)
@@ -474,6 +483,7 @@ export default defineComponent({
       expRowKeys,
       editing,
       searchState,
+      fmtIeIgnCols,
 
       refresh,
       onEditClicked,
