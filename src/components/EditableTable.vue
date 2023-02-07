@@ -14,7 +14,6 @@
           <a-space v-if="imExpable">
             <BchExpBox
               :columns="colsState"
-              :ignCols="fmtIeIgnCols"
               :copyFun="genCpyFun(BchExport, () => ({ column: '', compare: '=' }))"
               @submit="(info: any) => onBatchSubmit(info, 'export')"
             />
@@ -257,7 +256,7 @@ export default defineComponent({
       {}
     )
     const fmtIeIgnCols = computed(() =>
-      (props.ieIgnCols as string[]).map(col => `col${upperFirst(col)}`)
+      (props.ieIgnCols as string[]).concat('opera').map(col => `col${upperFirst(col)}`)
     )
 
     onMounted(refresh)

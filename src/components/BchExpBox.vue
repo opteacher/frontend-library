@@ -9,6 +9,8 @@
     :copy="copyFun"
     :emitter="emitter"
     :mapper="mapper"
+    width="80vw"
+    :lblWid="3"
     @submit="onSubmit"
   >
     <template #itfcTable="{ formState }">
@@ -24,20 +26,18 @@
           bordered
         >
           <template #headerCell="{ column }">
-            {{ column.title }}
-            <a-input-group class="mt-5 w-full" compact>
-              <a-select
-                size="small"
-                placeholder="等于……"
-                class="w-9/12"
-                allowClear
-                :options="cols.map((col: Column) => ({ label: col.title, value: col.dataIndex }))"
-                @select="(selected: string) => onAsIdenSelect(formState, selected, column.dataIndex)"
-              />
-              <a-button size="small">
-                <template #icon><ellipsis-outlined /></template>
-              </a-button>
-            </a-input-group>
+            <a-space>
+              {{ column.title }}
+              <enter-outlined :rotate="-90" />
+            </a-space>
+            <a-select
+              class="mb-2"
+              size="small"
+              placeholder="等于……"
+              allowClear
+              :options="cols.map((col: Column) => ({ label: col.title, value: col.dataIndex }))"
+              @select="(selected: string) => onAsIdenSelect(formState, selected, column.dataIndex)"
+            />
           </template>
           <template #footer>.....</template>
         </a-table>
@@ -63,7 +63,7 @@ import Mapper from '../types/mapper'
 import { computed, defineComponent, onMounted, reactive, ref, watch } from 'vue'
 import FormDialog from './FormDialog.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { ExportOutlined, EllipsisOutlined } from '@ant-design/icons-vue'
+import { ExportOutlined, EllipsisOutlined, EnterOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
 import { read } from 'xlsx'
 import { Cond } from '@/types'
@@ -75,7 +75,8 @@ export default defineComponent({
   components: {
     FormDialog,
     ExportOutlined,
-    EllipsisOutlined
+    EllipsisOutlined,
+    EnterOutlined
   },
   emits: ['submit'],
   props: {
@@ -96,7 +97,7 @@ export default defineComponent({
 
     onMounted(resetAllChk)
     watch(
-      () => props.columns,
+      () => props.columns.length,
       () => {
         cols.splice(0, cols.length, ...props.columns.map(col => Column.copy(col)))
         resetAllChk()
@@ -158,11 +159,11 @@ const mapper = new Mapper({
     desc: '没有参照文档，则导出所有设备',
     path: '/police-assets/api/v1/excel/upload',
     headers: { authorization: `Bearer ${localStorage.getItem('token')}` },
-    onChange: (form: any, file: any) => {
+    onChange: (form: any, info: any) => {
       form.loading = true
-      if (file.status === 'done') {
+      if (info.file.status === 'done') {
         const reader = new FileReader()
-        reader.readAsArrayBuffer(file.originFileObj)
+        reader.readAsArrayBuffer(info.file.originFileObj)
         reader.onload = () => {
           const workbook = read(reader.result)
           form.worksheet = workbook.Sheets[workbook.SheetNames[0]]

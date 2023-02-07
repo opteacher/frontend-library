@@ -194,16 +194,6 @@
           :data-source="getProp(formState, skey)"
           :pagination="false"
           size="small"
-          :custom-row="
-                  (record: any) => ({
-                    onClick: () => {
-                      valState.emitter.emit('viewOnly', !valState.editable)
-                      valState.emitter.emit('update:show', { show: true })
-                      valState.emitter.emit('update:data', record)
-                      valState.onEdit(formState)
-                    }
-                  })
-                "
         >
           <template v-if="validConds(formState, valState.delable)" #bodyCell="{ column, record }">
             <template v-if="column.dataIndex === 'opera'">

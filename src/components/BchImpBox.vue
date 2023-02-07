@@ -108,7 +108,6 @@ export default defineComponent({
     const visible = ref(false)
     const cols = reactive(props.columns.map(col => Column.copy(col)))
     const startCol = ref('A')
-    console.log(props.copyFun({}))
 
     watch(
       () => props.columns.length,
@@ -116,7 +115,6 @@ export default defineComponent({
     )
 
     async function onSubmit(info: any, next: () => void) {
-      console.log(info)
       emit('submit', info)
       next()
     }
