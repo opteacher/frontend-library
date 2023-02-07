@@ -53,14 +53,17 @@
           全部选择
         </a-checkbox>
       </a-form-item-rest>
-      <a-checkbox-group v-model:value="formState.filterCols" :options="colOpns" />
+      <a-checkbox-group
+        v-model:value="formState.filterCols"
+        :options="cols.map((col: any) => ({ label: col.title, value: col.dataIndex }))"
+      />
     </template>
   </FormDialog>
 </template>
 
 <script lang="ts">
 import Mapper from '../types/mapper'
-import { computed, defineComponent, onMounted, reactive, ref, watch } from 'vue'
+import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
 import FormDialog from './FormDialog.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { ExportOutlined, EllipsisOutlined, EnterOutlined } from '@ant-design/icons-vue'
@@ -91,9 +94,6 @@ export default defineComponent({
       indeterminate: true,
       checkAll: true
     })
-    const colOpns = computed(() =>
-      props.columns.map((col: any) => ({ label: col.title, value: col.dataIndex }))
-    )
 
     onMounted(resetAllChk)
     watch(
@@ -103,6 +103,7 @@ export default defineComponent({
         resetAllChk()
       }
     )
+    watch(() => visible.value, resetAllChk)
 
     function resetAllChk() {
       emitter.emit('update:data', { filterCols: cols.map((col: Column) => col.dataIndex) })
@@ -140,7 +141,6 @@ export default defineComponent({
       emitter,
       mapper,
       cols,
-      colOpns,
       allChk,
 
       genDspColumns,
