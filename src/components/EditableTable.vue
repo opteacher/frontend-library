@@ -1,7 +1,7 @@
 <template>
   <div
     class="flex flex-col space-y-2.5"
-    :class="{ [height]: height.startsWith('h-') && sclable }"
+    :class="{ [sclHeight]: sclHeight.startsWith('h-') }"
   >
     <div class="flex justify-between">
       <h3 class="mb-0">
@@ -42,7 +42,7 @@
       v-model:expandedRowKeys="expRowKeys"
       :loading="loading"
       bordered
-      :scroll="sclable ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
+      :scroll="sclHeight ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
       :custom-row="
       (record: any) => ({
         onClick: clkable ? () => onRowClick(record) : undefined
@@ -213,7 +213,6 @@ export default defineComponent({
     antdIcons
   ),
   props: {
-    height: { type: String, default: 'h-full' },
     icon: { type: String, default: '' },
     api: { type: Object /* ComAPI */, required: true },
     columns: { type: Array, required: true },
@@ -235,7 +234,7 @@ export default defineComponent({
     refOptions: { type: Array, default: () => [] },
     operaStyle: { type: String, default: 'link' },
     dspCols: { type: Boolean, default: false },
-    sclable: { type: Boolean, default: false }
+    sclHeight: { type: String, default: '' }
   },
   setup(props, { emit }) {
     const colsState = reactive<Column[]>([])
