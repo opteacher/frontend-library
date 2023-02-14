@@ -66,7 +66,7 @@ import Mapper from '../types/mapper'
 import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
 import FormDialog from './FormDialog.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { ExportOutlined, EllipsisOutlined, EnterOutlined } from '@ant-design/icons-vue'
+import { ExportOutlined, EnterOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
 import { read } from 'xlsx'
 import { Cond } from '@/types'
@@ -78,7 +78,6 @@ export default defineComponent({
   components: {
     FormDialog,
     ExportOutlined,
-    EllipsisOutlined,
     EnterOutlined
   },
   emits: ['submit'],

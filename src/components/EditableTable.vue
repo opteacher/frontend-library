@@ -1,5 +1,8 @@
 <template>
-  <div class="h-full flex flex-col space-y-2.5">
+  <div
+    class="flex flex-col space-y-2.5"
+    :class="{ [height]: height.startsWith('h-') && sclable }"
+  >
     <div class="flex justify-between">
       <h3 class="mb-0">
         <keep-alive v-if="icon">
@@ -39,7 +42,7 @@
       v-model:expandedRowKeys="expRowKeys"
       :loading="loading"
       bordered
-      :scroll="{ x: 'max-content', y: '100%' }"
+      :scroll="sclable ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
       :custom-row="
       (record: any) => ({
         onClick: clkable ? () => onRowClick(record) : undefined
@@ -95,7 +98,6 @@
               size="small"
               type="primary"
               ghost
-              :disabled="disabled(record, 'edit')"
               @click.stop="onEditClicked(record)"
             >
               编辑
@@ -110,7 +112,6 @@
               <a-button
                 size="small"
                 danger
-                :disabled="disabled(record, 'delete')"
                 @click.stop="(e: any) => e.preventDefault()"
               >
                 删除
@@ -121,7 +122,6 @@
             <a
               v-if="editable"
               class="text-primary"
-              :disabled="disabled(record, 'edit')"
               @click.stop="onEditClicked(record)"
             >
               编辑
@@ -133,7 +133,7 @@
               cancel-text="取消"
               @confirm="onRecordDel(record.key)"
             >
-              <a :disabled="disabled(record, 'delete')" class="text-error" @click.stop="">删除</a>
+              <a class="text-error" @click.stop="">删除</a>
             </a-popconfirm>
           </div>
         </template>
@@ -213,10 +213,11 @@ export default defineComponent({
     antdIcons
   ),
   props: {
+    height: { type: String, default: 'h-full' },
     icon: { type: String, default: '' },
     api: { type: Object /* ComAPI */, required: true },
     columns: { type: Array, required: true },
-    cells: { type: Array, default: [] },
+    cells: { type: Array, default: () => [] },
     mapper: { type: Mapper, default: new Mapper() },
     copy: { type: Function, default: () => ({ key: '#' }) },
     emitter: { type: Emitter, default: null },
@@ -229,12 +230,12 @@ export default defineComponent({
     addable: { type: Boolean, default: true },
     delable: { type: Boolean, default: true },
     imExpable: { type: Boolean, default: false },
-    ieIgnCols: { type: Array, default: [] },
-    disabled: { type: Function, default: () => false },
+    ieIgnCols: { type: Array, default: () => [] },
     clkable: { type: Boolean, default: true },
-    refOptions: { type: Array, default: [] },
+    refOptions: { type: Array, default: () => [] },
     operaStyle: { type: String, default: 'link' },
-    dspCols: { type: Boolean, default: true }
+    dspCols: { type: Boolean, default: false },
+    sclable: { type: Boolean, default: false }
   },
   setup(props, { emit }) {
     const colsState = reactive<Column[]>([])
@@ -252,7 +253,7 @@ export default defineComponent({
       key: ''
     })
     const loading = ref(false)
-    const searchState = reactive<Record<string, { content: string; reset: (param: any) => void }>>(
+    const searchState = reactive<Record<string, { content: string; reset: Function }>>(
       {}
     )
     const fmtIeIgnCols = computed(() =>
@@ -275,7 +276,10 @@ export default defineComponent({
       records.filters = undefined
       if (params) {
         if (params.filters) {
-          for (const [key, val] of Object.entries(params.filters).filter(([_, val]) => val)) {
+          for (const [key, val] of Object.entries(params.filters)) {
+            if (!val) {
+              continue
+            }
             const column = props.columns.find((col: any) => col.key === key)
             if (!column) {
               continue
@@ -292,8 +296,7 @@ export default defineComponent({
             records.offset = (params.pagination.current - 1) * records.limit
           }
         }
-      }
-      if (!params) {
+      } else {
         for (const key of Object.keys(searchState)) {
           onSchReset(searchState[key].reset, key)
           delete searchState[key]
@@ -305,7 +308,7 @@ export default defineComponent({
           }
         }
       }
-      records.total = await props.api.count()
+      records.total = props.api.count ? await props.api.count() : 0
       const orgData =
         data ||
         (records.filters
@@ -316,6 +319,9 @@ export default defineComponent({
               }
             }))
       records.data = orgData.filter(props.filter)
+      if (!records.total) {
+        records.total = records.data.length
+      }
       emit('refresh', records.data, (pcsData: any) => {
         records.data = pcsData
       })
@@ -337,7 +343,7 @@ export default defineComponent({
       props.emitter.emit('viewOnly', false)
       editing.show = true
     }
-    async function onRecordSave(record: any, reset: () => void) {
+    async function onRecordSave(record: any, reset: Function) {
       loading.value = true
       emit('before-save', record)
       if (editing.key === '') {
@@ -395,7 +401,7 @@ export default defineComponent({
       await refresh()
     }
     function genCpyFun<B extends Batch>(
-      b: { new (): B; copy: (src: any, tgt: any) => any },
+      b: { new (): B; copy: Function },
       genDft: () => any
     ) {
       return (src: any, tgt?: any, force = false) => {
@@ -417,14 +423,14 @@ export default defineComponent({
     function onDoSearch(
       selectedKeys: string[],
       confirm: () => void,
-      clearFilters: (param: any) => void,
+      clearFilters: Function,
       dataIndex: string
     ) {
       confirm()
       searchState[dataIndex].content = selectedKeys[0]
       searchState[dataIndex].reset = clearFilters
     }
-    function onSchReset(clearFilters: (param: any) => void, dataIndex: string) {
+    function onSchReset(clearFilters: Function, dataIndex: string) {
       clearFilters({ confirm: true })
       searchState[dataIndex].content = ''
     }
@@ -444,11 +450,14 @@ export default defineComponent({
         0,
         colsState.length,
         ...(props.editable || props.delable
-          ? cols.concat(new Column('操作', 'opera', { width: 100, fixed: 'right' }))
+          ? cols.concat(new Column('操作', 'opera', { width: 80, fixed: 'right' }))
           : cols
         )
           .filter((column: Column) => !column.notDisplay)
           .map((column: Column) => {
+            if (column.dataIndex === 'opera') {
+              return column
+            }
             const textmetrics = context.measureText(column.title)
             const minWidth = textmetrics.width << 1
             if (!records.data.length) {

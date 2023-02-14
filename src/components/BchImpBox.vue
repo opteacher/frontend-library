@@ -100,7 +100,7 @@ export default defineComponent({
   emits: ['refresh', 'submit'],
   props: {
     columns: { type: Array, required: true },
-    ignCols: { type: Array, default: [] },
+    ignCols: { type: Array, default: () => [] },
     copyFun: { type: Function, required: true }
   },
   setup(props, { emit }) {
