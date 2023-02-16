@@ -170,15 +170,15 @@
     :copy="copy"
     :title="title"
     :emitter="emitter"
-    :mapper="mapperState"
+    :mapper="mapper"
     @submit="onRecordSave"
   >
     <template
-      v-for="pname in Object.keys(mapperState).filter((key: any) => $slots[key + 'EDT'])"
+      v-for="pname in Object.keys(mapper).filter((key: any) => $slots[key + 'EDT'])"
       :key="pname"
       #[pname]="{ formState }"
     >
-      <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: mapperState[pname] }" />
+      <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: mapper[pname] }" />
     </template>
   </FormDialog>
 </template>
@@ -238,7 +238,6 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const colsState = reactive<Column[]>([])
-    const mapperState = reactive<Mapper>(props.mapper)
     const records = reactive({
       data: [] as unknown[],
       total: 0,
@@ -262,9 +261,6 @@ export default defineComponent({
     onMounted(refresh)
     if (props.emitter) {
       props.emitter.on('refresh', refresh)
-      props.emitter.on('update:mapper', (mapper: any) => {
-        Mapper.copy(mapper, mapperState)
-      })
     }
     fmtColumns()
 
@@ -327,7 +323,6 @@ export default defineComponent({
       editing.key = ''
       editing.show = false
       loading.value = false
-      Mapper.copy(props.mapper, mapperState)
       fmtColumns()
 
       loading.value = false
@@ -365,7 +360,7 @@ export default defineComponent({
       await refresh()
     }
     function hasExpand() {
-      for (const value of Object.values(mapperState)) {
+      for (const value of Object.values(props.mapper)) {
         if (value.expanded) {
           return true
         }
@@ -373,7 +368,7 @@ export default defineComponent({
       return false
     }
     function isCustomEmpty() {
-      for (const value of Object.values(mapperState)) {
+      for (const value of Object.values(props.mapper)) {
         if (value.empty) {
           return true
         }
@@ -485,7 +480,6 @@ export default defineComponent({
 
       colsState,
       loading,
-      mapperState,
       records,
       expRowKeys,
       editing,
