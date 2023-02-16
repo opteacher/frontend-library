@@ -61,7 +61,10 @@ export default defineComponent({
     function onEdtLstAdd() {
       let newItm = props.field.copy(addState)
       if (props.field.flatItem) {
-        newItm = newItm[Object.keys(props.field.mapper)[0]]
+        newItm = Object.values(newItm)
+        if (newItm.length === 1) {
+          newItm = newItm[0]
+        }
       }
       list.push(newItm)
       addMod.value = false
