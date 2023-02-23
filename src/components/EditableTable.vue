@@ -94,7 +94,7 @@
         <template v-if="column.key === 'opera'">
           <div v-if="operaStyle === 'button'" class="flex space-x-1.5">
             <a-button
-              v-if="editable"
+              v-if="editable && !disable(record)"
               size="small"
               type="primary"
               ghost
@@ -103,7 +103,7 @@
               编辑
             </a-button>
             <a-popconfirm
-              v-if="delable"
+              v-if="delable && !disable(record)"
               title="确定删除该记录吗？"
               ok-text="确定"
               cancel-text="取消"
@@ -120,14 +120,14 @@
           </div>
           <div v-else-if="operaStyle === 'link'" class="flex space-x-1.5">
             <a
-              v-if="editable"
+              v-if="editable && !disable(record)"
               class="text-primary"
               @click.stop="onEditClicked(record)"
             >
               编辑
             </a>
             <a-popconfirm
-              v-if="delable"
+              v-if="delable && !disable(record)"
               title="确定删除该记录吗？"
               ok-text="确定"
               cancel-text="取消"
@@ -147,7 +147,7 @@
           :keyword="column.dataIndex in searchState ? searchState[column.dataIndex].content : ''"
         />
       </template>
-      <template v-if="hasExpand()" #expandedRowRender="{ record }">
+      <template v-if="$slots['expandedRowRender']" #expandedRowRender="{ record }">
         <slot name="expandedRowRender" v-bind="{ record }" />
       </template>
       <template #expandIcon="{ record }">
@@ -163,24 +163,23 @@
         />
       </template>
     </a-table>
-  </div>
-
-  <FormDialog
-    v-model:show="editing.show"
-    :copy="copy"
-    :title="title"
-    :emitter="emitter"
-    :mapper="mapper"
-    @submit="onRecordSave"
-  >
-    <template
-      v-for="pname in Object.keys(mapper).filter((key: any) => $slots[key + 'EDT'])"
-      :key="pname"
-      #[pname]="{ formState }"
+    <FormDialog
+      v-model:show="editing.show"
+      :copy="copy"
+      :title="title"
+      :emitter="emitter"
+      :mapper="mapper"
+      @submit="onRecordSave"
     >
-      <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: mapper[pname] }" />
-    </template>
-  </FormDialog>
+      <template
+        v-for="pname in Object.keys(mapper).filter((key: any) => $slots[key + 'EDT'])"
+        :key="pname"
+        #[pname]="{ formState }"
+      >
+        <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: mapper[pname] }" />
+      </template>
+    </FormDialog>
+  </div>
 </template>
 
 <script lang="ts">
@@ -230,6 +229,7 @@ export default defineComponent({
     delable: { type: Boolean, default: true },
     imExpable: { type: Boolean, default: false },
     ieIgnCols: { type: Array, default: () => [] },
+    disable: { type: Function, default: () => false },
     clkable: { type: Boolean, default: true },
     refOptions: { type: Array, default: () => [] },
     operaStyle: { type: String, default: 'link' },
@@ -359,22 +359,6 @@ export default defineComponent({
       editing.show = false
       await refresh()
     }
-    function hasExpand() {
-      for (const value of Object.values(props.mapper)) {
-        if (value.expanded) {
-          return true
-        }
-      }
-      return false
-    }
-    function isCustomEmpty() {
-      for (const value of Object.values(props.mapper)) {
-        if (value.empty) {
-          return true
-        }
-      }
-      return false
-    }
     function onRowExpand(record: { key: string }) {
       const expand = !expRowKeys.includes(record.key)
       if (expand) {
@@ -454,9 +438,6 @@ export default defineComponent({
             }
             const textmetrics = context.measureText(column.title)
             const minWidth = textmetrics.width << 1
-            if (!records.data.length) {
-              column.width = minWidth
-            }
             column.customHeaderCell = () => ({
               style: { 'min-width': `${minWidth}px` }
             })
@@ -491,9 +472,7 @@ export default defineComponent({
       onRecordSave,
       onCclClicked,
       onRecordDel,
-      hasExpand,
       onRowExpand,
-      isCustomEmpty,
       onRowClick,
       onBatchSubmit,
       genCpyFun,
