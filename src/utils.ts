@@ -684,22 +684,46 @@ export function revsKeyVal(obj: any) {
   return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
 }
 
-// export function cpyFun(types: Record<string, () => Record<string, any>>, src: any, tgt?: Record<string, any>, force = false): Record<string, any> {
-//   tgt = tgt || types[]()
-//   for (const key of Object.keys(tgt)) {
-//     if (typeof tgt[key] === 'string' || typeof tgt[key] === 'number') {
-//       tgt[key] = force ? src[key] : src[key] || tgt[key]
-//     } else if (typeof tgt[key] === 'boolean'){
-//       tgt[key] = force ? src[key] : typeof src[key] !== 'undefined' ?src[key] : tgt[key]
-//     } else if (tgt[key] instanceof Array) {
-//       if (force && !src[key]) {
-//         tgt[key] = []
-//       } else if (src[key]) {
-//         tgt[key] = src[key].map((ele: any) => cpyFun(types, ele, undefined, force))
-//       }
-//     } else if (tgt[key] instanceof Object) {
-//       cpyFun(types, src[key], tgt[key], force)
-//     }
-//   }
-//   return tgt
-// }
+export function gnlCpy<T extends { new(): T } & Record<string, any>>(src: any, tgt: T, options: {
+  force: boolean,
+  ignProps: string[],
+  cpyMapper: Record<string, (src: any, tgt?: any, options?: any) => any>
+}): T {
+  if (!options) {
+    options = {}
+  }
+  if (!options.ignProps) {
+    options.ignProps = []
+  }
+  if (!options.cpyMapper) {
+    options.cpyMapper = {}
+  }
+  tgt = tgt || new T()
+  for (const key of Object.keys(tgt)) {
+    if (options.ignProps.includes(key)) {
+      continue
+    }
+    if (typeof tgt[key] === 'string' || typeof tgt[key] === 'number') {
+      tgt[key] = force ? src[key] : src[key] || tgt[key]
+    } else if (typeof tgt[key] === 'boolean'){
+      tgt[key] = force ? src[key] : typeof src[key] !== 'undefined' ? src[key] : tgt[key]
+    } else if (tgt[key] instanceof Array) {
+      if (src[key]) {
+        if (typeof src[key][0] === 'object' && key in options.cpyMapper) {
+          tgt[key].splice(0, tgt[key].length, ...src[key]
+            .map((ele: any) => options.cpyMapper(ele, undefined, options))
+          )
+        } else {
+          tgt[key].splice(0, tgt[key].length, ...src[key])
+        }
+      } else if (options.force) {
+        tgt[key].splice(0, tgt[key].length)
+      }
+    } else if (tgt[key] instanceof Object) {
+      if (key in options.cpyMapper) {
+        options.cpyMapper[key](src[key], tgt[key], options)
+      }
+    }
+  }
+  return tgt as T
+}
