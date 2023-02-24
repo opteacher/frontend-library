@@ -684,11 +684,17 @@ export function revsKeyVal(obj: any) {
   return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
 }
 
-export function gnlCpy<T extends { new(): T } & Record<string, any>>(src: any, tgt: T, options: {
-  force: boolean,
-  ignProps: string[],
-  cpyMapper: Record<string, (src: any, tgt?: any, options?: any) => any>
-}): T {
+export function copy<T extends Record<string, any>>(
+  t: { new (): T },
+  src: any,
+  tgt?: T,
+  options?: {
+    keys?: string[]
+    force?: boolean
+    ignProps?: string[]
+    cpyMapper?: Record<string, (src: any, tgt?: any, options?: any) => any>
+  }
+): T {
   if (!options) {
     options = {}
   }
@@ -698,20 +704,37 @@ export function gnlCpy<T extends { new(): T } & Record<string, any>>(src: any, t
   if (!options.cpyMapper) {
     options.cpyMapper = {}
   }
-  tgt = tgt || new T()
+  if (!options.keys) {
+    options.keys = ['id', '_id', 'key']
+  }
+  tgt = tgt || new t()
+  for (const key of options.keys) {
+    if (src[key]) {
+      setProp(tgt, 'key', src[key])
+      options.ignProps.push('key')
+      break
+    }
+  }
   for (const key of Object.keys(tgt)) {
     if (options.ignProps.includes(key)) {
       continue
     }
     if (typeof tgt[key] === 'string' || typeof tgt[key] === 'number') {
-      tgt[key] = force ? src[key] : src[key] || tgt[key]
-    } else if (typeof tgt[key] === 'boolean'){
-      tgt[key] = force ? src[key] : typeof src[key] !== 'undefined' ? src[key] : tgt[key]
+      setProp(tgt, key, options.force ? src[key] : src[key] || tgt[key])
+    } else if (typeof tgt[key] === 'boolean') {
+      setProp(
+        tgt,
+        key,
+        options.force ? src[key] : typeof src[key] !== 'undefined' ? src[key] : tgt[key]
+      )
     } else if (tgt[key] instanceof Array) {
       if (src[key]) {
         if (typeof src[key][0] === 'object' && key in options.cpyMapper) {
-          tgt[key].splice(0, tgt[key].length, ...src[key]
-            .map((ele: any) => options.cpyMapper(ele, undefined, options))
+          const cpy = options.cpyMapper[key]
+          tgt[key].splice(
+            0,
+            tgt[key].length,
+            ...src[key].map((ele: any) => cpy(ele, undefined, options))
           )
         } else {
           tgt[key].splice(0, tgt[key].length, ...src[key])
