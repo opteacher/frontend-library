@@ -692,7 +692,8 @@ export function copy<T extends Record<string, any>>(
     keys?: string[]
     force?: boolean
     ignProps?: string[]
-    cpyMapper?: Record<string, (src: any, tgt?: any, options?: any) => any>
+    baseCpy?: (src: any, tgt?: any, force?: boolean) => any
+    cpyMapper?: Record<string, (src: any, tgt?: any, force?: boolean) => any>
   }
 ): T {
   if (!options) {
@@ -707,6 +708,9 @@ export function copy<T extends Record<string, any>>(
   if (!options.keys) {
     options.keys = ['id', '_id', 'key']
   }
+  if (!options.baseCpy) {
+    options.baseCpy = (bsSrc: any, bsTgt?: any, bsFc?: boolean) => bsTgt
+  }
   tgt = tgt || new t()
   for (const key of options.keys) {
     if (src[key]) {
@@ -715,11 +719,12 @@ export function copy<T extends Record<string, any>>(
       break
     }
   }
+  options.baseCpy(src, tgt, options.force)
   for (const key of Object.keys(tgt)) {
     if (options.ignProps.includes(key)) {
       continue
     }
-    if (typeof tgt[key] === 'string' || typeof tgt[key] === 'number') {
+    if (typeof tgt[key] === 'string' || typeof tgt[key] === 'number' || typeof tgt[key] === 'function') {
       setProp(tgt, key, options.force ? src[key] : src[key] || tgt[key])
     } else if (typeof tgt[key] === 'boolean') {
       setProp(
@@ -734,7 +739,7 @@ export function copy<T extends Record<string, any>>(
           tgt[key].splice(
             0,
             tgt[key].length,
-            ...src[key].map((ele: any) => cpy(ele, undefined, options))
+            ...src[key].map((ele: any) => cpy(ele))
           )
         } else {
           tgt[key].splice(0, tgt[key].length, ...src[key])
@@ -744,7 +749,7 @@ export function copy<T extends Record<string, any>>(
       }
     } else if (tgt[key] instanceof Object) {
       if (key in options.cpyMapper) {
-        options.cpyMapper[key](src[key], tgt[key], options)
+        options.cpyMapper[key](src[key], tgt[key], options.force)
       }
     }
   }

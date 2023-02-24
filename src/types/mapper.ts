@@ -5,7 +5,7 @@ import { CompoType, Cond, OpnType } from '.'
 import Column from './column'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import Field from './field'
-import dayjs from 'dayjs'
+import { copy as gnlCpy } from '../utils'
 
 export class BaseMapper {
   label: string
@@ -35,12 +35,10 @@ export class BaseMapper {
   }
 
   static copy(src: any, tgt?: BaseMapper, force = false): BaseMapper {
-    tgt = tgt || new BaseMapper()
-    tgt.label = force ? src.label : (src.label || tgt.label)
-    tgt.desc = force ? src.desc : (src.desc || tgt.desc)
-    tgt.type = force ? src.type : (src.type || tgt.type)
-    tgt.rules = force ? src.rules : (src.rules || tgt.rules)
-    tgt.placeholder = force ? src.placeholder : (src.placeholder || tgt.placeholder)
+    gnlCpy(BaseMapper, src, tgt, { force, ignProps: ['disabled', 'display'] })
+    if (!tgt) {
+      return new BaseMapper()
+    }
     if (src.disabled instanceof Array) {
       tgt.disabled = src.disabled.map((el: any) => Cond.copy(el))
     } else if (typeof src.disabled !== 'undefined') {
@@ -55,8 +53,6 @@ export class BaseMapper {
     } else if (force) {
       tgt.display = false
     }
-    tgt.empty = typeof src.empty !== 'undefined' ? src.empty : tgt.empty
-    tgt.onChange = src.onChange || tgt.onChange
     return tgt
   }
 }
@@ -76,13 +72,7 @@ export class InputMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: InputMapper, force = false): InputMapper {
-    tgt = tgt || new InputMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.iptType = src.iptType || tgt.iptType
-    tgt.prefix = src.prefix || tgt.prefix
-    tgt.suffix = src.suffix || tgt.suffix
-    tgt.onBlur = src.onBlur || tgt.onBlur
-    return tgt
+    return gnlCpy(InputMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
 }
 
@@ -97,11 +87,7 @@ export class TextareaMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: TextareaMapper, force = false): TextareaMapper {
-    tgt = tgt || new TextareaMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.maxRows = src.maxRows || tgt.maxRows
-    tgt.onBlur = src.onBlur || tgt.onBlur
-    return tgt
+    return gnlCpy(TextareaMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
 }
 
@@ -118,9 +104,12 @@ export class SelectMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: SelectMapper, force = false): SelectMapper {
-    tgt = tgt || new SelectMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.loading = typeof src.loading !== 'undefined' ? src.loading : tgt.loading
+    gnlCpy(SelectMapper, src, tgt, {
+      force, ignProps: ['options'], baseCpy: BaseMapper.copy
+    })
+    if (!tgt) {
+      return new SelectMapper()
+    }
     tgt.options = src.options
       ? src.options.map((opn: any) => {
           if (typeof opn === 'string') {
@@ -134,8 +123,7 @@ export class SelectMapper extends BaseMapper {
             }
           }
         })
-      : tgt.options
-    tgt.onDropdown = src.onDropdown || tgt.onDropdown
+      : (force ? [] : tgt.options)
     return tgt
   }
 }
@@ -150,10 +138,7 @@ export class CheckboxMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: CheckboxMapper, force = false): CheckboxMapper {
-    tgt = tgt || new CheckboxMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.chkLabels = src.chkLabels || tgt.chkLabels
-    return tgt
+    return gnlCpy(CheckboxMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
 }
 
@@ -172,13 +157,7 @@ export class ButtonMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: ButtonMapper, force = false): ButtonMapper {
-    tgt = tgt || new ButtonMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.inner = src.inner || tgt.inner
-    tgt.danger = src.danger || tgt.danger
-    tgt.primary = src.primary || tgt.primary
-    tgt.onClick = src.onClick || tgt.onClick
-    return tgt
+    return gnlCpy(ButtonMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
 }
 
@@ -209,19 +188,11 @@ export class TableMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: TableMapper, force = false): TableMapper {
-    tgt = tgt || new TableMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.mapper = src.mapper ? Mapper.copy(src.mapper, tgt.mapper) : tgt.mapper
-    tgt.columns = src.columns || tgt.columns
-    tgt.emitter = src.emitter || tgt.emitter
-    tgt.copy = src.copy || tgt.copy
-    tgt.onEdit = src.onEdit || tgt.onEdit
-    tgt.onSaved = src.onSaved || tgt.onSaved
-    tgt.onDeleted = src.onDeleted || tgt.onDeleted
-    tgt.addable = typeof src.addable != 'undefined' ? src.addable : tgt.addable
-    tgt.editable = typeof src.editable != 'undefined' ? src.editable : tgt.editable
-    tgt.delable = typeof src.delable != 'undefined' ? src.delable : tgt.delable
-    return tgt
+    return gnlCpy(TableMapper, src, tgt, {
+      force,
+      cpyMapper: { mapper: Mapper.copy },
+      baseCpy: BaseMapper.copy
+    })
   }
 }
 
@@ -413,7 +384,7 @@ const EleTypeCopies = {
   CodeEditor: CdEdtMapper.copy,
   EditList: EdtLstMapper.copy,
   FormGroup: GroupMapper.copy
-} as { [elType: string]: (src: any, tgt?: any) => any }
+} as { [elType: string]: (src: any, tgt?: any, force?: boolean) => any }
 
 export type MapperType = BaseMapper & Record<string, any>
 
