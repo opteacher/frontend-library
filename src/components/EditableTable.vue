@@ -269,6 +269,7 @@ export default defineComponent({
       records.offset = 0
       records.limit = 10
       records.filters = undefined
+      let ignPams = new Set(['data', 'total', 'filters', 'offset', 'limit'])
       if (params) {
         if (params.filters) {
           for (const [key, val] of Object.entries(params.filters)) {
@@ -290,6 +291,8 @@ export default defineComponent({
           if (params.pagination.current) {
             records.offset = (params.pagination.current - 1) * records.limit
           }
+          ignPams.delete('offset')
+          ignPams.delete('limit')
         }
       } else {
         for (const key of Object.keys(searchState)) {
@@ -310,7 +313,7 @@ export default defineComponent({
           ? await props.api.filter(records.filters)
           : await props.api.all({
               axiosConfig: {
-                params: pickOrIgnore(records, ['data', 'total', 'filters'])
+                params: pickOrIgnore(records, Array.from(ignPams))
               }
             }))
       records.data = orgData.filter(props.filter)
