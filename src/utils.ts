@@ -712,6 +712,9 @@ export function copy<T extends Record<string, any>>(
     options.baseCpy = (bsSrc: any, bsTgt?: any, bsFc?: boolean) => bsTgt
   }
   tgt = tgt || new t()
+  if (options.force && tgt.reset) {
+    tgt.reset()
+  }
   for (const key of options.keys) {
     if (src[key]) {
       setProp(tgt, 'key', src[key])
@@ -720,17 +723,19 @@ export function copy<T extends Record<string, any>>(
     }
   }
   options.baseCpy(src, tgt, options.force)
-  for (const key of Object.keys(tgt)) {
+  for (const key of Object.keys(new t())) {
     if (options.ignProps.includes(key)) {
       continue
     }
-    if (typeof tgt[key] === 'string' || typeof tgt[key] === 'number' || typeof tgt[key] === 'function') {
-      setProp(tgt, key, options.force ? src[key] : src[key] || tgt[key])
-    } else if (typeof tgt[key] === 'boolean') {
+    const dftVal = typeof src[key] !== 'undefined' ? src[key] : tgt[key]
+    if (typeof tgt[key] === 'string'
+    || typeof tgt[key] === 'number'
+    || typeof tgt[key] === 'boolean'
+    || typeof tgt[key] === 'function') {
       setProp(
         tgt,
         key,
-        options.force ? src[key] : typeof src[key] !== 'undefined' ? src[key] : tgt[key]
+        options.force ? src[key] : dftVal
       )
     } else if (tgt[key] instanceof Array) {
       if (src[key]) {
@@ -739,7 +744,7 @@ export function copy<T extends Record<string, any>>(
           tgt[key].splice(
             0,
             tgt[key].length,
-            ...src[key].map((ele: any) => cpy(ele))
+            ...src[key].map((ele: any) => cpy(ele, undefined, options?.force))
           )
         } else {
           tgt[key].splice(0, tgt[key].length, ...src[key])
@@ -749,7 +754,9 @@ export function copy<T extends Record<string, any>>(
       }
     } else if (tgt[key] instanceof Object) {
       if (key in options.cpyMapper) {
-        options.cpyMapper[key](src[key], tgt[key], options.force)
+        options.cpyMapper[key](src[key] || {}, tgt[key], options.force)
+      } else {
+        setProp(tgt, key, options.force ? src[key] : dftVal)
       }
     }
   }

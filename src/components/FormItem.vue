@@ -89,7 +89,7 @@
         v-else-if="valState.type === 'Select'"
         class="w-full"
         :options="valState.options"
-        :value="getProp(formState, skey)"
+        :value="getProp(formState, skey) || undefined"
         :placeholder="valState.placeholder || '请选择'"
         :disabled="disabled"
         @dropdownVisibleChange="valState.onDropdown"

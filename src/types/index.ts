@@ -14,9 +14,6 @@ export class Cond {
   }
 
   isValid(object: Record<string, any>) {
-    if (this.key === 'key') {
-      console.log(object, this.val)
-    }
     switch (this.cmp) {
       case '!=':
         if (this.val === 'undefined') {

@@ -35,10 +35,7 @@ export class BaseMapper {
   }
 
   static copy(src: any, tgt?: BaseMapper, force = false): BaseMapper {
-    gnlCpy(BaseMapper, src, tgt, { force, ignProps: ['disabled', 'display'] })
-    if (!tgt) {
-      return new BaseMapper()
-    }
+    tgt = gnlCpy(BaseMapper, src, tgt, { force, ignProps: ['disabled', 'display'] })
     if (src.disabled instanceof Array) {
       tgt.disabled = src.disabled.map((el: any) => Cond.copy(el))
     } else if (typeof src.disabled !== 'undefined') {
@@ -104,12 +101,9 @@ export class SelectMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: SelectMapper, force = false): SelectMapper {
-    gnlCpy(SelectMapper, src, tgt, {
+    tgt = gnlCpy(SelectMapper, src, tgt, {
       force, ignProps: ['options'], baseCpy: BaseMapper.copy
     })
-    if (!tgt) {
-      return new SelectMapper()
-    }
     tgt.options = src.options
       ? src.options.map((opn: any) => {
           if (typeof opn === 'string') {
@@ -207,11 +201,7 @@ export class SelOrIptMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: SelOrIptMapper, force = false): SelOrIptMapper {
-    tgt = tgt || new SelOrIptMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.mode = src.mode || tgt.mode
-    tgt.options = src.options || tgt.options
-    return tgt
+    return gnlCpy(SelOrIptMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
 }
 
@@ -228,13 +218,7 @@ export class LstOpnType {
   }
 
   static copy(src: any, tgt?: LstOpnType, force = false): LstOpnType {
-    tgt = tgt || new LstOpnType()
-    tgt.title = src.title || tgt.title
-    tgt.key = src.key || tgt.key
-    tgt.subTitle = src.subTitle || tgt.subTitle
-    tgt.avatar = src.avatar || tgt.avatar
-    tgt.href = src.href || tgt.href
-    return tgt
+    return gnlCpy(LstOpnType, src, tgt, { force })
   }
 }
 
@@ -249,11 +233,11 @@ export class LstSelMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: LstSelMapper, force = false): LstSelMapper {
-    tgt = tgt || new LstSelMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.height = src.height || tgt.height
-    tgt.options = src.options ? src.options.map((opn: any) => LstOpnType.copy(opn)) : tgt.options
-    return tgt
+    return gnlCpy(LstSelMapper, src, tgt, {
+      force,
+      baseCpy: BaseMapper.copy,
+      cpyMapper: { options: LstOpnType.copy }
+    })
   }
 }
 
@@ -291,17 +275,13 @@ export class EdtLstMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: EdtLstMapper, force = false): EdtLstMapper {
-    tgt = tgt || new EdtLstMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.lblProp = src.lblProp || tgt.lblProp
-    tgt.lblMapper = src.lblMapper || tgt.lblMapper
-    tgt.inline = typeof src.inline !== 'undefined' ? src.inline : tgt.inline
-    tgt.flatItem = typeof src.flatItem !== 'undefined' ? src.flatItem : tgt.flatItem
-    tgt.mapper = src.mapper || tgt.mapper
-    tgt.emitter = src.emitter || tgt.emitter
-    tgt.copy = src.copy || tgt.copy
-    tgt.onSaved = src.onSaved || tgt.onSaved
-    return tgt
+    return gnlCpy(EdtLstMapper, src, tgt, {
+      force,
+      baseCpy: BaseMapper.copy,
+      cpyMapper: {
+        options: LstOpnType.copy
+      }
+    })
   }
 }
 
@@ -316,10 +296,13 @@ export class GroupMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: GroupMapper, force = false): GroupMapper {
-    tgt = tgt || new GroupMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.fold = typeof src.fold !== 'undefined' ? JSON.parse(src.fold) : tgt.fold
-    Mapper.copy(src.items, tgt.items)
+    tgt = gnlCpy(GroupMapper, src, tgt, {
+      force,
+      baseCpy: BaseMapper.copy,
+      ignProps: ['items'],
+      cpyMapper: { options: LstOpnType.copy }
+    })
+    Mapper.copy(src.items, tgt.items, force)
     return tgt
   }
 }
@@ -333,10 +316,7 @@ export class CdEdtMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: CdEdtMapper, force = false): CdEdtMapper {
-    tgt = tgt || new CdEdtMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.lang = src.lang || tgt.lang
-    return tgt
+    return gnlCpy(CdEdtMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
 }
 
@@ -353,12 +333,7 @@ export class UploadMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: UploadMapper, force = false): UploadMapper {
-    tgt = tgt || new UploadMapper()
-    BaseMapper.copy(src, tgt, force)
-    tgt.path = src.path || tgt.path
-    tgt.headers = src.headers || tgt.headers
-    tgt.onBeforeUpload = src.onBeforeUpload || tgt.onBeforeUpload
-    return tgt
+    return gnlCpy(UploadMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
 }
 
@@ -418,10 +393,13 @@ export default class Mapper {
     }
     for (const [key, val] of Object.entries(src)) {
       const value = val as BaseMapper
-      if (!value.type) {
-        value.type = 'Unknown'
+      const type = value.type && value.type !== 'Unknown' ? value.type : (
+        tgt && tgt[key] && tgt[key].type && tgt[key].type !== 'Unknown' ? tgt[key].type : undefined
+      )
+      if (!type) {
+        continue
       }
-      EleTypeCopies[value.type](value, tgt[key], force)
+      tgt[key] = EleTypeCopies[type](value, tgt[key], force)
     }
     return tgt
   }
