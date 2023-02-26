@@ -684,7 +684,7 @@ export function revsKeyVal(obj: any) {
   return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
 }
 
-export function copy<T extends Record<string, any>>(
+export function gnlCpy<T extends Record<string, any>>(
   t: { new (): T },
   src: any,
   tgt?: T,

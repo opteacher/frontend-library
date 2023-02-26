@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getProperty } from '@/utils'
+import { getProperty, gnlCpy } from '@/utils'
 import dayjs from 'dayjs'
 
 export class Cond {
@@ -31,12 +31,8 @@ export class Cond {
     }
   }
 
-  static copy(src: any, tgt?: Cond): Cond {
-    tgt = tgt || new Cond()
-    tgt.key = src.key || tgt.key
-    tgt.cmp = src.cmp || tgt.cmp
-    tgt.val = typeof src.val !== 'undefined' ? src.val : tgt.val
-    return tgt
+  static copy(src: any, tgt?: Cond, force = false): Cond {
+    return gnlCpy(Cond, src, tgt, { force })
   }
 }
 

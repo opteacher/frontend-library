@@ -5,7 +5,7 @@ import { CompoType, Cond, OpnType } from '.'
 import Column from './column'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import Field from './field'
-import { copy as gnlCpy } from '../utils'
+import { gnlCpy } from '../utils'
 
 export class BaseMapper {
   label: string
