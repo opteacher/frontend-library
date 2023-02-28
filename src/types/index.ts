@@ -5,12 +5,13 @@ import dayjs from 'dayjs'
 
 export class Cond {
   key: string
-  cmp?: '=' | '!=' | 'in'
+  cmp: '=' | '!=' | 'in'
   val: any
 
   constructor() {
     this.key = ''
-    this.val = undefined
+    this.cmp = '='
+    this.val = 'undefined'
   }
 
   isValid(object: Record<string, any>) {

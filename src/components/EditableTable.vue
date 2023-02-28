@@ -321,7 +321,9 @@ export default defineComponent({
         records.total = records.data.length
       }
       emit('refresh', records.data, (pcsData: any) => {
-        records.data = pcsData
+        if (typeof pcsData !== 'undefined') {
+          records.data = pcsData
+        }
       })
       editing.key = ''
       editing.show = false
@@ -441,16 +443,14 @@ export default defineComponent({
             }
             const textmetrics = context.measureText(column.title)
             const minWidth = textmetrics.width << 1
-            column.customHeaderCell = () => ({
-              style: { 'min-width': `${minWidth}px` }
-            })
+            const style = !column.width ? { 'min-width': `${minWidth}px` } : {}
+            column.customHeaderCell = () => ({ style })
             column.customCell = () => ({
-              style: {
-                'min-width': `${minWidth}px`,
+              style: Object.assign({
                 'white-space': 'nowrap',
                 'text-overflow': 'ellipsis',
                 overflow: 'hidden'
-              }
+              }, style)
             })
             return column
           })
