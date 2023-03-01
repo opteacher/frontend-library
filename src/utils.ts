@@ -754,9 +754,12 @@ export function gnlCpy<T extends Record<string, any>>(
       }
     } else if (tgt[key] instanceof Object || tgt[key] === null) {
       if (key in options.cpyMapper) {
-        options.cpyMapper[key](src[key] || {}, tgt[key], options.force)
+        const res = options.cpyMapper[key](src[key] || {}, tgt[key], options.force)
+        if (!tgt[key]) {
+          setProp(tgt, key, res)
+        }
       } else {
-        setProp(tgt, key, options.force ? src[key] : dftVal)
+        setProp(tgt, key, src[key])
       }
     }
   }
