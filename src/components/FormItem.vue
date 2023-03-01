@@ -92,6 +92,7 @@
         :value="getProp(formState, skey) || undefined"
         :placeholder="valState.placeholder || '请选择'"
         :disabled="disabled"
+        :allowClear="valState.allowClear"
         @dropdownVisibleChange="valState.onDropdown"
         @change="(val: any) => onFieldChanged(val)"
       >

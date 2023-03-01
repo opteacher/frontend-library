@@ -752,7 +752,7 @@ export function gnlCpy<T extends Record<string, any>>(
       } else if (options.force) {
         tgt[key].splice(0, tgt[key].length)
       }
-    } else if (tgt[key] instanceof Object) {
+    } else if (tgt[key] instanceof Object || tgt[key] === null) {
       if (key in options.cpyMapper) {
         options.cpyMapper[key](src[key] || {}, tgt[key], options.force)
       } else {
