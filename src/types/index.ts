@@ -11,20 +11,20 @@ export class Cond {
   constructor() {
     this.key = ''
     this.cmp = '='
-    this.val = 'undefined'
+    this.val = undefined
   }
 
   isValid(object: Record<string, any>) {
     switch (this.cmp) {
       case '!=':
-        if (this.val === 'undefined') {
+        if (this.val === 'undefined' || typeof this.val === 'undefined') {
           return typeof getProperty(object, this.key) !== 'undefined'
         } else {
           return getProperty(object, this.key) !== this.val
         }
       case '=':
       default:
-        if (this.val === 'undefined') {
+        if (this.val === 'undefined' || typeof this.val === 'undefined') {
           return typeof getProperty(object, this.key) === 'undefined'
         } else {
           return getProperty(object, this.key) === this.val
@@ -32,8 +32,8 @@ export class Cond {
     }
   }
 
-  static copy(src: any, tgt?: Cond, force = false): Cond {
-    return gnlCpy(Cond, src, tgt, { force })
+  static copy(src: any, tgt?: Cond): Cond {
+    return gnlCpy(Cond, src, tgt, { force: true })
   }
 }
 

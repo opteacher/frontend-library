@@ -36,6 +36,13 @@ export class BaseMapper {
     tgt = gnlCpy(BaseMapper, src, tgt, { force, ignProps: ['disabled', 'display'] })
     if (src.disabled instanceof Array) {
       tgt.disabled = src.disabled.map((el: any) => Cond.copy(el))
+    } else if (src.disabled instanceof Object) {
+      tgt.disabled = Object.fromEntries(
+        Object.entries(src.disabled).map(([mode, conds]) => [
+          mode,
+          (conds as Array<any>).map(cond => Cond.copy(cond))
+        ])
+      )
     } else if (typeof src.disabled !== 'undefined') {
       tgt.disabled = src.disabled
     } else if (force) {
@@ -43,10 +50,17 @@ export class BaseMapper {
     }
     if (src.display instanceof Array) {
       tgt.display = src.display.map((el: any) => Cond.copy(el))
+    } else if (src.display instanceof Object) {
+      tgt.display = Object.fromEntries(
+        Object.entries(src.display).map(([mode, conds]) => [
+          mode,
+          (conds as Array<any>).map(cond => Cond.copy(cond))
+        ])
+      )
     } else if (typeof src.display !== 'undefined') {
       tgt.display = src.display
     } else if (force) {
-      tgt.display = false
+      tgt.display = true
     }
     return tgt
   }
@@ -279,7 +293,7 @@ export class EdtLstMapper extends BaseMapper {
       force,
       baseCpy: BaseMapper.copy,
       cpyMapper: {
-        options: LstOpnType.copy
+        mapper: Mapper.copy
       }
     })
   }
@@ -296,14 +310,13 @@ export class GroupMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: GroupMapper, force = false): GroupMapper {
-    tgt = gnlCpy(GroupMapper, src, tgt, {
+    return gnlCpy(GroupMapper, src, tgt, {
       force,
       baseCpy: BaseMapper.copy,
-      ignProps: ['items'],
-      cpyMapper: { options: LstOpnType.copy }
+      cpyMapper: {
+        items: Mapper.copy
+      }
     })
-    Mapper.copy(src.items, tgt.items, force)
-    return tgt
   }
 }
 
