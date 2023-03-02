@@ -37,7 +37,7 @@ export default defineComponent({
     )
 
     function onNewTagClick() {
-      fldState.emitter.emit('update:show', { show: true })
+      fldState.emitter.emit('update:show', true)
       fldState.emitter.emit('update:data', valState)
     }
     async function onRmvTagClick(key: any) {

@@ -87,7 +87,11 @@ export default defineComponent({
       })
       props.emitter.on(
         'update:show',
-        (args: { show: boolean; cpyRcd?: Function; viewOnly?: boolean }) => {
+        (args: { show: boolean; cpyRcd?: Function; viewOnly?: boolean } | boolean) => {
+          if (typeof args === 'boolean') {
+            visible.value = args
+            return
+          }
           if (!args.show) {
             visible.value = false
             return

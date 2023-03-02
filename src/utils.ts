@@ -709,9 +709,12 @@ export function gnlCpy<T extends Record<string, any>>(
     options.keys = ['id', '_id', 'key']
   }
   if (!options.baseCpy) {
-    options.baseCpy = (bsSrc: any, bsTgt?: any, bsFc?: boolean) => bsTgt
+    options.baseCpy = (_bsSrc: any, bsTgt?: any, _bsFc?: boolean) => bsTgt
   }
-  tgt = tgt || new t()
+  if (!tgt) {
+    options.force = true
+    tgt = new t()
+  }
   if (options.force && tgt.reset) {
     tgt.reset()
   }
@@ -727,16 +730,13 @@ export function gnlCpy<T extends Record<string, any>>(
     if (options.ignProps.includes(key)) {
       continue
     }
-    const dftVal = typeof src[key] !== 'undefined' ? src[key] : tgt[key]
     if (typeof tgt[key] === 'string'
     || typeof tgt[key] === 'number'
     || typeof tgt[key] === 'boolean'
     || typeof tgt[key] === 'function') {
-      setProp(
-        tgt,
-        key,
-        options.force ? src[key] : dftVal
-      )
+      if (src[key] || options.force) {
+        setProp(tgt, key, src[key])
+      }
     } else if (tgt[key] instanceof Array) {
       if (src[key]) {
         if (typeof src[key][0] === 'object' && key in options.cpyMapper) {
@@ -756,9 +756,9 @@ export function gnlCpy<T extends Record<string, any>>(
       if (key in options.cpyMapper) {
         const res = options.cpyMapper[key](src[key] || {}, tgt[key], options.force)
         if (!tgt[key]) {
-          setProp(tgt, key, res)
+          setProp(tgt, key, src[key] ? res : null)
         }
-      } else {
+      } else if (src[key] || options.force) {
         setProp(tgt, key, src[key])
       }
     }

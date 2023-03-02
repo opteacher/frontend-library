@@ -174,8 +174,7 @@
             type="primary"
             @click="
               () => {
-                valState.emitter.emit('viewOnly', false)
-                valState.emitter.emit('update:show', { show: true })
+                valState.emitter.emit('update:show', { show: true, viewOnly: false })
                 valState.onEdit(formState)
               }
             "

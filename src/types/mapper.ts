@@ -16,7 +16,6 @@ export class BaseMapper {
   disabled: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   loading: boolean
   display: boolean | Cond[] | { [cmpRel: string]: Cond[] }
-  reset: boolean
   empty: boolean
   onChange: (record: any, to: any, from?: any, extra?: any) => void
 
@@ -29,7 +28,6 @@ export class BaseMapper {
     this.disabled = false
     this.loading = false
     this.display = true
-    this.reset = true
     this.empty = false
     this.onChange = () => undefined
   }
@@ -272,7 +270,7 @@ export class EdtLstMapper extends BaseMapper {
       return tgt
     }
     this.onSaved = () => {
-      this.emitter.emit('update:show', { show: false })
+      this.emitter.emit('update:show', false)
     }
   }
 

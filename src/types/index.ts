@@ -27,7 +27,7 @@ export class Cond {
         if (this.val === 'undefined') {
           return typeof getProperty(object, this.key) === 'undefined'
         } else {
-        return getProperty(object, this.key) === this.val
+          return getProperty(object, this.key) === this.val
         }
     }
   }
