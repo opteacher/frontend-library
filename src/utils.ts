@@ -753,7 +753,7 @@ export function gnlCpy<T extends Record<string, any>>(
       if (!tgt[key]) {
         setProp(tgt, key, res)
       }
-    } else if (options.force) {
+    } else if (src[key] || options.force) {
       setProp(tgt, key, src[key])
     }
   }

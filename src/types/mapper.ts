@@ -198,8 +198,11 @@ export class TableMapper extends BaseMapper {
   static copy(src: any, tgt?: TableMapper, force = false): TableMapper {
     return gnlCpy(TableMapper, src, tgt, {
       force,
-      cpyMapper: { mapper: Mapper.copy },
-      baseCpy: BaseMapper.copy
+      baseCpy: BaseMapper.copy,
+      cpyMapper: {
+        mapper: Mapper.copy,
+        columns: Column.copy
+      }
     })
   }
 }
@@ -293,7 +296,7 @@ export class EdtLstMapper extends BaseMapper {
       force,
       baseCpy: BaseMapper.copy,
       cpyMapper: {
-        mapper: Mapper.copy
+        mapper: (src: any, tgt?: Mapper): Mapper => Mapper.copy(src, tgt, true)
       }
     })
   }
