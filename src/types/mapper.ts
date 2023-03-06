@@ -188,8 +188,14 @@ export class TableMapper extends BaseMapper {
     this.emitter = new Emitter()
     this.copy = () => undefined
     this.onEdit = () => undefined
-    this.onSaved = () => undefined
-    this.onDeleted = () => undefined
+    this.onSaved = <T extends { key: string }>(nItm: T, array: T[]) => {
+      array.push(nItm)
+      this.emitter.emit('update:show', false)
+    }
+    this.onDeleted = <T extends { key: string }>(key: string, array: T[]) => {
+      array.splice(array.findIndex(item => item.key === key), 1)
+      this.emitter.emit('update:show', false)
+    }
     this.addable = true
     this.editable = true
     this.delable = true

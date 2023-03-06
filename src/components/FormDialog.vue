@@ -33,7 +33,7 @@
           :copy="value.copy"
           :emitter="value.emitter"
           :object="value.editing"
-          @submit="(form: any) => value.onSaved(form, form[key])"
+          @submit="(form: any) => value.onSaved(form, getProp(formState, key))"
         />
       </template>
       <template v-for="(_, name) in $slots" :key="name" #[name]>
@@ -50,6 +50,7 @@ import Mapper from '../types/mapper'
 import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormGroup from './FormGroup.vue'
+import { getProp } from '@/utils'
 
 export default defineComponent({
   name: 'FormDialog',
@@ -166,6 +167,7 @@ export default defineComponent({
       viewOnly,
       okLoading,
 
+      getProp,
       onOkClick,
       onCclClick
     }
