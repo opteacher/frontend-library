@@ -74,7 +74,7 @@ export default defineComponent({
     const okLoading = ref(false)
     const formRef = ref()
     const formMapper = reactive(props.mapper)
-    const formState = reactive(props.copy(props.object || {}))
+    const formState = reactive(props.object || props.copy({}))
     const formRules = Object.fromEntries(
       Object.entries(props.mapper).map(entry => {
         return [entry[0], entry[1].rules]
@@ -125,10 +125,7 @@ export default defineComponent({
     watch(
       () => props.show,
       (show: boolean) => {
-        visible.value = props.show
-        if (show && props.object) {
-          props.copy(props.object, formState)
-        }
+        visible.value = show
       }
     )
     watch(
