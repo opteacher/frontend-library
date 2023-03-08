@@ -21,7 +21,7 @@
     <a-divider class="my-2 mx-0" />
     <a-list size="small" :data-source="list">
       <template #renderItem="{ item, index }">
-        <a-list-item class="p-0">
+        <a-list-item class="py-1.5">
           <template #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>

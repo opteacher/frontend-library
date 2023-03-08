@@ -189,7 +189,7 @@ export class TableMapper extends BaseMapper {
     this.copy = () => undefined
     this.onEdit = () => undefined
     this.onSaved = <T extends { key: string }>(nItm: T, array: T[]) => {
-      array.push(nItm)
+      array.push(this.copy(nItm))
       this.emitter.emit('update:show', false)
     }
     this.onDeleted = <T extends { key: string }>(key: string, array: T[]) => {
