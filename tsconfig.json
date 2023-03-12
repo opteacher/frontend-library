@@ -25,7 +25,7 @@
     "resolveJsonModule": true,
     // 编译过程中需要引入的库文件的列表。
     "lib": ["esnext", "dom", "DOM.Iterable", "ScriptHost"],
-    "types": ["vite/client", "node"],
+    "types": ["vite/client", "node", "cypress"],
     // 模块名到基于 baseUrl的路径映射的列表。
     "paths": {
       "@/*": ["src/*"]
