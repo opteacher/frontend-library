@@ -13,7 +13,7 @@ export default defineConfig({
       include: 'src/*',
       exclude: ['node_modules', 'tests/', '*.cy.ts'],
       extension: [ '.js', '.ts', '.vue' ],
-      requireEnv: true,
+      cypress: true
     })
   ],
   resolve: {
