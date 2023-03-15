@@ -11,7 +11,7 @@ export default defineConfig({
     vueJsx(),
     istanbul({
       include: 'src/*',
-      exclude: ['node_modules', 'tests/', '*.cy.ts'],
+      exclude: ['node_modules', 'tests/**'],
       extension: [ '.js', '.ts', '.vue' ],
       cypress: true
     })
