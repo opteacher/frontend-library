@@ -69,8 +69,8 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { ExportOutlined, EnterOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
 import { read } from 'xlsx'
-import { Cond } from '@/types'
-import { upperFirst } from '@/utils'
+import { Cond } from '../types'
+import { upperFirst } from '../utils'
 import { genDspColumns, genDspRecords } from '../utils'
 
 export default defineComponent({

@@ -29,6 +29,7 @@
     >
       <template #FormDialog="{ value, key }">
         <FormDialog
+          :title="value.label"
           :mapper="value.mapper"
           :copy="value.copy"
           :emitter="value.emitter"

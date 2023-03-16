@@ -327,7 +327,7 @@ export async function waitFor(
   options: {
     reqFun?: (el: any) => boolean
     loop?: number
-    getBy?: 'id' | 'name'
+    getBy?: 'id' | 'name' | 'class'
   } = {}
 ): Promise<HTMLElement | null> {
   if (!options.reqFun) {
@@ -339,18 +339,24 @@ export async function waitFor(
   if (!options.getBy) {
     options.getBy = 'id'
   }
-  let ret = null
+  let ret: any = null
   for (let i = 0; i < options.loop; ++i) {
-    if (options.getBy === 'id') {
-      ret = document.getElementById(iden)
-    } else if (options.getBy === 'name') {
-      const eles = document.getElementsByName(iden)
-      if (!eles || !eles.length) {
-        await new Promise(res => setTimeout(res, 200))
-        continue
-      } else {
-        ret = eles[0]
-      }
+    switch (options.getBy) {
+      case 'id':
+        ret = document.getElementById(iden)
+        break
+      case 'name':
+        ret = document.getElementsByName(iden)
+        break
+      case 'class':
+        ret = document.getElementsByClassName(iden)
+        break
+    }
+    if (!ret || !ret.length) {
+      await new Promise(res => setTimeout(res, 200))
+      continue
+    } else if (ret.length) {
+      ret = ret[0]
     }
     if (ret) {
       if (options.reqFun(ret)) {
