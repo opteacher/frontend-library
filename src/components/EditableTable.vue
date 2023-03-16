@@ -270,23 +270,24 @@ export default defineComponent({
 
     async function refresh(data?: any[], params?: any) {
       loading.value = true
-      const tblBdy = await waitFor('ant-table-body', { getBy: 'class' })
-      if (!tblBdy) {
-        return
-      }
-      switch (props.size) {
-        case 'small':
-          tblBdy.style.top = '40px'
-          break
-        case 'middle':
-          tblBdy.style.top = '47px'
-          break
-        case 'default':
-        case 'large':
-        default:
-          tblBdy.style.top = '56px'
-          break
-      }
+      waitFor('ant-table-body', { getBy: 'class' }).then(tblBdy => {
+        if (!tblBdy) {
+          return
+        }
+        switch (props.size) {
+          case 'small':
+            tblBdy.style.top = '40px'
+            break
+          case 'middle':
+            tblBdy.style.top = '47px'
+            break
+          case 'default':
+          case 'large':
+          default:
+            tblBdy.style.top = '56px'
+            break
+        }
+      })
       records.offset = 0
       records.limit = 10
       records.filters = undefined
