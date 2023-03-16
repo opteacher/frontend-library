@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 import '@cypress/code-coverage/support'
+import './index.css'
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite

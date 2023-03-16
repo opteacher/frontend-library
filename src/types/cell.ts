@@ -1,3 +1,5 @@
+import { gnlCpy } from '../utils'
+
 export default class Cell {
   color: string
   prefix: string
@@ -25,41 +27,31 @@ export default class Cell {
   }
 
   static copy(src: any, tgt?: Cell, force = false): Cell {
-    tgt = tgt || new Cell()
-    tgt.color = force ? src.color : src.color || tgt.color
-    tgt.prefix = force ? src.prefix : src.prefix || tgt.prefix
-    tgt.suffix = force ? src.suffix : src.suffix || tgt.suffix
-    tgt.ctype = force ? src.ctype : src.ctype || tgt.ctype
-    tgt.format = force ? src.format : src.format || tgt.format
-    tgt.refer = force ? src.refer : src.refer || tgt.refer
-    return tgt
+    return gnlCpy(Cell, src, tgt, { force })
   }
 }
 
 export class Cells extends Cell {
   refer: string
   selCond: string
-  cdCell: Record<string, Cell>
+  cdCell: Record<string, Cell> | null
 
   constructor() {
     super()
     this.refer = ''
     this.selCond = ''
-    this.cdCell = {}
+    this.cdCell = null
   }
 
   reset() {
     super.reset()
     this.refer = ''
     this.selCond = ''
-    this.cdCell = {}
+    this.cdCell = null
   }
 
   static copy(src: any, tgt?: Cells, force = false): Cells {
-    tgt = tgt || new Cells()
-    Cell.copy(src, tgt, force)
-    tgt.refer = force ? src.refer : src.refer || tgt.refer
-    tgt.selCond = force ? src.selCond : src.selCond || tgt.selCond
+    tgt = gnlCpy(Cells, src, tgt, { force, baseCpy: Cell.copy, ignProps: ['cdCell'] })
     tgt.cdCell = src.cdCell
       ? Object.fromEntries(
           Object.entries(src.cdCell).map(([cond, data]: [string, any]) => [cond, Cell.copy(data)])

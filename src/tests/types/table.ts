@@ -37,6 +37,7 @@ export class Cells extends Cell {
     return tgt
   }
 }
+
 export default class Table {
   key: string
   title: string

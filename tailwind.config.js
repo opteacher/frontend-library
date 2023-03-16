@@ -4,8 +4,7 @@ module.exports = {
     preflight: false
   },
   important: true,
-  purge: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
-  content: [],
+  content: ['./index.html', './src/components/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
       spacing: {
