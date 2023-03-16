@@ -4,7 +4,7 @@
     :class="{ [sclHeight]: sclHeight.startsWith('h-') }"
   >
     <div class="flex justify-between">
-      <h3 class="mb-0">
+      <h3 class="mb-0 ml-2 flex-1">
         <keep-alive v-if="icon">
           <component :is="icon" v-bind="{ class: 'text-4xl' }" />
         </keep-alive>
@@ -33,7 +33,7 @@
     </div>
     <RefreshBox v-if="refOptions.length" :tblRfsh="refOptions" @click="refresh" />
     <a-table
-      class="flex-auto overflow-hidden"
+      class="flex-1 overflow-hidden"
       :columns="colsState"
       :data-source="records.data"
       :size="size"
@@ -166,7 +166,7 @@
     <FormDialog
       v-model:show="editing.show"
       :copy="copy"
-      :title="title"
+      :title="title || undefined"
       :emitter="emitter"
       :mapper="mapper"
       @submit="onRecordSave"
@@ -191,13 +191,15 @@ import Column from '../types/column'
 import Mapper from '../types/mapper'
 import * as antdIcons from '@ant-design/icons-vue/lib/icons'
 import SelColBox from './SelColBox.vue'
-import { pickOrIgnore, upperFirst } from '../utils'
+import { pickOrIgnore, upperFirst, waitFor } from '../utils'
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
 import BchImport from '../types/bchImport'
 import RefreshBox from './RefreshBox.vue'
 import { Cells } from '../types/cell'
 import CellCard from './CellCard.vue'
+import BchImpBox from './BchImpBox.vue'
+import BchExpBox from './BchExpBox.vue'
 
 export default defineComponent({
   name: 'EditableTable',
@@ -207,7 +209,9 @@ export default defineComponent({
       FormDialog,
       SelColBox,
       RefreshBox,
-      CellCard
+      CellCard,
+      BchImpBox,
+      BchExpBox
     },
     antdIcons
   ),
@@ -266,6 +270,24 @@ export default defineComponent({
 
     async function refresh(data?: any[], params?: any) {
       loading.value = true
+      waitFor('ant-table-body', { getBy: 'class' }).then(tblBdy => {
+        if (!tblBdy) {
+          return
+        }
+        switch (props.size) {
+          case 'small':
+            tblBdy.style.top = '40px'
+            break
+          case 'middle':
+            tblBdy.style.top = '47px'
+            break
+          case 'default':
+          case 'large':
+          default:
+            tblBdy.style.top = '56px'
+            break
+        }
+      })
       records.offset = 0
       records.limit = 10
       records.filters = undefined
@@ -507,6 +529,6 @@ export default defineComponent({
 }
 
 .ant-table-body {
-  @apply absolute top-10 bottom-0 left-0 right-0;
+  @apply absolute bottom-0 left-0 right-0;
 }
 </style>
