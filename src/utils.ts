@@ -24,7 +24,7 @@ export interface RequestOptions {
   orgRes?: boolean
 }
 
-const DefaultProject = process && process.env && process.env.VUE_APP_PJT ? process.env.VUE_APP_PJT : 'frontend-library'
+const getDftPjt = () => process.env.VUE_APP_PJT || 'frontend-library'
 
 export async function makeRequest(pms: Promise<any>, options?: RequestOptions): Promise<any> {
   if (!options) {
@@ -81,7 +81,7 @@ export async function reqAll(path: string, options?: RequestOptions): Promise<an
     options = {}
   }
   if (!options.project) {
-    options.project = DefaultProject
+    options.project = getDftPjt()
   }
   if (typeof options.orgRes === 'undefined') {
     options.orgRes = false
@@ -114,7 +114,7 @@ export async function reqGet(path: string, iden?: any, options?: RequestOptions)
     options = {}
   }
   if (!options.project) {
-    options.project = DefaultProject
+    options.project = getDftPjt()
   }
   if (typeof options.orgRes === 'undefined') {
     options.orgRes = false
@@ -147,7 +147,7 @@ export function reqPost(path: string, body?: any, options?: RequestOptions): Pro
     options = {}
   }
   if (!options.project) {
-    options.project = DefaultProject
+    options.project = getDftPjt()
   }
   if (typeof options.orgRes === 'undefined') {
     options.orgRes = false
@@ -181,7 +181,7 @@ export function reqDelete(path: string, iden: any, options?: RequestOptions): Pr
     options = {}
   }
   if (!options.project) {
-    options.project = DefaultProject
+    options.project = getDftPjt()
   }
   if (typeof options.orgRes === 'undefined') {
     options.orgRes = false
@@ -218,7 +218,7 @@ export function reqPut(
     options = {}
   }
   if (!options.project) {
-    options.project = DefaultProject
+    options.project = getDftPjt()
   }
   if (typeof options.orgRes === 'undefined') {
     options.orgRes = false
@@ -259,7 +259,7 @@ export function reqLink(
     options = {}
   }
   if (!options.project) {
-    options.project = DefaultProject
+    options.project = getDftPjt()
   }
   if (typeof options.orgRes === 'undefined') {
     options.orgRes = false

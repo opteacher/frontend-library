@@ -29,7 +29,7 @@ export default defineComponent({
     cell: { type: Cells, required: true },
     text: { type: String, required: true },
     selected: { type: Boolean, default: false },
-    mapValue: { type: Object, default: { type: 'Unknown', lblMapper: {} } },
+    mapValue: { type: Object, default: () => ({ type: 'Unknown', lblMapper: {} }) },
     record: { type: Object, default: null },
     keyword: { type: String, default: '' }
   },

@@ -6,7 +6,7 @@
     <div class="flex justify-between">
       <h3 class="mb-0 ml-2 flex-1">
         <keep-alive v-if="icon">
-          <component :is="icon" v-bind="{ class: 'text-4xl' }" />
+          <component :is="icon" v-bind="{ class: 'text-3xl' }" />
         </keep-alive>
         {{ title }}
         <span class="text-gray-400">{{ description }}</span>
@@ -276,15 +276,15 @@ export default defineComponent({
         }
         switch (props.size) {
           case 'small':
-            tblBdy.style.top = '40px'
+            tblBdy.style.top = '41px'
             break
           case 'middle':
-            tblBdy.style.top = '47px'
+            tblBdy.style.top = '48px'
             break
           case 'default':
           case 'large':
           default:
-            tblBdy.style.top = '56px'
+            tblBdy.style.top = '57px'
             break
         }
       })
