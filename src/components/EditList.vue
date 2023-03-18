@@ -5,11 +5,11 @@
   <a-form
     v-else
     class="flex"
-    :layout="field.inline ? 'inline' : 'horizontal'"
+    :layout="mapper.inline ? 'inline' : 'horizontal'"
     :model="addState"
     @finish="onEdtLstAdd"
   >
-    <template v-for="(value, key) in field.mapper">
+    <template v-for="(value, key) in mapper.mapper">
       <slot name="formItem" v-bind="{ form: addState, skey: key, value }" />
     </template>
     <div class="flex justify-end space-x-2">
@@ -25,9 +25,9 @@
           <template #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
-          <template v-if="field.lblProp && item[field.lblProp]">{{ item[field.lblProp] }}</template>
-          <template v-else-if="field.lblMapper && field.lblMapper[item]">
-            {{ field.lblMapper[item] }}
+          <template v-if="mapper.lblProp && item[mapper.lblProp]">{{ item[mapper.lblProp] }}</template>
+          <template v-else-if="mapper.lblMapper && mapper.lblMapper[item]">
+            {{ mapper.lblMapper[item] }}
           </template>
           <template v-else>{{ item }}</template>
         </a-list-item>
@@ -45,11 +45,11 @@ export default defineComponent({
   props: {
     label: { type: String, default: '项' },
     value: { type: Array, default: () => [] },
-    field: { type: Object, required: true }
+    mapper: { type: Object, required: true }
   },
   setup(props, { emit }) {
     const addMod = ref(false)
-    const addState = reactive(props.field.copy({}))
+    const addState = reactive(props.mapper.copy({}))
     const list = reactive([] as any[])
 
     onMounted(refresh)
@@ -59,8 +59,8 @@ export default defineComponent({
       list.splice(0, list.length, ...props.value)
     }
     function onEdtLstAdd() {
-      let newItm = props.field.copy(addState)
-      if (props.field.flatItem) {
+      let newItm = props.mapper.copy(addState)
+      if (props.mapper.flatItem) {
         newItm = Object.values(newItm)
         if (newItm.length === 1) {
           newItm = newItm[0]
@@ -74,7 +74,7 @@ export default defineComponent({
       if (addState.reset) {
         addState.reset()
       } else {
-        props.field.copy({}, addState)
+        props.mapper.copy({}, addState)
       }
       addMod.value = false
     }
@@ -82,7 +82,7 @@ export default defineComponent({
       if (addState.reset) {
         addState.reset()
       } else {
-        props.field.copy({}, addState)
+        props.mapper.copy({}, addState)
       }
       addMod.value = true
     }

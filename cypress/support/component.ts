@@ -20,6 +20,8 @@ import './commands'
 // require('./commands')
 
 import { mount } from 'cypress/vue'
+import Antd from 'ant-design-vue'
+import 'ant-design-vue/dist/antd.css'
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -33,7 +35,22 @@ declare global {
   }
 }
 
-Cypress.Commands.add('mount', mount)
+Cypress.Commands.add('mount', (component, options = {}) => {
+  // Setup options object
+  options.global = options.global || {}
+  options.global.stubs = (options.global.stubs || {}) as Record<string, any>
+  options.global.stubs['transition'] = false
+  options.global.components = options.global.components || {}
+  options.global.plugins = options.global.plugins || []
+
+  /* Add any global plugins */
+  options.global.plugins.push(Antd)
+
+  /* Add any global components */
+  // options.global.components['Button'] = Button;
+
+  return mount(component, options)
+})
 
 // Example use:
 // cy.mount(MyComponent)

@@ -292,7 +292,7 @@
       </a-form-item-rest>
       <EditList
         v-else-if="valState.type === 'EditList'"
-        :field="valState"
+        :mapper="valState"
         :value="getProp(formState, skey)"
         @update:value="onFieldChanged"
       >
@@ -309,7 +309,7 @@
       />
       <TagList
         v-else-if="valState.type === 'TagList'"
-        :field="valState"
+        :mapper="valState"
         :value="getProp(formState, skey)"
         @update:value="(val: string) => setProp(formState, skey, val)"
       >

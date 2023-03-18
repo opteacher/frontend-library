@@ -32,20 +32,17 @@ export default class Cell {
 }
 
 export class Cells extends Cell {
-  refer: string
   selCond: string
   cdCell: Record<string, Cell> | null
 
   constructor() {
     super()
-    this.refer = ''
     this.selCond = ''
     this.cdCell = null
   }
 
   reset() {
     super.reset()
-    this.refer = ''
     this.selCond = ''
     this.cdCell = null
   }

@@ -13,7 +13,7 @@
       </template>
       <template v-else>
         <a-button type="default" @click="onCclClick">取消</a-button>
-        <a-button type="primary" @click="onOkClick">确定</a-button>
+        <a-button type="primary" html-type="submit" @click="onOkClick">确定</a-button>
       </template>
     </template>
     <FormGroup
@@ -34,7 +34,10 @@
           :copy="value.copy"
           :emitter="value.emitter"
           :object="value.editing"
-          @submit="(form: any) => value.onSaved(form, getProp(formState, key))"
+          @submit="(form: any, next: Function) => {
+            value.onSaved(form, getProp(formState, key))
+            next()
+          }"
         />
       </template>
       <template v-for="(_, name) in $slots" :key="name" #[name]>

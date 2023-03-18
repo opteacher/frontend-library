@@ -32,6 +32,19 @@ export class BaseMapper {
     this.onChange = () => undefined
   }
 
+  reset() {
+    this.label = ''
+    this.desc = ''
+    this.type = 'Unknown'
+    this.rules = []
+    this.placeholder = ''
+    this.disabled = false
+    this.loading = false
+    this.display = true
+    this.empty = false
+    this.onChange = () => undefined
+  }
+
   static copy(src: any, tgt?: BaseMapper, force = false): BaseMapper {
     tgt = gnlCpy(BaseMapper, src, tgt, { force, ignProps: ['disabled', 'display'] })
     if (src.disabled instanceof Array) {
@@ -80,6 +93,14 @@ export class InputMapper extends BaseMapper {
     this.onBlur = () => undefined
   }
 
+  reset() {
+    super.reset()
+    this.iptType = ''
+    this.prefix = ''
+    this.suffix = ''
+    this.onBlur = () => undefined
+  }
+
   static copy(src: any, tgt?: InputMapper, force = false): InputMapper {
     return gnlCpy(InputMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
@@ -91,6 +112,12 @@ export class TextareaMapper extends BaseMapper {
 
   constructor() {
     super()
+    this.maxRows = 3
+    this.onBlur = () => undefined
+  }
+
+  reset() {
+    super.reset()
     this.maxRows = 3
     this.onBlur = () => undefined
   }
@@ -114,14 +141,24 @@ export class SelectMapper extends BaseMapper {
     this.onDropdown = () => undefined
   }
 
+  reset() {
+    super.reset()
+    this.loading = false
+    this.allowClear = false
+    this.options = []
+    this.onDropdown = () => undefined
+  }
+
   static copy(src: any, tgt?: SelectMapper, force = false): SelectMapper {
     tgt = gnlCpy(SelectMapper, src, tgt, {
-      force, ignProps: ['options'], baseCpy: BaseMapper.copy
+      force,
+      ignProps: ['options'],
+      baseCpy: BaseMapper.copy
     })
     tgt.options = src.options
       ? src.options.map((opn: any) => {
           if (typeof opn === 'string') {
-            return opn
+            return { label: opn, value: opn }
           } else {
             return {
               label: opn.label,
@@ -131,7 +168,9 @@ export class SelectMapper extends BaseMapper {
             }
           }
         })
-      : (force ? [] : tgt.options)
+      : force
+      ? []
+      : tgt.options
     return tgt
   }
 }
@@ -142,6 +181,11 @@ export class CheckboxMapper extends BaseMapper {
 
   constructor() {
     super()
+    this.chkLabels = ['否', '是']
+  }
+
+  reset() {
+    super.reset()
     this.chkLabels = ['否', '是']
   }
 
@@ -158,6 +202,14 @@ export class ButtonMapper extends BaseMapper {
 
   constructor() {
     super()
+    this.inner = ''
+    this.danger = false
+    this.primary = true
+    this.onClick = () => undefined
+  }
+
+  reset() {
+    super.reset()
     this.inner = ''
     this.danger = false
     this.primary = true
@@ -183,7 +235,7 @@ export class TableMapper extends BaseMapper {
 
   constructor() {
     super()
-    this.mapper = new Mapper()
+    this.mapper = {}
     this.columns = []
     this.emitter = new Emitter()
     this.copy = () => undefined
@@ -193,7 +245,33 @@ export class TableMapper extends BaseMapper {
       this.emitter.emit('update:show', false)
     }
     this.onDeleted = <T extends { key: string }>(key: string, array: T[]) => {
-      array.splice(array.findIndex(item => item.key === key), 1)
+      array.splice(
+        array.findIndex(item => item.key === key),
+        1
+      )
+      this.emitter.emit('update:show', false)
+    }
+    this.addable = true
+    this.editable = true
+    this.delable = true
+  }
+
+  reset() {
+    super.reset()
+    this.mapper = {}
+    this.columns = []
+    this.emitter = new Emitter()
+    this.copy = () => undefined
+    this.onEdit = () => undefined
+    this.onSaved = <T extends { key: string }>(nItm: T, array: T[]) => {
+      array.push(this.copy(nItm))
+      this.emitter.emit('update:show', false)
+    }
+    this.onDeleted = <T extends { key: string }>(key: string, array: T[]) => {
+      array.splice(
+        array.findIndex(item => item.key === key),
+        1
+      )
       this.emitter.emit('update:show', false)
     }
     this.addable = true
@@ -223,6 +301,12 @@ export class SelOrIptMapper extends BaseMapper {
     this.options = []
   }
 
+  reset() {
+    super.reset()
+    this.mode = 'input'
+    this.options = []
+  }
+
   static copy(src: any, tgt?: SelOrIptMapper, force = false): SelOrIptMapper {
     return gnlCpy(SelOrIptMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
@@ -236,6 +320,11 @@ export class LstOpnType {
   href?: string
 
   constructor() {
+    this.key = ''
+    this.title = ''
+  }
+
+  reset() {
     this.key = ''
     this.title = ''
   }
@@ -255,6 +344,12 @@ export class LstSelMapper extends BaseMapper {
     this.options = []
   }
 
+  reset() {
+    super.reset()
+    this.height = 200
+    this.options = []
+  }
+
   static copy(src: any, tgt?: LstSelMapper, force = false): LstSelMapper {
     return gnlCpy(LstSelMapper, src, tgt, {
       force,
@@ -266,13 +361,19 @@ export class LstSelMapper extends BaseMapper {
 
 export class EdtLstMapper extends BaseMapper {
   lblProp: string
+  // 存在lblProp的情况下，则显示lblMapper[item[lblProp]]，不存在的话显示lblMapper[item]
   lblMapper: Record<any, string>
   inline: boolean
-  flatItem: boolean // 抹平单元素表单列表：[{ key: 'abc' }] => ['abc']，（注意：会抹去元素的键信息）
+  // 抹平单元素表单列表：[{ key: 'abc' }] => ['abc']
+  // 注意：会抹去元素的键信息
+  // 注意：抹平只作用于onSaved，不会影响元素的显示！
+  //      但抹平确实会影响lblProp（产生如：string[lblProp]
+  //      这样的问题），所以两者最好不要同时为真
+  flatItem: boolean
   mapper: Mapper
   emitter: Emitter
   copy: (src: any, tgt?: any) => any
-  onSaved: (record: any) => void
+  onSaved: (nItem: any, array?: any[]) => void
 
   constructor() {
     super()
@@ -282,8 +383,10 @@ export class EdtLstMapper extends BaseMapper {
     this.flatItem = true
     this.mapper = new Mapper({
       value: {
+        label: '内容',
         type: 'Input',
-        placeholder: '请输入'
+        placeholder: '请输入',
+        rules: [{ required: true, message: '不能输入空内容！' }]
       }
     })
     this.emitter = new Emitter()
@@ -292,8 +395,43 @@ export class EdtLstMapper extends BaseMapper {
       tgt.value = src.value || tgt.value
       return tgt
     }
-    this.onSaved = () => {
-      this.emitter.emit('update:show', false)
+    this.onSaved = (newOne: any, array?: any[]) => {
+      if (typeof array !== 'undefined') {
+        // 如果抹平，则取新元素第一个字段，反之调用copy
+        array.push(this.flatItem ? newOne.value : this.copy(newOne))
+        // 数据发生变化后必须触发这个事件，重写onSaved也必须注意这一点！
+        this.emitter.emit('update:value', array)
+      }
+    }
+  }
+
+  reset() {
+    super.reset()
+    this.lblProp = ''
+    this.lblMapper = {}
+    this.inline = true
+    this.flatItem = true
+    this.mapper = new Mapper({
+      value: {
+        label: '内容',
+        type: 'Input',
+        placeholder: '请输入',
+        rules: [{ required: true, message: '不能输入空内容！' }]
+      }
+    })
+    this.emitter = new Emitter()
+    this.copy = (src: any, tgt?: { value: any }) => {
+      tgt = tgt || { value: '' }
+      tgt.value = src.value || tgt.value
+      return tgt
+    }
+    this.onSaved = (newOne: any, array?: any[]) => {
+      if (typeof array !== 'undefined') {
+        // 如果抹平，则取新元素第一个字段，反之调用copy
+        array.push(this.flatItem ? newOne.value : this.copy(newOne))
+        // 数据发生变化后必须触发这个事件，重写onSaved也必须注意这一点！
+        this.emitter.emit('update:value', array)
+      }
     }
   }
 
@@ -318,6 +456,12 @@ export class GroupMapper extends BaseMapper {
     this.items = {}
   }
 
+  reset() {
+    super.reset()
+    this.fold = false
+    this.items = {}
+  }
+
   static copy(src: any, tgt?: GroupMapper, force = false): GroupMapper {
     return gnlCpy(GroupMapper, src, tgt, {
       force,
@@ -337,6 +481,11 @@ export class CdEdtMapper extends BaseMapper {
     this.lang = 'javascript'
   }
 
+  reset() {
+    super.reset()
+    this.lang = 'javascript'
+  }
+
   static copy(src: any, tgt?: CdEdtMapper, force = false): CdEdtMapper {
     return gnlCpy(CdEdtMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
   }
@@ -349,6 +498,13 @@ export class UploadMapper extends BaseMapper {
 
   constructor() {
     super()
+    this.path = ''
+    this.headers = {}
+    this.onBeforeUpload = () => true
+  }
+
+  reset() {
+    super.reset()
     this.path = ''
     this.headers = {}
     this.onBeforeUpload = () => true
@@ -415,9 +571,12 @@ export default class Mapper {
     }
     for (const [key, val] of Object.entries(src)) {
       const value = val as BaseMapper
-      const type = value.type && value.type !== 'Unknown' ? value.type : (
-        tgt && tgt[key] && tgt[key].type && tgt[key].type !== 'Unknown' ? tgt[key].type : undefined
-      )
+      const type =
+        value.type && value.type !== 'Unknown'
+          ? value.type
+          : tgt && tgt[key] && tgt[key].type && tgt[key].type !== 'Unknown'
+          ? tgt[key].type
+          : undefined
       if (!type) {
         continue
       }
@@ -447,9 +606,7 @@ export function createByField(field: Field): MapperType {
       rules: field.rules,
       placeholder: field.placeholder
     },
-    Object.fromEntries(
-      Object.entries(field.extra || {}).map(([key, val]) => [key, adjExtra(val)])
-    )
+    Object.fromEntries(Object.entries(field.extra || {}).map(([key, val]) => [key, adjExtra(val)]))
   ) as MapperType
 }
 

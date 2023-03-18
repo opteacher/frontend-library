@@ -54,9 +54,7 @@ describe('<ColorSelect />', () => {
 
   describe('直接修改props不能影响子组件！', () => {
     it('修改props影响子组件（16进制字符串）', () => {
-      mount().then(({ wrapper }) => {
-        wrapper.setProps({ color: '#FF0000' })
-      })
+      mount().then(({ wrapper }) => wrapper.setProps({ color: '#FF0000' }))
       cy.get('.color-value .hex input').should('have.value', '#FF0000')
     })
 
@@ -67,9 +65,7 @@ describe('<ColorSelect />', () => {
         b: Math.floor(Math.random() * 256),
         a: parseFloat(Math.random().toFixed(2))
       }
-      mount().then(({ wrapper }) => {
-        wrapper.setProps({ color })
-      })
+      mount().then(({ wrapper }) => wrapper.setProps({ color }))
       cy.get('.color-value .hex input').should(
         'have.value',
         rgba(color.r, color.g, color.b, color.a)
@@ -208,9 +204,7 @@ describe('<ColorSelect />', () => {
       it('随机生成三个颜色', () => {
         const gen256 = () => Math.floor(Math.random() * 256)
         const preset = Array.from({ length: 3 }, () => `rgb(${gen256()}, ${gen256()}, ${gen256()})`)
-        mount().then(({ wrapper }) => {
-          wrapper.setProps({ preset: preset.map(color => eval(color)) })
-        })
+        mount().then(({ wrapper }) => wrapper.setProps({ preset: preset.map(color => eval(color)) }))
         cy.get('.preset li').should('have.length', 3)
         cy.get('.preset li').each(($el, idx) => {
           cy.wrap($el).should('have.css', 'background-color', preset[idx])

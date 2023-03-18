@@ -1,12 +1,19 @@
 <template>
+  <!-- cell type -->
   <a v-if="pcsCell.ctype === 'Link'" class="no-underline" :href="fmtHref">
     <HighLight :text="fmtTxt" :search="keyword" />
   </a>
+  <pre v-else-if="pcsCell.ctype === 'Textarea'" class="mb-0">{{ fmtTxt }}</pre>
+  <!-- text type -->
   <template v-else-if="typeof text === 'undefined' || text === null">-</template>
   <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
-  <pre v-else-if="pcsCell.ctype === 'Textarea'" class="mb-0">{{ fmtTxt }}</pre>
-  <template v-else-if="mapValue.type === 'Select'">
-    {{ text in mapValue.lblMapper ? mapValue.lblMapper[text] : text }}
+  <!-- mapper type -->
+  <template v-else-if="mapper.type === 'Select'">
+    {{
+      mapper.options.map((opn: any) => opn.value).includes(text)
+        ? mapper.options.find((opn: any) => opn.value === text).label
+        : text
+    }}
   </template>
   <span v-else :class="{ 'text-primary': selected }">
     {{ fmtTxt }}
@@ -29,7 +36,7 @@ export default defineComponent({
     cell: { type: Cells, required: true },
     text: { type: String, required: true },
     selected: { type: Boolean, default: false },
-    mapValue: { type: Object, default: () => ({ type: 'Unknown', lblMapper: {} }) },
+    mapper: { type: Object, default: () => ({}) },
     record: { type: Object, default: null },
     keyword: { type: String, default: '' }
   },
@@ -44,7 +51,7 @@ export default defineComponent({
           const tgtVal = conds[2]
           const srcVal = props.record[prop]
           switch (cmp) {
-            case '=':
+            case '==':
               if (srcVal == tgtVal) {
                 return cell as Cell
               }
@@ -80,7 +87,7 @@ export default defineComponent({
       return ret as Cell
     })
     const fmtTxt = computed(() => {
-      let ret = props.text
+      let ret = props.text.toString()
       switch (pcsCell.value.ctype) {
         case 'Number':
           if (pcsCell.value.format.fix > 0) {
@@ -92,15 +99,15 @@ export default defineComponent({
           break
         case 'DateTime':
           if (pcsCell.value.format.pattern) {
-            ret = dayjs(props.text).format(pcsCell.value.format.pattern)
+            ret = dayjs(ret).format(pcsCell.value.format.pattern)
           }
       }
       return [
-        pcsCell.value.prefix && !props.text.startsWith(pcsCell.value.prefix)
+        pcsCell.value.prefix && !ret.startsWith(pcsCell.value.prefix)
           ? pcsCell.value.prefix
           : '',
         ret,
-        pcsCell.value.suffix && !endsWith(props.text, pcsCell.value.suffix)
+        pcsCell.value.suffix && !endsWith(ret, pcsCell.value.suffix)
           ? pcsCell.value.suffix
           : ''
       ].join('')

@@ -1,7 +1,7 @@
 <template>
-  <template v-for="item in valState" :key="item">
+  <template v-for="item in value" :key="item">
     <a-tag closable @close="onRmvTagClick(item)">
-      {{ fldState.lvMapper[item] || item }}
+      <LabelItem :value="item as any" :prop="mapper.lblProp" :mapper="mapper.lblMapper" />
     </a-tag>
   </template>
   <a-button type="dashed" size="small" @click="onNewTagClick">
@@ -12,42 +12,35 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, watch } from 'vue'
+import { defineComponent } from 'vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
+import LabelItem from './LabelItem.vue'
 
 export default defineComponent({
   name: 'TagList',
   components: {
-    PlusOutlined
+    PlusOutlined,
+    LabelItem
   },
   emits: ['update:value'],
   props: {
-    field: { type: Object, required: true },
+    mapper: { type: Object, required: true },
     value: { type: Array, required: true }
   },
   setup(props, { emit }) {
-    const valState = reactive(props.value as any[])
-    const fldState = reactive(props.field)
-
-    watch(
-      () => props.value,
-      () => {
-        valState.splice(0, valState.length, ...props.value)
-      }
-    )
+    props.mapper.emitter.on('update:value', (array: any) => {
+      emit('update:value', array)
+    })
 
     function onNewTagClick() {
-      fldState.emitter.emit('update:show', true)
-      fldState.emitter.emit('update:data', valState)
+      props.mapper.emitter.emit('update:show', true)
+      props.mapper.emitter.emit('update:data', props.value)
     }
     async function onRmvTagClick(key: any) {
-      valState.splice(valState.indexOf(key), 1)
-      emit('update:value', valState)
+      props.value.splice(props.value.indexOf(key), 1)
+      props.mapper.emitter.emit('update:value', props.value)
     }
     return {
-      valState,
-      fldState,
-
       onNewTagClick,
       onRmvTagClick
     }
