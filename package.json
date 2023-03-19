@@ -12,7 +12,8 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "test:com": "concurrently \"tailwindcss -i ./src/assets/main.css -o ./cypress/support/index.css --watch\" \"cypress open\" "
+    "test:com": "concurrently \"tailwindcss -i ./src/assets/main.css -o ./cypress/support/index.css --watch\" \"cypress open\" ",
+    "test:com:all": "npx cypress run --component --record --key 9cdffdd4-b9e2-4817-bb89-a671ed8b988e"
   },
   "dependencies": {
     "ant-design-vue": "^3.2.15",
