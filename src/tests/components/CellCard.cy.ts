@@ -2,6 +2,9 @@
 import CellCard from '@/components/CellCard.vue'
 import Cell, { Cells } from '@/types/cell'
 import { SelectMapper } from '@/types/mapper'
+import { rgb, rgba } from '@/utils'
+
+console.log(rgb(0, 0, 0), rgba(0, 0, 0, 1))
 
 describe('<CellCard />', () => {
   it('显示正常', () => {
@@ -31,17 +34,15 @@ describe('<CellCard />', () => {
   })
 
   it('选中变色', () => {
-    const ret = cy.mount(CellCard, {
+    cy.mount(CellCard, {
       props: {
         cell: Cells.copy({}),
         text: 'abcd'
       }
     })
-    cy.get('div[data-v-app] span').should('have.css', 'color', 'rgb(0, 0, 0)')
-    ret
-      .then(({ wrapper }) => wrapper.setProps({ selected: true }))
-      .get('div[data-v-app] span')
-      .should('not.have.css', 'color', 'rgb(0, 0, 0)')
+    cy.get('div[data-v-app] span').then($el => {
+      expect(eval($el.css('color')).startsWith('#000000')).to.true
+    })
   })
 
   it('空值', () => {

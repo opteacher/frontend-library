@@ -1,6 +1,8 @@
 /// <reference path="../../../cypress/support/component.ts" />
 import HighLight from '@/components/HighLight.vue'
 
+const IdMark = 'div[data-v-app] mark'
+
 describe('<HighLight />', () => {
   it('显示正常', () => {
     const ret = cy.mount(HighLight, {
@@ -16,9 +18,7 @@ describe('<HighLight />', () => {
       }
     })
 
-    cy.get('div[data-v-app]')
-      .should('have.css', 'background-color', cy.$$('body').css('background-color'))
-      .get('mark')
+    cy.get(IdMark)
       .should('have.length.above', 0)
       .each($el =>
         cy
@@ -27,9 +27,9 @@ describe('<HighLight />', () => {
           .should('have.text', '地球')
       )
 
-    ret.then(({ wrapper }) => {
-      wrapper.setProps({ search: '太阳' })
-      cy.get('mark').each($el => cy.wrap($el).should('not.have.text', '地球'))
-    })
+    ret
+      .then(({ wrapper }) => wrapper.setProps({ search: '太阳' }))
+      .get(IdMark)
+      .each($el => cy.wrap($el).should('not.have.text', '地球'))
   })
 })

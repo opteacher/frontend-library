@@ -31,7 +31,7 @@
         </a-row>
         <a-divider />
         <div class="flex justify-between items-center">
-          <div>选中图标：{{ selIcon }}</div>
+          <div>选中图标：<a>{{ selIcon }}</a></div>
           <a-pagination
             v-if="pages.num"
             v-model:current="pages.cur"

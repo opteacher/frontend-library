@@ -691,7 +691,7 @@ export function revsKeyVal(obj: any) {
 }
 
 export function gnlCpy<T extends Record<string, any>>(
-  t: { new (): T },
+  t: { new (): T } | (() => T),
   src: any,
   tgt?: T,
   options?: {
@@ -714,7 +714,15 @@ export function gnlCpy<T extends Record<string, any>>(
   if (!options.keys) {
     options.keys = ['id', '_id', 'key']
   }
-  tgt = tgt || new t()
+  const create = (): T => {
+    // 通过判断能否使用new调用判断是类还是函数
+    try {
+      return new (t as any)()
+    } catch (e) {
+      return (t as any)()
+    }
+  }
+  tgt = tgt || create()
   if (options.force && tgt.reset) {
     tgt.reset()
   }
@@ -728,14 +736,16 @@ export function gnlCpy<T extends Record<string, any>>(
   if (options.baseCpy) {
     options.baseCpy(src, tgt, options.force)
   }
-  for (const key of Object.keys(new t())) {
+  for (const key of Object.keys(create())) {
     if (options.ignProps.includes(key)) {
       continue
     }
-    if (typeof tgt[key] === 'string'
-    || typeof tgt[key] === 'number'
-    || typeof tgt[key] === 'boolean'
-    || typeof tgt[key] === 'function') {
+    if (
+      typeof tgt[key] === 'string' ||
+      typeof tgt[key] === 'number' ||
+      typeof tgt[key] === 'boolean' ||
+      typeof tgt[key] === 'function'
+    ) {
       if (options.force || typeof src[key] !== 'undefined') {
         setProp(tgt, key, src[key])
       }
@@ -764,4 +774,29 @@ export function gnlCpy<T extends Record<string, any>>(
     }
   }
   return tgt as T
+}
+
+export function styleHyphenFormat(text: string) {
+  function upperToHyphenLower(match: string) {
+    return '-' + match.toLowerCase()
+  }
+  return rmvStartsOf(text.replace(/[A-Z]/g, upperToHyphenLower), '-')
+}
+
+export function rgb(r: number, g: number, b: number) {
+  return (
+    '#' +
+    Math.floor(r).toString(16).toUpperCase().padStart(2, '0') +
+    Math.floor(g).toString(16).toUpperCase().padStart(2, '0') +
+    Math.floor(b).toString(16).toUpperCase().padStart(2, '0')
+  )
+}
+
+export function rgba(r: number, g: number, b: number, a: number) {
+  const alpha = Math.floor(a * 256)
+  if (alpha === 1) {
+    return rgb(r, g, b)
+  } else {
+    return rgb(r, g, b) + alpha.toString(16).toUpperCase().padStart(2, '0')
+  }
 }

@@ -2,6 +2,7 @@ import { defineConfig } from 'cypress'
 import task from '@cypress/code-coverage/task'
 
 export default defineConfig({
+  projectId: 'shncfc',
   viewportWidth: 1280,
   viewportHeight: 720,
   

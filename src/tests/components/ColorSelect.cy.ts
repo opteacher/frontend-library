@@ -1,5 +1,6 @@
 /// <reference path="../../../cypress/support/component.ts" />
 import ColorSelect from '@/components/ColorSelect.vue'
+import { rgb, rgba } from '@/utils'
 
 const props: Record<string, any> = { color: '#FF00FF' }
 
@@ -7,24 +8,6 @@ function mount() {
   // see: https://test-utils.vuejs.org/guide/
   props['onUpdate:color'] = cy.spy().as('onColorChange')
   return cy.mount(ColorSelect, { props })
-}
-
-function rgb(r: number, g: number, b: number) {
-  return (
-    '#' +
-    Math.floor(r).toString(16).toUpperCase().padStart(2, '0') +
-    Math.floor(g).toString(16).toUpperCase().padStart(2, '0') +
-    Math.floor(b).toString(16).toUpperCase().padStart(2, '0')
-  )
-}
-
-function rgba(r: number, g: number, b: number, a: number) {
-  const alpha = Math.floor(a * 256)
-  if (alpha === 1) {
-    return rgb(r, g, b)
-  } else {
-    return rgb(r, g, b) + alpha.toString(16).toUpperCase().padStart(2, '0')
-  }
 }
 
 describe('<ColorSelect />', () => {

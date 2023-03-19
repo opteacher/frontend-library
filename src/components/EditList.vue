@@ -25,11 +25,7 @@
           <template #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
-          <template v-if="mapper.lblProp && item[mapper.lblProp]">{{ item[mapper.lblProp] }}</template>
-          <template v-else-if="mapper.lblMapper && mapper.lblMapper[item]">
-            {{ mapper.lblMapper[item] }}
-          </template>
-          <template v-else>{{ item }}</template>
+          <LabelItem :value="item" :mapper="mapper.lblMapper" :prop="mapper.lblProp" />
         </a-list-item>
       </template>
     </a-list>
@@ -38,9 +34,11 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
+import LabelItem from './LabelItem.vue'
 
 export default defineComponent({
   name: 'EditList',
+  components: { LabelItem },
   emits: ['update:value'],
   props: {
     label: { type: String, default: '项' },
