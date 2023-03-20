@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.10.0",
+    "@cypress/vue": "^5.0.5",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@rushstack/eslint-patch": "^1.1.4",
     "@types/cypress__code-coverage": "^3.10.0",

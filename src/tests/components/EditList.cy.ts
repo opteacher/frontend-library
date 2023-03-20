@@ -35,7 +35,7 @@ describe('<EditList />', () => {
 
     it('正常显示', () => {
       const text = v4()
-      cy.get(IdAddBtn)
+      cy.contains('button', '添加')
         .click()
         .should('not.exist')
         .get(IdForm)
@@ -56,7 +56,7 @@ describe('<EditList />', () => {
         .click()
         .get(IdLstItm)
         .should('not.exist')
-        .get(IdAddBtn)
+        .contains('button', '添加')
         .click()
         .get(IdFmItmIpt)
         .should('exist')
@@ -68,7 +68,7 @@ describe('<EditList />', () => {
 
     it('子 -> 父', () => {
       const array = [v4(), v4()]
-      cy.get(IdAddBtn)
+      cy.contains('button', '添加')
         .click()
         .get(IdForm)
         .find(sbInput)
@@ -78,7 +78,7 @@ describe('<EditList />', () => {
         .click()
         .get('@onUpdate')
         .should('be.calledWith', [array[0]])
-      cy.get(IdAddBtn)
+      cy.contains('button', '添加')
         .click()
         .get(IdForm)
         .find(sbInput)
@@ -134,7 +134,7 @@ describe('<EditList />', () => {
     })
 
     const text = v4()
-    cy.get(IdAddBtn)
+    cy.contains('button', '添加')
       .click()
       .get([IdForm, sbFormItm].join(' '))
       .should('have.length', 2)
