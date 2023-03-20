@@ -37,8 +37,11 @@ export default defineComponent({
       props.mapper.emitter.emit('update:data', props.value)
     }
     async function onRmvTagClick(key: any) {
-      props.value.splice(props.value.indexOf(key), 1)
-      props.mapper.emitter.emit('update:value', props.value)
+      const index = props.value.indexOf(key)
+      props.mapper.emitter.emit(
+        'update:value',
+        props.value.slice(0, index).concat(props.value.slice(index))
+      )
     }
     return {
       onNewTagClick,
