@@ -1,0 +1,48 @@
+{
+  "data": [
+    {
+      "label": "上海",
+      "value": "shanghai",
+      "children": [
+        { "label": "黄浦区", "value": "huangpu" },
+        { "label": "徐汇区", "value": "xuhui" },
+        { "label": "长宁区", "value": "changning" },
+        { "label": "静安区", "value": "jingan" },
+        { "label": "虹口区", "value": "hongkou" },
+        { "label": "普陀区", "value": "putuo" },
+        { "label": "宝山区", "value": "baoshan" },
+        { "label": "青浦区", "value": "qingpu" },
+        { "label": "闵行区", "value": "minhang" },
+        { "label": "松江区", "value": "songjiang" },
+        { "label": "浦东新区", "value": "pudong" },
+        { "label": "金山区", "value": "jinshan" },
+        { "label": "奉贤区", "value": "fengxian" },
+        { "label": "崇明区", "value": "chongming" },
+        { "label": "杨浦区", "value": "yangpu" },
+        { "label": "嘉定区", "value": "jiading" }
+      ]
+    },
+    {
+      "label": "北京",
+      "value": "beijing",
+      "children": [
+        { "label": "东城区", "value": "dongcheng" },
+        { "label": "西城区", "value": "xicheng" },
+        { "label": "朝阳区", "value": "chaoyang" },
+        { "label": "丰台区", "value": "fengtai" },
+        { "label": "石景山区", "value": "shijingshan" },
+        { "label": "海淀区", "value": "haidian" },
+        { "label": "顺义区", "value": "shunyi" },
+        { "label": "通州区", "value": "tongzhou" },
+        { "label": "大兴区", "value": "daxing" },
+        { "label": "房山区", "value": "fangshan" },
+        { "label": "门头沟区", "value": "mentougou" },
+        { "label": "昌平区", "value": "changping" },
+        { "label": "平谷区", "value": "pinggu" },
+        { "label": "密云区", "value": "miyun" },
+        { "label": "怀柔区", "value": "huairou" },
+        { "label": "延庆区", "value": "yanqing" }
+      ]
+    }
+  ]
+}
