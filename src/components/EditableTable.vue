@@ -131,7 +131,7 @@
               title="确定删除该记录吗？"
               ok-text="确定"
               cancel-text="取消"
-              @confirm="onRecordDel(record.key)"
+              @confirm="onRecordDel(record)"
             >
               <a class="text-error" @click.stop="">删除</a>
             </a-popconfirm>
@@ -379,10 +379,10 @@ export default defineComponent({
     function onCclClicked() {
       refresh()
     }
-    async function onRecordDel(key: unknown) {
+    async function onRecordDel(record: any) {
       loading.value = true
-      await props.api.remove(key)
-      emit('delete', key, refresh)
+      await props.api.remove(record)
+      emit('delete', record, refresh)
       editing.show = false
       await refresh()
     }

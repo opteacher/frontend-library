@@ -369,6 +369,9 @@ export async function waitFor(
 }
 
 export function fixStartsWith(text: string, prefix: string) {
+  if (text.length < prefix.length) {
+    return prefix
+  }
   return (text.substring(0, prefix.length) !== prefix ? prefix : '') + text
 }
 
