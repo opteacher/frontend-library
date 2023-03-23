@@ -74,7 +74,7 @@
         :disabled="disabled"
         :addon-before="valState.prefix"
         :addon-after="valState.suffix"
-        @change="(val: any) => onFieldChanged(val)"
+        @change="onFieldChanged"
         @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
       />
       <a-input-password
@@ -94,7 +94,7 @@
         :disabled="disabled"
         :allowClear="valState.allowClear"
         @dropdownVisibleChange="valState.onDropdown"
-        @change="(val: any) => onFieldChanged(val)"
+        @change="onFieldChanged"
       >
         <template v-if="valState.loading" #notFoundContent>
           <a-spin size="small" />
@@ -143,7 +143,7 @@
         :value="getProp(formState, skey)"
         change-on-select
         :disabled="disabled"
-        @change="(e: any) => onFieldChanged(e)"
+        @change="onFieldChanged"
       />
       <a-tooltip v-else-if="valState.type === 'Button'">
         <template #title>{{ valState.placeholder || '请点击' }}</template>
@@ -166,6 +166,7 @@
         :placeholder="valState.placeholder || '请选择'"
         :disabled="disabled"
         :value="getProp(formState, skey)"
+        @change="onFieldChanged"
       />
       <template v-else-if="valState.type === 'Table'">
         <a-space>
@@ -230,7 +231,7 @@
           :value="getProp(formState, skey)"
           :placeholder="valState.placeholder || '请选择'"
           :disabled="disabled"
-          @change="(val: any) => onFieldChanged(val)"
+          @change="onFieldChanged"
         />
         <a-input
           v-else
