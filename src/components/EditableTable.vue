@@ -203,7 +203,7 @@ import BchExpBox from './BchExpBox.vue'
 
 export default defineComponent({
   name: 'EditableTable',
-  emits: ['add', 'edit', 'before-save', 'save', 'delete', 'refresh', 'expand'],
+  emits: ['add', 'edit', 'before-save', 'save', 'after-save', 'delete', 'refresh', 'expand'],
   components: Object.assign(
     {
       FormDialog,
@@ -367,14 +367,13 @@ export default defineComponent({
     async function onRecordSave(record: any, reset: Function) {
       loading.value = true
       emit('before-save', record)
-      if (editing.key === '') {
-        await props.api.add(record)
-      } else {
-        await props.api.update(record)
-      }
+      const result = editing.key === ''
+        ? await props.api.add(record)
+        : await props.api.update(record)
       emit('save', record, refresh)
       reset()
       await refresh()
+      emit('after-save', result)
     }
     function onCclClicked() {
       refresh()

@@ -4,6 +4,7 @@ import qs from 'qs'
 import { Cond } from './types'
 import Batch from './types/batch'
 import Column from './types/column'
+import dayjs from 'dayjs'
 
 export interface RequestOptions {
   project?: string
@@ -751,6 +752,10 @@ export function gnlCpy<T extends Record<string, any>>(
     ) {
       if (options.force || typeof src[key] !== 'undefined') {
         setProp(tgt, key, src[key])
+      }
+    } else if (typeof tgt[key] === 'object' && tgt[key] instanceof dayjs) {
+      if (options.force || typeof src[key] !== 'undefined') {
+        setProp(tgt, key, dayjs(src[key]))
       }
     } else if (tgt[key] instanceof Array) {
       if (src[key]) {
