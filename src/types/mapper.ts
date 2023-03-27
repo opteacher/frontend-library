@@ -235,7 +235,7 @@ export class TableMapper extends BaseMapper {
 
   constructor() {
     super()
-    this.mapper = {}
+    this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
     this.copy = () => undefined
@@ -258,7 +258,7 @@ export class TableMapper extends BaseMapper {
 
   reset() {
     super.reset()
-    this.mapper = {}
+    this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
     this.copy = () => undefined

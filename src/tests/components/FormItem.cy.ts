@@ -1,15 +1,18 @@
 /// <reference path="../../../cypress/support/component.ts" />
 import FormItem from '@/components/FormItem.vue'
 import Field from '@/types/field'
-import { createByField, getCopy } from '@/types/mapper'
+import Mapper, { createByField, getCopy } from '@/types/mapper'
 import { bsTpDefault, CompoType } from '../types'
 import Model from '../types/model'
 import Project from '../types/project'
 import { v4 } from 'uuid'
-import { reactive } from 'vue'
+import { createVNode, reactive } from 'vue'
 import dayjs, { Dayjs } from 'dayjs'
-import { setProp } from '@/utils'
+import { getProp, gnlCpy, setProp } from '@/utils'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
+import Column from './../../types/column'
+import FormDialog from '../../components/FormDialog.vue'
+import { TableMapper } from './../../types/mapper'
 
 const fieldMapper = {
   Text: '文本框',
@@ -384,6 +387,135 @@ describe('<FormItem />', () => {
         .click()
         .get('@onClick')
         .should('be.called')
+    })
+
+    it('<Table />', () => {
+      const emitter = new Emitter()
+      const form = reactive({ value: [] })
+      const value = getCopy({
+        label: '表格',
+        type: 'Table',
+        emitter,
+        columns: [new Column('名称', 'name'), new Column('身份ID', 'iden')],
+        mapper: new Mapper({
+          name: { label: '名称', type: 'Input' },
+          iden: { label: '身份ID', type: 'Input' }
+        }),
+        copy: (src: any, tgt?: any, force = false) =>
+          gnlCpy(() => ({ name: '', iden: '' }), src, tgt, { force }),
+        onSubmit: cy.spy().as('itemAdd')
+      }) as TableMapper
+      cy.mount(FormItem, {
+        props: {
+          form,
+          skey: 'value',
+          value
+        },
+        slots: {
+          FormDialog: () =>
+            createVNode(FormDialog, {
+              title: value.label,
+              mapper: value.mapper,
+              copy: value.copy,
+              emitter: value.emitter,
+              object: form,
+              onSubmit: (form: any, next: Function) => {
+                value.onSaved(form, getProp(form, 'value'))
+                next()
+              }
+            })
+        }
+      }).then(({ component }) => {
+        const cmpValWpr = cy.wrap(component.formState.value)
+        const test = { name: v4(), iden: v4() }
+        cy.get('.ant-form-item .ant-form-item-label')
+          .should('contain.text', value.label)
+          .get('.ant-form-item .ant-form-item-control')
+          .find('button.ant-btn-primary')
+          .should('exist')
+          .click()
+          .get('.ant-modal')
+          .should('be.visible')
+          .then($el => {
+            cy.wrap($el)
+              .find('.ant-modal-body .ant-form .ant-form-item')
+              .should('have.length', 2)
+              .each(($el, idx) => {
+                switch (idx) {
+                  case 0:
+                    cy.wrap($el).find('input').type(test.name)
+                    break
+                  case 1:
+                    cy.wrap($el).find('input').type(test.iden)
+                    break
+                }
+              })
+          })
+          .then(() => cmpValWpr.should('have.length', 0))
+          .get('.ant-modal .ant-modal-footer button[type=submit]')
+          .click()
+          .then(() =>
+            cmpValWpr
+              .should('have.length', 1)
+              .its(0)
+              .should('deep.equal', test)
+          )
+          .get('.ant-modal')
+          .should('be.hidden')
+          .get('.ant-form-item .ant-form-item-control .ant-table')
+          .should('exist')
+          .find('tr')
+          .should('have.length', 2)
+          .each(($el, idx) => {
+            switch (idx) {
+              case 0:
+                cy.wrap($el)
+                  .find('th')
+                  .should('have.length', 3)
+                  .each(($el, idx) => {
+                    switch (idx) {
+                      case 0:
+                        cy.wrap($el).should('contain.text', '名称')
+                        break
+                      case 1:
+                        cy.wrap($el).should('contain.text', '身份ID')
+                        break
+                    }
+                  })
+                break
+              case 1:
+                cy.wrap($el)
+                  .find('td')
+                  .should('have.length', 3)
+                  .each(($el, idx) => {
+                    switch (idx) {
+                      case 0:
+                        cy.wrap($el).should('contain.text', test.name)
+                        break
+                      case 1:
+                        cy.wrap($el).should('contain.text', test.iden)
+                        break
+                    }
+                  })
+                break
+            }
+          })
+          .get('.ant-form-item .ant-form-item-control .ant-table tr')
+          .eq(1)
+          .find('td')
+          .eq(2)
+          .find('button.ant-btn-dangerous')
+          .should('exist')
+          .click()
+          .get('.ant-popconfirm')
+          .should('exist')
+          .should('be.visible')
+          .find('.ant-popover-buttons button.ant-btn-primary')
+          .should('exist')
+          .click()
+          .get('.ant-form-item .ant-form-item-control .ant-table')
+          .should('not.exist')
+      })
     })
   })
 })

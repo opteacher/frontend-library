@@ -190,7 +190,7 @@
         </a-space>
         <a-table
           class="mt-1.5"
-          v-show="getProp(formState, skey) && getProp(formState, skey).length"
+          v-if="getProp(formState, skey) && getProp(formState, skey).length"
           :columns="valState.columns.concat([new Column('操作', 'opera', { width: 80 })])"
           :data-source="getProp(formState, skey)"
           :pagination="false"
