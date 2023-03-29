@@ -3,7 +3,9 @@
     <template v-if="valState.label" #label>
       {{ valState.label }}&nbsp;
       <a-tooltip v-if="valState.desc">
-        <template #title>{{ valState.desc }}</template>
+        <template #title>
+          <pre>{{ valState.desc }}</pre>
+        </template>
         <InfoCircleOutlined />
       </a-tooltip>
     </template>
