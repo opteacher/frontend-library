@@ -561,10 +561,12 @@ export default class Mapper {
 
   static copy(src: any, tgt?: Mapper, force = false): Mapper {
     tgt = tgt || new Mapper()
-    const srcKeys = Object.keys(src)
-    for (const key of Object.keys(tgt)) {
-      if (!srcKeys.includes(key)) {
-        delete tgt[key]
+    if (force) {
+      const srcKeys = Object.keys(src)
+      for (const key of Object.keys(tgt)) {
+        if (!srcKeys.includes(key)) {
+          delete tgt[key]
+        }
       }
     }
     for (const [key, val] of Object.entries(src)) {
@@ -578,7 +580,12 @@ export default class Mapper {
       if (!type) {
         continue
       }
-      tgt[key] = EleTypeCopies[type](value, tgt[key], force)
+      const cpyFun = EleTypeCopies[type]
+      if (tgt[key]) {
+        cpyFun(value, tgt[key], force)
+      } else {
+        tgt[key] = cpyFun(value)
+      }
     }
     return tgt
   }
