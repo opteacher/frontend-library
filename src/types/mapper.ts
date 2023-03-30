@@ -440,7 +440,7 @@ export class EdtLstMapper extends BaseMapper {
       force,
       baseCpy: BaseMapper.copy,
       cpyMapper: {
-        mapper: (src: any, tgt?: Mapper): Mapper => Mapper.copy(src, tgt, true)
+        mapper: Mapper.copy
       }
     })
   }
@@ -561,12 +561,10 @@ export default class Mapper {
 
   static copy(src: any, tgt?: Mapper, force = false): Mapper {
     tgt = tgt || new Mapper()
-    if (force) {
-      const srcKeys = Object.keys(src)
-      for (const key of Object.keys(tgt)) {
-        if (!srcKeys.includes(key)) {
-          delete tgt[key]
-        }
+    const srcKeys = Object.keys(src)
+    for (const key of Object.keys(tgt)) {
+      if (!srcKeys.includes(key)) {
+        delete tgt[key]
       }
     }
     for (const [key, val] of Object.entries(src)) {
