@@ -50,8 +50,9 @@ export const cmpLblMap = {
   Button: '按钮',
   Select: '选择框',
   DateTime: '日期选择',
+  Radio: '单选框',
   Checkbox: '多选框',
-  Switch: '单选框',
+  Switch: '开关',
   Table: '可编辑表',
   Textarea: '多行输入框',
   Delable: '可删除',
@@ -98,6 +99,7 @@ export function compoDftVal(ctype: CompoType) {
     case 'SelOrIpt':
     case 'CodeEditor':
     case 'IconField':
+    case 'Radio':
     default:
       return ''
   }

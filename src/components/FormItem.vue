@@ -129,6 +129,32 @@
           @change="onFieldChanged"
         />
       </a-tooltip>
+      <a-radio-group
+        v-else-if="valState.type === 'Radio'"
+        button-style="solid"
+        :disabled="disabled"
+        :value="getProp(formState, skey)"
+        @change="(e: any) => onFieldChanged(e.target.value)"
+      >
+        <template v-if="valState.style === 'button'">
+          <a-radio-button
+            v-for="opn in valState.options"
+            :key="opn.value"
+            :value="opn.value"
+          >
+            {{ opn.label }}
+          </a-radio-button>
+        </template>
+        <template v-else>
+          <a-radio
+            v-for="opn in valState.options"
+            :key="opn.value"
+            :value="opn.value"
+          >
+            {{ opn.label }}
+          </a-radio>
+        </template>
+      </a-radio-group>
       <a-textarea
         v-else-if="valState.type === 'Textarea'"
         :value="getProp(formState, skey)"

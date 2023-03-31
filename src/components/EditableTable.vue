@@ -357,8 +357,8 @@ export default defineComponent({
     function onEditClicked(record?: any) {
       emit('add', record)
       editing.key = ''
+      props.emitter.emit('update:data', record)
       if (record) {
-        props.emitter.emit('update:data', record)
         editing.key = record.key || ''
       }
       props.emitter.emit('viewOnly', false)

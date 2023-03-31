@@ -5,7 +5,6 @@ import { CompoType, Cond, OpnType } from '.'
 import Column from './column'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import Field from './field'
-import { gnlCpy } from '../utils'
 
 export class BaseMapper {
   label: string
@@ -524,6 +523,27 @@ export class UploadMapper extends BaseMapper {
   }
 }
 
+export class RadioMapper extends SelectMapper {
+  style: 'circle' | 'button'
+
+  constructor() {
+    super()
+    this.style = 'circle'
+  }
+
+  reset() {
+    super.reset()
+    this.style = 'circle'
+  }
+
+  static copy(src: any, tgt?: RadioMapper, force = false): RadioMapper {
+    tgt = tgt || new RadioMapper()
+    SelectMapper.copy(src, tgt)
+    tgt.style = src.style || tgt.style
+    return tgt
+  }
+}
+
 const EleTypeCopies = {
   Unknown: BaseMapper.copy,
   Input: InputMapper.copy,
@@ -533,6 +553,7 @@ const EleTypeCopies = {
   Select: SelectMapper.copy,
   Cascader: SelectMapper.copy,
   Checkbox: CheckboxMapper.copy,
+  Radio: RadioMapper.copy,
   Switch: CheckboxMapper.copy,
   Button: ButtonMapper.copy,
   Table: TableMapper.copy,
