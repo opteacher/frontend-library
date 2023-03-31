@@ -764,7 +764,7 @@ export function gnlCpy<T extends Record<string, any>>(
           tgt[key].splice(
             0,
             tgt[key].length,
-            ...src[key].map((ele: any) => cpy(ele, undefined, options?.force))
+            ...src[key].map((ele: any) => cpy(ele))
           )
         } else {
           tgt[key].splice(0, tgt[key].length, ...src[key])

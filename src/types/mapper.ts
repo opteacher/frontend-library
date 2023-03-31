@@ -46,35 +46,26 @@ export class BaseMapper {
   }
 
   static copy(src: any, tgt?: BaseMapper, force = false): BaseMapper {
-    tgt = gnlCpy(BaseMapper, src, tgt, { force, ignProps: ['disabled', 'display'] })
-    if (src.disabled instanceof Array) {
-      tgt.disabled = src.disabled.map((el: any) => Cond.copy(el))
-    } else if (src.disabled instanceof Object) {
-      tgt.disabled = Object.fromEntries(
-        Object.entries(src.disabled).map(([mode, conds]) => [
-          mode,
-          (conds as Array<any>).map(cond => Cond.copy(cond))
-        ])
-      )
-    } else if (typeof src.disabled !== 'undefined') {
-      tgt.disabled = src.disabled
-    } else if (force) {
-      tgt.disabled = false
-    }
-    if (src.display instanceof Array) {
-      tgt.display = src.display.map((el: any) => Cond.copy(el))
-    } else if (src.display instanceof Object) {
-      tgt.display = Object.fromEntries(
-        Object.entries(src.display).map(([mode, conds]) => [
-          mode,
-          (conds as Array<any>).map(cond => Cond.copy(cond))
-        ])
-      )
-    } else if (typeof src.display !== 'undefined') {
-      tgt.display = src.display
-    } else if (force) {
-      tgt.display = true
-    }
+    tgt = tgt || new BaseMapper()
+    tgt.label = src.label || tgt.label
+    tgt.desc = src.desc || tgt.desc
+    tgt.type = src.type || tgt.type
+    tgt.rules = src.rules || tgt.rules
+    tgt.placeholder = src.placeholder || tgt.placeholder
+    tgt.disabled =
+      src.disabled && src.disabled.length
+        ? src.disabled.map((el: any) => Cond.copy(el))
+        : typeof src.disabled !== 'undefined'
+        ? src.disabled
+        : tgt.disabled
+    tgt.display =
+      src.display && src.display.length
+        ? src.display.map((el: any) => Cond.copy(el))
+        : typeof src.display !== 'undefined'
+        ? src.display
+        : tgt.display
+    tgt.empty = typeof src.empty !== 'undefined' ? src.empty : tgt.empty
+    tgt.onChange = src.onChange || tgt.onChange
     return tgt
   }
 }
@@ -102,7 +93,13 @@ export class InputMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: InputMapper, force = false): InputMapper {
-    return gnlCpy(InputMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
+    tgt = tgt || new InputMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.iptType = src.iptType || tgt.iptType
+    tgt.prefix = src.prefix || tgt.prefix
+    tgt.suffix = src.suffix || tgt.suffix
+    tgt.onBlur = src.onBlur || tgt.onBlur
+    return tgt
   }
 }
 
@@ -123,7 +120,11 @@ export class TextareaMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: TextareaMapper, force = false): TextareaMapper {
-    return gnlCpy(TextareaMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
+    tgt = tgt || new TextareaMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.maxRows = src.maxRows || tgt.maxRows
+    tgt.onBlur = src.onBlur || tgt.onBlur
+    return tgt
   }
 }
 
@@ -150,15 +151,14 @@ export class SelectMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: SelectMapper, force = false): SelectMapper {
-    tgt = gnlCpy(SelectMapper, src, tgt, {
-      force,
-      ignProps: ['options'],
-      baseCpy: BaseMapper.copy
-    })
+    tgt = tgt || new SelectMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.loading = typeof src.loading !== 'undefined' ? src.loading : tgt.loading
+    tgt.allowClear = typeof src.allowClear !== 'undefined' ? src.allowClear : tgt.allowClear
     tgt.options = src.options
       ? src.options.map((opn: any) => {
           if (typeof opn === 'string') {
-            return { label: opn, value: opn }
+            return opn
           } else {
             return {
               label: opn.label,
@@ -168,9 +168,8 @@ export class SelectMapper extends BaseMapper {
             }
           }
         })
-      : force
-      ? []
       : tgt.options
+    tgt.onDropdown = src.onDropdown || tgt.onDropdown
     return tgt
   }
 }
@@ -190,7 +189,10 @@ export class CheckboxMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: CheckboxMapper, force = false): CheckboxMapper {
-    return gnlCpy(CheckboxMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
+    tgt = tgt || new CheckboxMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.chkLabels = src.chkLabels || tgt.chkLabels
+    return tgt
   }
 }
 
@@ -217,7 +219,13 @@ export class ButtonMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: ButtonMapper, force = false): ButtonMapper {
-    return gnlCpy(ButtonMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
+    tgt = tgt || new ButtonMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.inner = src.inner || tgt.inner
+    tgt.danger = src.danger || tgt.danger
+    tgt.primary = src.primary || tgt.primary
+    tgt.onClick = src.onClick || tgt.onClick
+    return tgt
   }
 }
 
@@ -280,14 +288,19 @@ export class TableMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: TableMapper, force = false): TableMapper {
-    return gnlCpy(TableMapper, src, tgt, {
-      force,
-      baseCpy: BaseMapper.copy,
-      cpyMapper: {
-        mapper: Mapper.copy,
-        columns: Column.copy
-      }
-    })
+    tgt = tgt || new TableMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.mapper = src.mapper ? Mapper.copy(src.mapper, tgt.mapper) : tgt.mapper
+    tgt.columns = src.columns || tgt.columns
+    tgt.emitter = src.emitter || tgt.emitter
+    tgt.copy = src.copy || tgt.copy
+    tgt.onEdit = src.onEdit || tgt.onEdit
+    tgt.onSaved = src.onSaved || tgt.onSaved
+    tgt.onDeleted = src.onDeleted || tgt.onDeleted
+    tgt.addable = typeof src.addable != 'undefined' ? src.addable : tgt.addable
+    tgt.editable = typeof src.editable != 'undefined' ? src.editable : tgt.editable
+    tgt.delable = typeof src.delable != 'undefined' ? src.delable : tgt.delable
+    return tgt
   }
 }
 
@@ -308,7 +321,11 @@ export class SelOrIptMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: SelOrIptMapper, force = false): SelOrIptMapper {
-    return gnlCpy(SelOrIptMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
+    tgt = tgt || new SelOrIptMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.mode = src.mode || tgt.mode
+    tgt.options = src.options || tgt.options
+    return tgt
   }
 }
 
@@ -322,15 +339,27 @@ export class LstOpnType {
   constructor() {
     this.key = ''
     this.title = ''
+    this.subTitle = ''
+    this.avatar = ''
+    this.href = ''
   }
 
   reset() {
     this.key = ''
     this.title = ''
+    this.subTitle = ''
+    this.avatar = ''
+    this.href = ''
   }
 
   static copy(src: any, tgt?: LstOpnType, force = false): LstOpnType {
-    return gnlCpy(LstOpnType, src, tgt, { force })
+    tgt = tgt || new LstOpnType()
+    tgt.title = src.title || tgt.title
+    tgt.key = src.key || tgt.key
+    tgt.subTitle = src.subTitle || tgt.subTitle
+    tgt.avatar = src.avatar || tgt.avatar
+    tgt.href = src.href || tgt.href
+    return tgt
   }
 }
 
@@ -351,11 +380,11 @@ export class LstSelMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: LstSelMapper, force = false): LstSelMapper {
-    return gnlCpy(LstSelMapper, src, tgt, {
-      force,
-      baseCpy: BaseMapper.copy,
-      cpyMapper: { options: LstOpnType.copy }
-    })
+    tgt = tgt || new LstSelMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.height = src.height || tgt.height
+    tgt.options = src.options ? src.options.map((opn: any) => LstOpnType.copy(opn)) : tgt.options
+    return tgt
   }
 }
 
@@ -369,10 +398,13 @@ export class EdtLstMapper extends BaseMapper {
   // 注意：抹平只作用于onSaved，不会影响元素的显示！
   //      但抹平确实会影响lblProp（产生如：string[lblProp]
   //      这样的问题），所以两者最好不要同时为真
+  // 如果抹平，则取新元素第一个字段，反之调用copy
   flatItem: boolean
   mapper: Mapper
+  // 数据发生变化后必须触发update:value，重写onSaved也必须注意这一点！
   emitter: Emitter
   copy: (src: any, tgt?: any) => any
+  onAdded: () => Promise<void>
   onSaved: (nItem: any, array?: any[]) => void
 
   constructor() {
@@ -381,28 +413,11 @@ export class EdtLstMapper extends BaseMapper {
     this.lblMapper = {}
     this.inline = true
     this.flatItem = true
-    this.mapper = new Mapper({
-      value: {
-        label: '内容',
-        type: 'Input',
-        placeholder: '请输入',
-        rules: [{ required: true, message: '不能输入空内容！' }]
-      }
-    })
+    this.mapper = new Mapper()
     this.emitter = new Emitter()
-    this.copy = (src: any, tgt?: { value: any }) => {
-      tgt = tgt || { value: '' }
-      tgt.value = src.value || tgt.value
-      return tgt
-    }
-    this.onSaved = (newOne: any, array?: any[]) => {
-      if (typeof array !== 'undefined') {
-        // 如果抹平，则取新元素第一个字段，反之调用copy
-        array.push(this.flatItem ? newOne.value : this.copy(newOne))
-        // 数据发生变化后必须触发这个事件，重写onSaved也必须注意这一点！
-        this.emitter.emit('update:value', array)
-      }
-    }
+    this.copy = () => undefined
+    this.onAdded = () => Promise.resolve()
+    this.onSaved = () => Promise.resolve()
   }
 
   reset() {
@@ -411,38 +426,26 @@ export class EdtLstMapper extends BaseMapper {
     this.lblMapper = {}
     this.inline = true
     this.flatItem = true
-    this.mapper = new Mapper({
-      value: {
-        label: '内容',
-        type: 'Input',
-        placeholder: '请输入',
-        rules: [{ required: true, message: '不能输入空内容！' }]
-      }
-    })
+    this.mapper = new Mapper({})
     this.emitter = new Emitter()
-    this.copy = (src: any, tgt?: { value: any }) => {
-      tgt = tgt || { value: '' }
-      tgt.value = src.value || tgt.value
-      return tgt
-    }
-    this.onSaved = (newOne: any, array?: any[]) => {
-      if (typeof array !== 'undefined') {
-        // 如果抹平，则取新元素第一个字段，反之调用copy
-        array.push(this.flatItem ? newOne.value : this.copy(newOne))
-        // 数据发生变化后必须触发这个事件，重写onSaved也必须注意这一点！
-        this.emitter.emit('update:value', array)
-      }
-    }
+    this.copy = () => undefined
+    this.onAdded = () => Promise.resolve()
+    this.onSaved = () => Promise.resolve()
   }
 
   static copy(src: any, tgt?: EdtLstMapper, force = false): EdtLstMapper {
-    return gnlCpy(EdtLstMapper, src, tgt, {
-      force,
-      baseCpy: BaseMapper.copy,
-      cpyMapper: {
-        mapper: Mapper.copy
-      }
-    })
+    tgt = tgt || new EdtLstMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.lblProp = src.lblProp || tgt.lblProp
+    tgt.lblMapper = src.lblMapper || tgt.lblMapper
+    tgt.inline = typeof src.inline !== 'undefined' ? src.inline : tgt.inline
+    tgt.flatItem = typeof src.flatItem !== 'undefined' ? src.flatItem : tgt.flatItem
+    tgt.mapper = src.mapper || tgt.mapper
+    tgt.emitter = src.emitter || tgt.emitter
+    tgt.copy = src.copy || tgt.copy
+    tgt.onAdded = src.onAdded || tgt.onAdded
+    tgt.onSaved = src.onSaved || tgt.onSaved
+    return tgt
   }
 }
 
@@ -463,13 +466,11 @@ export class GroupMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: GroupMapper, force = false): GroupMapper {
-    return gnlCpy(GroupMapper, src, tgt, {
-      force,
-      baseCpy: BaseMapper.copy,
-      cpyMapper: {
-        items: Mapper.copy
-      }
-    })
+    tgt = tgt || new GroupMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.fold = typeof src.fold !== 'undefined' ? JSON.parse(src.fold) : tgt.fold
+    Mapper.copy(src.items, tgt.items)
+    return tgt
   }
 }
 
@@ -487,7 +488,10 @@ export class CdEdtMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: CdEdtMapper, force = false): CdEdtMapper {
-    return gnlCpy(CdEdtMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
+    tgt = tgt || new CdEdtMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.lang = src.lang || tgt.lang
+    return tgt
   }
 }
 
@@ -511,7 +515,12 @@ export class UploadMapper extends BaseMapper {
   }
 
   static copy(src: any, tgt?: UploadMapper, force = false): UploadMapper {
-    return gnlCpy(UploadMapper, src, tgt, { force, baseCpy: BaseMapper.copy })
+    tgt = tgt || new UploadMapper()
+    BaseMapper.copy(src, tgt)
+    tgt.path = src.path || tgt.path
+    tgt.headers = src.headers || tgt.headers
+    tgt.onBeforeUpload = src.onBeforeUpload || tgt.onBeforeUpload
+    return tgt
   }
 }
 
@@ -554,7 +563,7 @@ export default class Mapper {
         if (!value.type) {
           value.type = 'Unknown'
         }
-        this[key] = EleTypeCopies[value.type](value)
+        this[key] = EleTypeCopies[value.type](value, undefined, true)
       }
     }
   }

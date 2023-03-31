@@ -76,7 +76,10 @@ export default defineComponent({
       }
       addMod.value = false
     }
-    function onEdtLstShow() {
+    async function onEdtLstShow() {
+      if (props.mapper.onAdded) {
+        await props.mapper.onAdded(props.mapper)
+      }
       if (addState.reset) {
         addState.reset()
       } else {

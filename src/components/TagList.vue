@@ -32,7 +32,10 @@ export default defineComponent({
       emit('update:value', array)
     })
 
-    function onNewTagClick() {
+    async function onNewTagClick() {
+      if (props.mapper.onAdded) {
+        await props.mapper.onAdded(props.mapper)
+      }
       props.mapper.emitter.emit('update:show', true)
       props.mapper.emitter.emit('update:data', props.value)
     }
