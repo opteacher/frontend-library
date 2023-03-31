@@ -4,7 +4,7 @@ import { computed, defineComponent } from 'vue'
 export default defineComponent({
   name: 'LabelItem',
   props: {
-    value: { type: [Object, String], required: true },
+    value: { type: [Object, String, Number], required: true },
     prop: { type: String, default: '' },
     mapper: { type: Object, default: () => ({}) }
   },
