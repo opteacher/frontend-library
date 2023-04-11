@@ -8,8 +8,8 @@
         <keep-alive v-if="icon">
           <component :is="icon" v-bind="{ class: 'text-3xl' }" />
         </keep-alive>
-        {{ title }}
-        <span class="text-gray-400">{{ description }}</span>
+        {{ title }}&nbsp;
+        <span class="text-gray-400 text-sm">{{ description }}</span>
       </h3>
       <a-space>
         <SelColBox v-if="dspCols" :columns="columns" @change="fmtColumns" />
@@ -29,6 +29,7 @@
           </a-space>
           <a-button type="primary" @click="onEditClicked()">添加</a-button>
         </template>
+        <slot name="extra" />
       </a-space>
     </div>
     <RefreshBox v-if="refOptions.length" :tblRfsh="refOptions" @click="refresh" />

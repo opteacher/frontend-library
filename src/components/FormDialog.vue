@@ -155,7 +155,7 @@ export default defineComponent({
     }
     function onCclClick() {
       formRef.value.refer.resetFields()
-      // formState.reset && formState.reset()
+      formState.reset && formState.reset()
       visible.value = false
       emit('update:show', false)
     }
