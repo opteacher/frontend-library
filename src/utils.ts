@@ -706,6 +706,9 @@ export function gnlCpy<T extends Record<string, any>>(
     cpyMapper?: Record<string, (src: any, tgt?: any, force?: boolean) => any>
   }
 ): T {
+  if (!src) {
+    src = {}
+  }
   if (!options) {
     options = {}
   }
