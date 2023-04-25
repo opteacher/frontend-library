@@ -760,7 +760,7 @@ export function gnlCpy<T extends Record<string, any>>(
       if (options.force || typeof src[key] !== 'undefined') {
         setProp(tgt, key, dayjs(src[key]))
       }
-    } else if (tgt[key] instanceof Array) {
+    } else if (Array.isArray(tgt[key])) {
       if (src[key]) {
         if (typeof src[key][0] === 'object' && key in options.cpyMapper) {
           const cpy = options.cpyMapper[key]

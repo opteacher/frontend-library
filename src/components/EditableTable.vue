@@ -222,7 +222,7 @@ export default defineComponent({
     columns: { type: Array, required: true },
     cells: { type: Array, default: () => [] },
     mapper: { type: Mapper, default: new Mapper() },
-    copy: { type: Function, default: () => ({ key: '#' }) },
+    copy: { type: Function, default: (src: any) => src },
     emitter: { type: Emitter, default: null },
     title: { type: String, default: '' },
     description: { type: String, default: '' },
@@ -339,7 +339,7 @@ export default defineComponent({
                 params: pickOrIgnore(records, Array.from(ignPams))
               }
             }))
-      records.data = orgData.filter(props.filter)
+      records.data = orgData.filter(props.filter).map((item: any) => props.copy(item))
       if (!records.total) {
         records.total = records.data.length
       }

@@ -1,49 +1,29 @@
 <template>
-  <a-dropdown class="w-full" :disabled="disabled">
-    <a-button>
+  <a-upload
+    class="upload-compo"
+    name="file"
+    :multiple="false"
+    :directory="directory"
+    v-model:file-list="valState"
+    :action="path"
+    :headers="headers"
+    :progress="progress"
+    :beforeUpload="onBeforeUpload"
+    @change="onUploadChange"
+  >
+    <a-button class="w-full">
       <template #icon><UploadOutlined /></template>
-      选择上传的文件或文件夹
+      选择上传的{{ directory ? '文件夹' : '文件' }}
     </a-button>
-    <template #overlay>
-      <a-upload
-        name="file"
-        :multiple="false"
-        :directory="uploadDir"
-        :showUploadList="false"
-        v-model:file-list="valState"
-        :action="path"
-        :headers="headers"
-        :progress="progress"
-        :beforeUpload="onBeforeUpload"
-        @change="onUploadChange"
-      >
-        <a-menu @click="onUploadClicked">
-          <a-menu-item key="file">
-            <FileAddOutlined />
-            &nbsp;上传文件
-          </a-menu-item>
-          <a-menu-item key="folder">
-            <FolderAddOutlined />
-            &nbsp;上传文件夹
-          </a-menu-item>
-        </a-menu>
-      </a-upload>
-    </template>
-  </a-dropdown>
-  <a-list v-show="valState.length" class="mt-1.5" size="small" :data-source="valState">
-    <template #renderItem="{ item: file }">
-      <a-list-item>
-        {{ file.originFileObj.webkitRelativePath || file.name }}
-      </a-list-item>
-    </template>
-  </a-list>
+  </a-upload>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue'
+import { defineComponent, ref, watch, onMounted } from 'vue'
 import { UploadOutlined, FileAddOutlined, FolderAddOutlined } from '@ant-design/icons-vue'
 import type { UploadChangeParam, UploadProps, UploadFile } from 'ant-design-vue'
 import { validConds } from '@/utils'
+import { v4 } from 'uuid'
 
 export default defineComponent({
   name: 'UploadFile',
@@ -56,6 +36,7 @@ export default defineComponent({
   props: {
     form: { type: Object, required: true },
     path: { type: String, default: '' },
+    directory: { type: Boolean, default: false },
     headers: { type: Object, default: undefined },
     value: { type: Array, required: true },
     onBeforeUpload: { type: Function, default: () => () => true },
@@ -63,8 +44,7 @@ export default defineComponent({
     disabled: { type: Boolean, default: false }
   },
   setup(props, { emit }) {
-    const uploadDir = ref(false)
-    const valState = ref(props.value || [])
+    const valState = ref<UploadFile[]>([])
     const progress: UploadProps['progress'] = {
       strokeColor: {
         '0%': '#108ee9',
@@ -75,15 +55,14 @@ export default defineComponent({
       class: 'test'
     }
 
+    onMounted(refresh)
     watch(
       () => props.value,
-      () => {
-        valState.value = props.value
-      }
+      refresh
     )
 
-    function onUploadClicked(item: { key: string }) {
-      uploadDir.value = item.key === 'folder'
+    function refresh() {
+      valState.value = props.value.map((name: string) => ({ uid: v4(), name }))
     }
     function onUploadChange(info: UploadChangeParam) {
       props.onChange(props.form, info)
@@ -93,18 +72,22 @@ export default defineComponent({
           true
         )
       ) {
-        emit('update:value', valState.value)
+        emit('update:value', valState.value.map((item: any) => item.response.result))
       }
     }
     return {
-      uploadDir,
       valState,
       progress,
 
       validConds,
-      onUploadClicked,
       onUploadChange
     }
   }
 })
 </script>
+
+<style>
+.upload-compo .ant-upload {
+  @apply w-full;
+}
+</style>
