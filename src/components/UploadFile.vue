@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch, onMounted } from 'vue'
-import { UploadOutlined, FileAddOutlined, FolderAddOutlined } from '@ant-design/icons-vue'
+import { UploadOutlined } from '@ant-design/icons-vue'
 import type { UploadChangeParam, UploadProps, UploadFile } from 'ant-design-vue'
 import { validConds } from '@/utils'
 import { v4 } from 'uuid'
@@ -28,9 +28,7 @@ import { v4 } from 'uuid'
 export default defineComponent({
   name: 'UploadFile',
   components: {
-    UploadOutlined,
-    FileAddOutlined,
-    FolderAddOutlined
+    UploadOutlined
   },
   emits: ['update:value'],
   props: {
@@ -62,7 +60,7 @@ export default defineComponent({
     )
 
     function refresh() {
-      valState.value = props.value.map((name: string) => ({ uid: v4(), name }))
+      valState.value = (props.value as string[]).map((name: string) => ({ uid: v4(), name }))
     }
     function onUploadChange(info: UploadChangeParam) {
       props.onChange(props.form, info)
