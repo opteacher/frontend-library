@@ -2,7 +2,7 @@
   <a-upload
     class="upload-compo"
     name="file"
-    :multiple="false"
+    :multiple="!directory"
     :directory="directory"
     v-model:file-list="valState"
     :action="path"

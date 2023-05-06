@@ -96,14 +96,14 @@ export async function reqAll(path: string, options?: RequestOptions): Promise<an
   if (!options.messages.succeed) {
     options.messages.succeed = '查询成功！'
   }
+  if (options.axiosConfig && options.axiosConfig.params) {
+    Object.assign(options.axiosConfig, {
+      paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
+    })
+  }
   const result = await makeRequest(
     axios.get(
-      `/${options.project}/${reqType(options)}/v1/${path}/s`,
-      options.axiosConfig && options.axiosConfig.params
-        ? Object.assign(options.axiosConfig, {
-            paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
-          })
-        : undefined
+      `/${options.project}/${reqType(options)}/v1/${path}/s`, options.axiosConfig
     ),
     options
   )
@@ -129,14 +129,14 @@ export async function reqGet(path: string, iden?: any, options?: RequestOptions)
   if (!options.messages.succeed) {
     options.messages.succeed = '查询成功！'
   }
+  if (options.axiosConfig && options.axiosConfig.params) {
+    Object.assign(options.axiosConfig, {
+      paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
+    })
+  }
   const result = await makeRequest(
     axios.get(
-      `/${options.project}/${reqType(options)}/v1/${path}${iden ? '/' + iden : ''}`,
-      options.axiosConfig && options.axiosConfig.params
-        ? Object.assign(options.axiosConfig, {
-            paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
-          })
-        : undefined
+      `/${options.project}/${reqType(options)}/v1/${path}${iden ? '/' + iden : ''}`, options.axiosConfig
     ),
     options
   )
@@ -196,14 +196,14 @@ export function reqDelete(path: string, iden: any, options?: RequestOptions): Pr
   if (!options.messages.succeed) {
     options.messages.succeed = '删除成功！'
   }
+  if (options.axiosConfig && options.axiosConfig.params) {
+    Object.assign(options.axiosConfig, {
+      paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
+    })
+  }
   return makeRequest(
     axios.delete(
-      `/${options.project}/${reqType(options)}/v1/${path}/${iden}`,
-      options.axiosConfig && options.axiosConfig.params
-        ? Object.assign(options.axiosConfig, {
-            paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
-          })
-        : undefined
+      `/${options.project}/${reqType(options)}/v1/${path}/${iden}`, options.axiosConfig
     ),
     options
   )
@@ -385,7 +385,7 @@ export function endsWith(text: string, suffix: string) {
 }
 
 export function intervalCheck(options: {
-  chkFun: () => Promise<boolean>
+  chkFun: (stop: () => boolean) => Promise<boolean>
   middle?: {
     waiting?: (countdown: number) => void
     failed?: () => void
@@ -396,7 +396,7 @@ export function intervalCheck(options: {
 }) {
   let countdown = 0
   const func = async (options: {
-    chkFun: () => Promise<boolean>
+    chkFun: (stop: () => boolean) => Promise<boolean>
     middle?: {
       waiting?: (countdown: number) => void
       failed?: () => void
@@ -425,7 +425,10 @@ export function intervalCheck(options: {
     if (!options.limit) {
       options.limit = 60
     }
-    if (!(await options.chkFun())) {
+    if (!(await options.chkFun(() => {
+      clearInterval(h)
+      return true
+    }))) {
       // 检查状态不满足要求
       options.middle.waiting(countdown)
       if (countdown > (options.limit || 60)) {
