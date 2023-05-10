@@ -179,6 +179,13 @@
       >
         <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: mapper[pname] }" />
       </template>
+      <template
+        v-for="pname in Object.keys(mapper).filter((key: any) => $slots[key + 'VW'])"
+        :key="pname + 'VW'"
+        #[`${pname}VW`]="{ formState }"
+      >
+        <slot :name="pname + 'VW'" v-bind="{ current: formState, mapper: mapper[pname] }" />
+      </template>
     </FormDialog>
   </div>
 </template>

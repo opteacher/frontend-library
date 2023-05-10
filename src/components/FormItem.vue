@@ -10,8 +10,9 @@
       </a-tooltip>
     </template>
     <template v-if="viewOnly">
+      <slot v-if="chkInSlot('VW')" :name="skey + 'VW'" v-bind="{ formState }" />
       <template
-        v-if="
+        v-else-if="
           valState.type === 'Input' ||
           valState.type === 'Number' ||
           valState.type === 'Delable' ||
@@ -38,7 +39,7 @@
             : '否'
         }}
       </template>
-      <template v-else-if="valState.type === 'EditList'">
+      <template v-else-if="valState.type === 'EditList' || valState.type === 'UploadFile'">
         <ul class="pl-0 list-none mb-0">
           <li v-for="item in getProp(formState, skey)" :key="item">{{ item }}</li>
         </ul>
@@ -458,8 +459,9 @@ export default defineComponent({
         valState.onChange(formState, newVal)
       }
     }
-    function chkInSlot() {
-      return slots[props.skey] && props.skey !== 'default'
+    function chkInSlot(suffix?: string) {
+      const key = props.skey + (suffix || '')
+      return slots[key] && key !== 'default'
     }
     return {
       Column,
