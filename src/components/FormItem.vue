@@ -254,6 +254,7 @@
         :form="formState"
         :path="valState.path"
         :headers="valState.headers"
+        :directory="valState.directory"
         :value="getProp(formState, skey)"
         :onBeforeUpload="valState.onBeforeUpload"
         :onChange="valState.onChange"

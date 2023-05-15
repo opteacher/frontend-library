@@ -496,6 +496,7 @@ export class CdEdtMapper extends BaseMapper {
 
 export class UploadMapper extends BaseMapper {
   path: string
+  directory: boolean
   headers: Record<string, any>
   onBeforeUpload: (file: any, fileList: any[]) => boolean | Promise<any>
 
@@ -503,6 +504,7 @@ export class UploadMapper extends BaseMapper {
     super()
     this.path = ''
     this.headers = {}
+    this.directory = false
     this.onBeforeUpload = () => true
   }
 
@@ -510,6 +512,7 @@ export class UploadMapper extends BaseMapper {
     super.reset()
     this.path = ''
     this.headers = {}
+    this.directory = false
     this.onBeforeUpload = () => true
   }
 
@@ -518,6 +521,7 @@ export class UploadMapper extends BaseMapper {
     BaseMapper.copy(src, tgt)
     tgt.path = src.path || tgt.path
     tgt.headers = src.headers || tgt.headers
+    tgt.directory = typeof src.directory !== 'undefined' ? src.directory : tgt.directory
     tgt.onBeforeUpload = src.onBeforeUpload || tgt.onBeforeUpload
     return tgt
   }

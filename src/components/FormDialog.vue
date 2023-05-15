@@ -16,6 +16,9 @@
         <a-button type="primary" html-type="submit" @click="onOkClick">确定</a-button>
       </template>
     </template>
+    <div class="mb-5">
+      <slot name="top" />
+    </div>
     <FormGroup
       ref="formRef"
       :copy="copy"
@@ -44,6 +47,9 @@
         <slot :name="name" v-bind="{ formState }" />
       </template>
     </FormGroup>
+    <div class="mt-5">
+      <slot name="bottom" />
+    </div>
   </a-modal>
 </template>
 
