@@ -5,6 +5,7 @@
     :multiple="!directory"
     :directory="directory"
     v-model:file-list="valState"
+    :data="params"
     :action="path"
     :headers="headers"
     :progress="progress"
@@ -34,6 +35,7 @@ export default defineComponent({
   props: {
     form: { type: Object, required: true },
     path: { type: String, default: '' },
+    params: { type: Object, default: () => ({}) },
     directory: { type: Boolean, default: false },
     headers: { type: Object, default: undefined },
     value: { type: Array, required: true },

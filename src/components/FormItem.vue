@@ -253,6 +253,7 @@
         v-else-if="valState.type === 'UploadFile'"
         :form="formState"
         :path="valState.path"
+        :params="valState.params"
         :headers="valState.headers"
         :directory="valState.directory"
         :value="getProp(formState, skey)"
