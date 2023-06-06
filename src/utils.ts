@@ -52,11 +52,17 @@ export async function makeRequest(pms: Promise<any>, options?: RequestOptions): 
   let result = resp
   if (options.orgRes) {
     result = resp
-  } else if (typeof resp.result !== 'undefined') {
-    result = resp.result
-  } else if (typeof resp.data !== 'undefined') {
-    result = resp.data
+  } else {
+    if (typeof resp.result !== 'undefined') {
+      result = resp.result
+    } else if (typeof resp.data !== 'undefined') {
+      result = resp.data
+    }
+    if (options.copy) {
+      result = Array.isArray(result) ? result.map((item: any) => options && options.copy && options.copy(item)) : options.copy(result)
+    }
   }
+
   if (resp.error || result.error) {
     if (!options.messages.notShow && options.messages.failed) {
       message.error(options.messages.failed)
@@ -101,13 +107,12 @@ export async function reqAll(path: string, options?: RequestOptions): Promise<an
       paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
     })
   }
-  const result = await makeRequest(
+  return makeRequest(
     axios.get(
       `/${options.project}/${reqType(options)}/v1/${path}/s`, options.axiosConfig
     ),
     options
   )
-  return result.map((item: any) => (options && options.copy ? options.copy(item) : item))
 }
 
 export async function reqGet(path: string, iden?: any, options?: RequestOptions): Promise<any> {
@@ -134,13 +139,12 @@ export async function reqGet(path: string, iden?: any, options?: RequestOptions)
       paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
     })
   }
-  const result = await makeRequest(
+  return makeRequest(
     axios.get(
       `/${options.project}/${reqType(options)}/v1/${path}${iden ? '/' + iden : ''}`, options.axiosConfig
     ),
     options
   )
-  return options && options.copy ? options.copy(result) : result
 }
 
 export function reqPost(path: string, body?: any, options?: RequestOptions): Promise<any> {
