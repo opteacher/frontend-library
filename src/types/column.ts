@@ -15,8 +15,8 @@ export default class Column {
   customFilterDropdown: boolean
   dict: Record<string, string>
   onFilter?: (value: string, record: any) => boolean
-  customCell: (record: any, rowIndex: number, column: Column) => any
-  customHeaderCell: (column: Column) => any
+  custCell: any
+  custHdCell: any
 
   constructor(
     title: string,
@@ -34,8 +34,8 @@ export default class Column {
       fixed?: 'left' | 'right'
       dict?: Record<string, string>
       filter?: (value: string, record: any) => boolean
-      customCell?: (record: any, rowIndex: number, column: Column) => any
-      customHeaderCell?: (column: Column) => any
+      custCell?: any
+      custHdCell?: any
     }
   ) {
     this.title = title
@@ -57,9 +57,8 @@ export default class Column {
     this.customFilterDropdown = this.searchable
     this.dict = options && options.dict ? options.dict : {}
     this.onFilter = options && options.filter ? options.filter : undefined
-    this.customCell = options && options.customCell ? options.customCell : () => console.log()
-    this.customHeaderCell =
-      options && options.customHeaderCell ? options.customHeaderCell : () => console.log()
+    this.custCell = options?.custCell
+    this.custHdCell = options?.custHdCell
   }
 
   reset() {
@@ -77,8 +76,8 @@ export default class Column {
     this.customFilterDropdown = false
     this.dict = {}
     this.onFilter = undefined
-    this.customCell = () => console.log()
-    this.customHeaderCell = () => console.log()
+    this.custCell = undefined
+    this.custHdCell = undefined
   }
 
   static copy(src: any, tgt?: Column): Column {
@@ -107,8 +106,8 @@ export default class Column {
     tgt.customFilterDropdown = src.customFilterDropdown || src.searchable || tgt.customFilterDropdown
     tgt.dict = src.dict || tgt.dict
     tgt.onFilter = src.filter || src.onFilter || tgt.onFilter
-    tgt.customCell = src.customCell || tgt.customCell
-    tgt.customHeaderCell = src.customHeaderCell || tgt.customHeaderCell
+    tgt.custCell = src.custCell || tgt.custCell
+    tgt.custHdCell = src.custHdCell || tgt.custHdCell
     return tgt
   }
 }

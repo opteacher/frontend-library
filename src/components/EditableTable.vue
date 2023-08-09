@@ -44,12 +44,9 @@
       :loading="loading"
       bordered
       :scroll="sclHeight ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
-      :custom-row="
-      (record: any) => ({
+      :custom-row="(record: any) => ({
         onClick: clkable ? () => onRowClick(record) : undefined
-      })
-
-    "
+      })"
       @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
       @expand="(_expanded: unknown, record: any) => onRowExpand(record)"
     >
@@ -359,7 +356,6 @@ export default defineComponent({
       editing.show = false
       loading.value = false
       fmtColumns()
-
       loading.value = false
     }
     function onEditClicked(record?: any) {
@@ -470,18 +466,27 @@ export default defineComponent({
             if (column.dataIndex === 'opera') {
               return column
             }
-            const textmetrics = context.measureText(column.title)
-            const minWidth = textmetrics.width << 1
-            const style = !column.width ? { 'min-width': `${minWidth}px` } : {}
-            column.customHeaderCell = () => ({ style })
-            column.customCell = () => ({
-              style: Object.assign({
-                'white-space': 'nowrap',
-                'text-overflow': 'ellipsis',
-                overflow: 'hidden'
-              }, style)
-            })
-            return column
+            let width = column.width
+            if (!column.width) {
+              const textmetrics = context.measureText(column.title)
+              width = textmetrics.width * 2.5
+              column.width = width
+            }
+            return Object.assign({
+              customHeaderCell: () => ({
+                ...(column.custHdCell || {}),
+                style: { width }
+              }),
+              customCell: () => ({
+                ...(column.custCell || {}),
+                style: {
+                  'white-space': 'nowrap',
+                  'text-overflow': 'ellipsis',
+                  overflow: 'hidden',
+                  width
+                }
+              })
+            }, pickOrIgnore(column, ['custHdCell', 'custCell', 'dict', 'notDisplay']))
           })
       )
       canvas.remove()

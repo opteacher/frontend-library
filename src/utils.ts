@@ -533,7 +533,7 @@ export function genDspColumns(formState: Batch) {
     ret.push(
       new Column(txt, key, {
         width,
-        customCell: () => ({
+        custCell: {
           style: {
             'min-width': '100px',
             'max-width': `${width}px`,
@@ -541,7 +541,7 @@ export function genDspColumns(formState: Batch) {
             'text-overflow': 'ellipsis',
             overflow: 'hidden'
           }
-        })
+        }
       })
     )
   }
