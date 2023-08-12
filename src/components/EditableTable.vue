@@ -453,42 +453,53 @@ export default defineComponent({
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d') as CanvasRenderingContext2D
       context.font = '14px Microsoft YaHei'
-      const cols = (columns || props.columns) as Column[]
-      colsState.splice(
-        0,
-        colsState.length,
-        ...(props.editable || props.delable
-          ? cols.concat(new Column('操作', 'opera', { width: 80, fixed: 'right' }))
-          : cols
-        )
-          .filter((column: Column) => !column.notDisplay)
-          .map((column: Column) => {
-            if (column.dataIndex === 'opera') {
-              return column
+      const cols: Column[] = ((columns || props.columns) as Column[])
+        .filter((column: Column) => !column.notDisplay)
+        .map((column: Column) => {
+          let width = column.width
+          if (!column.width) {
+            const textmetrics = context.measureText(column.title)
+            width = textmetrics.width * 2.5
+            column.width = width
+          }
+          return Object.assign({
+            customHeaderCell: () => ({
+              ...(column.custHdCell || {}),
+              style: { width }
+            }),
+            customCell: () => ({
+              ...(column.custCell || {}),
+              style: {
+                'white-space': 'nowrap',
+                'text-overflow': 'ellipsis',
+                overflow: 'hidden',
+                width
+              }
+            })
+          }, pickOrIgnore(column, ['custHdCell', 'custCell', 'dict', 'notDisplay']))
+        })
+      if (props.editable || props.delable) {
+        cols.push(new Column('操作', 'opera', { width: 80, fixed: 'right' }))
+      }
+      const col4Ist = [] as Column[]
+      for (const col of cols) {
+        if (!col.group.length) {
+          col4Ist.push(pickOrIgnore(col, ['group']))
+        } else {
+          let tmp: Column[] = col4Ist
+          for (let i = 0; i < col.group.length; ++i) {
+            const group = col.group[i]
+            let tmpCol = tmp?.find(citm => citm.title === group)
+            if (!tmpCol) {
+              tmpCol = new Column(group, '')
+              tmp.push(tmpCol as Column)
             }
-            let width = column.width
-            if (!column.width) {
-              const textmetrics = context.measureText(column.title)
-              width = textmetrics.width * 2.5
-              column.width = width
-            }
-            return Object.assign({
-              customHeaderCell: () => ({
-                ...(column.custHdCell || {}),
-                style: { width }
-              }),
-              customCell: () => ({
-                ...(column.custCell || {}),
-                style: {
-                  'white-space': 'nowrap',
-                  'text-overflow': 'ellipsis',
-                  overflow: 'hidden',
-                  width
-                }
-              })
-            }, pickOrIgnore(column, ['custHdCell', 'custCell', 'dict', 'notDisplay']))
-          })
-      )
+            tmp = tmpCol?.children as Column[]
+          }
+          tmp.push(pickOrIgnore(col, ['group']))
+        }
+      }
+      colsState.splice(0, colsState.length, ...col4Ist)
       canvas.remove()
     }
     return {

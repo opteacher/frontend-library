@@ -3,6 +3,7 @@
 export default class Column {
   title: string
   dataIndex: string
+  group: string[]
   key: string
   width?: number
   align: 'left' | 'right' | 'center'
@@ -17,12 +18,14 @@ export default class Column {
   onFilter?: (value: string, record: any) => boolean
   custCell: any
   custHdCell: any
+  children: Column[]
 
   constructor(
     title: string,
     dataIdx: string,
     options?: {
       key?: string
+      group?: string[]
       width?: number
       align?: 'left' | 'right' | 'center'
       sortable?: boolean
@@ -36,10 +39,12 @@ export default class Column {
       filter?: (value: string, record: any) => boolean
       custCell?: any
       custHdCell?: any
+      children?: Column[]
     }
   ) {
     this.title = title
     this.dataIndex = dataIdx
+    this.group = options && options.group ? options.group : []
     this.key = options && options.key ? options.key : dataIdx
     if (options && options.width) {
       this.width = options.width
@@ -59,11 +64,14 @@ export default class Column {
     this.onFilter = options && options.filter ? options.filter : undefined
     this.custCell = options?.custCell
     this.custHdCell = options?.custHdCell
+    this.children = options && options.children && options.children.length
+      ? options.children.map(col => Column.copy(col)) : []
   }
 
   reset() {
     this.title = ''
     this.dataIndex = ''
+    this.group = []
     this.key = ''
     this.width = 0
     this.align = 'left'
@@ -78,6 +86,7 @@ export default class Column {
     this.onFilter = undefined
     this.custCell = undefined
     this.custHdCell = undefined
+    this.children = []
   }
 
   static copy(src: any, tgt?: Column): Column {
@@ -85,6 +94,7 @@ export default class Column {
     tgt.key = src.key || src._id || tgt.key
     tgt.title = src.title || tgt.title
     tgt.dataIndex = src.dataIndex || tgt.dataIndex
+    tgt.group = src.group || tgt.group
     tgt.width = src.width || tgt.width
     tgt.align = src.align || tgt.align
     tgt.sorter =
@@ -108,6 +118,7 @@ export default class Column {
     tgt.onFilter = src.filter || src.onFilter || tgt.onFilter
     tgt.custCell = src.custCell || tgt.custCell
     tgt.custHdCell = src.custHdCell || tgt.custHdCell
+    tgt.children.splice(0, tgt.children.length, ...(src.children || []).map((col: any) => Column.copy(col)))
     return tgt
   }
 }
