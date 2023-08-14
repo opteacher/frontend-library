@@ -279,19 +279,22 @@ export default defineComponent({
         if (!tblBdy) {
           return
         }
+        let colHgt = 0
         switch (props.size) {
           case 'small':
-            tblBdy.style.top = '41px'
+            colHgt = 41
             break
           case 'middle':
-            tblBdy.style.top = '48px'
+            colHgt = 48
             break
           case 'default':
           case 'large':
           default:
-            tblBdy.style.top = '57px'
+            colHgt = 57
             break
         }
+        const layNum = Math.max(...props.columns.map((column: any) => column.group ? column.group.length : 0)) + 1
+        tblBdy.style.top = layNum * colHgt + 'px'
       })
       records.offset = 0
       records.limit = 10
