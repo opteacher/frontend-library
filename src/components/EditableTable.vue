@@ -162,7 +162,6 @@
       </template>
     </a-table>
     <FormDialog
-      v-model:show="editing.show"
       :copy="copy"
       :title="title || undefined"
       :emitter="emitter"
@@ -255,10 +254,7 @@ export default defineComponent({
       filters: undefined as any
     })
     const expRowKeys = reactive([] as string[])
-    const editing = reactive({
-      show: false,
-      key: ''
-    })
+    const editKey = ref<string>('')
     const loading = ref(false)
     const searchState = reactive<Record<string, { content: string; reset: Function }>>(
       {}
@@ -355,28 +351,30 @@ export default defineComponent({
           records.data = pcsData
         }
       })
-      editing.key = ''
-      editing.show = false
+      editKey.value = ''
+      props.emitter.emit('update:show', false)
       loading.value = false
       fmtColumns()
       loading.value = false
     }
     function onEditClicked(record?: any) {
       emit('add', record)
-      editing.key = ''
-      props.emitter.emit('update:data', record)
+      editKey.value = ''
       if (record) {
-        editing.key = record.key || ''
+        editKey.value = record.key || ''
       }
-      props.emitter.emit('viewOnly', false)
-      editing.show = true
+      props.emitter.emit('update:show', {
+        show: true,
+        viewOnly: false,
+        cpyRcd: (form: any) => props.copy(record, form)
+      })
     }
     async function onRecordSave(record: any, reset: Function) {
       loading.value = true
       emit('before-save', record)
-      const result = editing.key === ''
+      const result = editKey.value === ''
         ? await props.api.add(record)
-        : await props.api.update(record)
+        : await props.api.update({ ...record, key: editKey.value })
       emit('save', record, refresh)
       reset()
       await refresh()
@@ -389,7 +387,7 @@ export default defineComponent({
       loading.value = true
       await props.api.remove(record)
       emit('delete', record, refresh)
-      editing.show = false
+      props.emitter.emit('update:show', false)
       await refresh()
     }
     function onRowExpand(record: { key: string }) {
@@ -402,9 +400,11 @@ export default defineComponent({
       emit('expand', { expand, record })
     }
     function onRowClick(record: any) {
-      props.emitter.emit('viewOnly', true)
-      props.emitter.emit('update:data', record)
-      editing.show = true
+      props.emitter.emit('update:show', {
+        show: true,
+        viewOnly: true,
+        cpyRcd: (form: any) => props.copy(record, form)
+      })
     }
     async function onBatchSubmit(info: any, opera: 'import' | 'export') {
       loading.value = true
@@ -486,7 +486,7 @@ export default defineComponent({
       }
       const col4Ist = [] as Column[]
       for (const col of cols) {
-        if (!col.group.length) {
+        if (!col.group || !col.group.length) {
           col4Ist.push(pickOrIgnore(col, ['group']))
         } else {
           let tmp: Column[] = col4Ist
@@ -514,7 +514,7 @@ export default defineComponent({
       loading,
       records,
       expRowKeys,
-      editing,
+      editKey,
       searchState,
       fmtIeIgnCols,
 
