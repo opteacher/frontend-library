@@ -204,7 +204,7 @@ import { Cells } from '../types/cell'
 import CellCard from './CellCard.vue'
 import BchImpBox from './BchImpBox.vue'
 import BchExpBox from './BchExpBox.vue'
-import { uuid } from 'uuidv4'
+import { v4 as uuid } from 'uuid'
 
 export default defineComponent({
   name: 'EditableTable',

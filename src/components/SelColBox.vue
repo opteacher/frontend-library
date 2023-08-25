@@ -61,7 +61,7 @@ export default defineComponent({
     function refresh() {
       colsState.splice(0, colsState.length, ...(props.columns as Column[]))
       grps.splice(0, grps.length, ...Array.from(new Set(colsState
-        .filter((col: Column) => col.group.length)
+        .filter((col: Column) => col.group && col.group.length)
         .map((col: Column) => col.group[0])
       )))
       allSelCols.value = chkSelState(colsState, true)
