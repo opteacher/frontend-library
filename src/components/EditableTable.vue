@@ -204,6 +204,7 @@ import { Cells } from '../types/cell'
 import CellCard from './CellCard.vue'
 import BchImpBox from './BchImpBox.vue'
 import BchExpBox from './BchExpBox.vue'
+import { uuid } from 'uuidv4'
 
 export default defineComponent({
   name: 'EditableTable',
@@ -494,7 +495,7 @@ export default defineComponent({
             const group = col.group[i]
             let tmpCol = tmp?.find(citm => citm.title === group)
             if (!tmpCol) {
-              tmpCol = new Column(group, '')
+              tmpCol = new Column(group, '', { key: uuid() })
               tmp.push(tmpCol as Column)
             }
             tmp = tmpCol?.children as Column[]
