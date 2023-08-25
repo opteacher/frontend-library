@@ -60,7 +60,7 @@ import Mapper from '../types/mapper'
 import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormGroup from './FormGroup.vue'
-import { getProp } from '@/utils'
+import { getProp } from '../utils'
 
 export default defineComponent({
   name: 'FormDialog',

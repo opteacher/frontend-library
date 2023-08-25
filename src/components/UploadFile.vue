@@ -23,7 +23,7 @@
 import { defineComponent, ref, watch, onMounted } from 'vue'
 import { UploadOutlined } from '@ant-design/icons-vue'
 import type { UploadChangeParam, UploadProps, UploadFile } from 'ant-design-vue'
-import { validConds } from '@/utils'
+import { validConds } from '../utils'
 import { v4 } from 'uuid'
 
 export default defineComponent({

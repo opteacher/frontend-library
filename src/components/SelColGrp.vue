@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import Column from '@/types/column'
+import Column from '../types/column'
 import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
