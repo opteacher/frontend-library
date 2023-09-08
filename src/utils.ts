@@ -292,16 +292,21 @@ export function reqLink(
   }
 }
 
-export function getProperty(obj: any, props: string | string[]): any {
+export function getProperty(obj: any, props: string | string[]): any{
   if (typeof props === 'string') {
     props = props.split('.')
   }
   for (const prop of props) {
     if (!obj) {
       return null
-    } else if (obj instanceof Array && prop.startsWith('[') && prop.endsWith(']')) {
-      const key = prop.substring(1, prop.length - 1)
-      obj = obj.find(el => el.key === key)
+    } else if (Array.isArray(obj) && prop.startsWith('[') && prop.endsWith(']')) {
+      const key = prop.slice(1, -1)
+      const numKey = parseInt(key)
+      if (!Number.isNaN(numKey)) {
+        obj = obj[numKey]
+      } else {
+        obj = obj.find(el => el.key === key)
+      }
     } else if (prop in obj) {
       obj = obj[prop]
     } else {
