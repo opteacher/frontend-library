@@ -184,7 +184,7 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { computed, onMounted, reactive, ref, shallowReactive } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
@@ -237,7 +237,6 @@ const props = defineProps({
   dspCols: { type: Boolean, default: false },
   sclHeight: { type: String, default: '' }
 })
-
 const colsState = reactive<Column[]>([])
 const records = reactive({
   data: [] as unknown[],
@@ -372,9 +371,6 @@ async function onRecordSave(record: any, reset: Function) {
   reset()
   await refresh()
   emit('after-save', result)
-}
-function onCclClicked() {
-  refresh()
 }
 async function onRecordDel(record: any) {
   loading.value = true

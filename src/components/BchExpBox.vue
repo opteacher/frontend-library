@@ -17,8 +17,8 @@
       <a-form-item-rest>
         <a-table
           v-if="formState.worksheet"
-          :columns="genDspColumns(formState)"
-          :data-source="genDspRecords(formState)"
+          :columns="genDspColumns(formState as Batch)"
+          :data-source="genDspRecords(formState as Batch)"
           :scroll="{ x: 'max-content' }"
           :loading="formState.loading"
           size="small"
@@ -72,6 +72,7 @@ import { read } from 'xlsx'
 import { Cond } from '../types'
 import { upperFirst } from '../utils'
 import { genDspColumns, genDspRecords } from '../utils'
+import Batch from '../types/batch'
 
 export default defineComponent({
   name: 'BchExpBox',

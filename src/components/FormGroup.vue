@@ -1,36 +1,21 @@
-<script lang="ts">
+<script lang="ts" setup name="FormGroup">
 import { validConds } from '../utils'
 import FormItem from './FormItem.vue'
 import Mapper from '../types/mapper'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
-import { defineComponent, ref } from 'vue'
+import { ref } from 'vue'
 
-export default defineComponent({
-  name: 'FormGroup',
-  components: {
-    FormItem,
-
-    PlusOutlined,
-    MinusOutlined
-  },
-  props: {
-    lblWid: { type: Number, default: 4 },
-    copy: { type: Function, required: true },
-    object: { type: Object, default: null },
-    mapper: { type: Mapper, required: true },
-    form: { type: Object, required: true },
-    rules: { type: Object, required: true },
-    editable: { type: Boolean, default: true },
-    viewOnly: { type: Boolean, default: false }
-  },
-  setup() {
-    const refer = ref()
-    return {
-      refer,
-      validConds
-    }
-  }
+defineProps({
+  lblWid: { type: Number, default: 4 },
+  copy: { type: Function, required: true },
+  object: { type: Object, default: null },
+  mapper: { type: Mapper, required: true },
+  form: { type: Object, required: true },
+  rules: { type: Object, required: true },
+  editable: { type: Boolean, default: true },
+  viewOnly: { type: Boolean, default: false }
 })
+const refer = ref()
 </script>
 
 <template>

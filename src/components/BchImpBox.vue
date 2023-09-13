@@ -31,8 +31,8 @@
           </a-button>
         </a-space>
         <a-table
-          :columns="genDspColumns(formState)"
-          :data-source="genDspRecords(formState)"
+          :columns="genDspColumns(formState as Batch)"
+          :data-source="genDspRecords(formState as Batch)"
           :scroll="{ x: 'max-content' }"
           :loading="formState.loading"
           size="small"
@@ -87,6 +87,7 @@ import {
   EnterOutlined,
   CloseOutlined
 } from '@ant-design/icons-vue'
+import Batch from '../types/batch'
 
 export default defineComponent({
   name: 'BchImpBox',

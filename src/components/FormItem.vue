@@ -368,10 +368,10 @@
   </a-form-item>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup name="FormItem">
 import type { OpnType } from '../types'
 import Column from '../types/column'
-import { computed, defineComponent, reactive, watch } from 'vue'
+import { computed, reactive, useSlots, watch } from 'vue'
 import {
   InfoCircleOutlined,
   CloseCircleOutlined,
@@ -386,101 +386,69 @@ import TagList from './TagList.vue'
 import EditList from './EditList.vue'
 import { validConds, getProp, setProp } from '../utils'
 
-export default defineComponent({
-  name: 'FormItem',
-  components: {
-    InfoCircleOutlined,
-    CloseCircleOutlined,
-    SelectOutlined,
-    EditOutlined,
-    AppstoreOutlined,
-
-    UploadFile,
-    CodeEditor,
-    TagList,
-    EditList
-  },
-  props: {
-    form: { type: Object, required: true },
-    skey: { type: String, required: true },
-    value: { type: Object, required: true },
-    editable: { type: Boolean, default: true },
-    viewOnly: { type: Boolean, default: false }
-  },
-  setup(props, { slots }) {
-    const formState = reactive(props.form)
-    const valState = reactive(props.value)
-    const display = computed(() => validConds(formState, valState.display, true))
-    const disabled = computed(() => validConds(formState, valState.disabled) || !props.editable)
-
-    watch(
-      () => props.value,
-      () => {
-        getCopy(props.value, valState)
-      }
-    )
-
-    function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
-      if (value instanceof Array) {
-        const vals = []
-        if (!options || !options.length) {
-          return value.join(' / ')
-        }
-        let opns = options
-        for (let i = 0; i < value.length; ++i) {
-          const opn = opns.find((opn: OpnType) => opn.value === value[i])
-          if (opn) {
-            opns = opn.children as OpnType[]
-            vals.push(opn.label || opn.value)
-          } else {
-            vals.push(value[i])
-          }
-          if (i === value.length - 1) {
-            break
-          }
-        }
-        return vals.join(' / ')
-      } else {
-        const opn = options.find((opn: OpnType) => opn.value === value)
-        return opn ? opn.label || opn.value : value
-      }
-    }
-    function onLstSelChecked(chk: boolean, propKey: string, opnKey: string) {
-      const selKeys = formState[propKey].map((itm: any) => itm.key)
-      if (chk) {
-        if (!selKeys.includes(opnKey)) {
-          formState[propKey].push(opnKey)
-        }
-      } else {
-        formState[propKey].splice(selKeys.indexOf(opnKey), 1)
-      }
-    }
-    function onFieldChanged(newVal: any) {
-      setProp(formState, props.skey, newVal)
-      if (valState.onChange) {
-        valState.onChange(formState, newVal)
-      }
-    }
-    function chkInSlot(suffix?: string) {
-      const key = props.skey + (suffix || '')
-      return slots[key] && key !== 'default'
-    }
-    return {
-      Column,
-
-      formState,
-      valState,
-      display,
-      disabled,
-
-      getProp,
-      setProp,
-      validConds,
-      fmtDrpdwnValue,
-      onLstSelChecked,
-      onFieldChanged,
-      chkInSlot
-    }
-  }
+const props = defineProps({
+  form: { type: Object, required: true },
+  skey: { type: String, required: true },
+  value: { type: Object, required: true },
+  editable: { type: Boolean, default: true },
+  viewOnly: { type: Boolean, default: false }
 })
+const formState = reactive(props.form)
+const valState = reactive(props.value)
+const display = computed(() => validConds(formState, valState.display, true))
+const disabled = computed(() => validConds(formState, valState.disabled) || !props.editable)
+
+watch(
+  () => props.value,
+  () => {
+    getCopy(props.value, valState)
+  }
+)
+
+function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
+  if (value instanceof Array) {
+    const vals = []
+    if (!options || !options.length) {
+      return value.join(' / ')
+    }
+    let opns = options
+    for (let i = 0; i < value.length; ++i) {
+      const opn = opns.find((opn: OpnType) => opn.value === value[i])
+      if (opn) {
+        opns = opn.children as OpnType[]
+        vals.push(opn.label || opn.value)
+      } else {
+        vals.push(value[i])
+      }
+      if (i === value.length - 1) {
+        break
+      }
+    }
+    return vals.join(' / ')
+  } else {
+    const opn = options.find((opn: OpnType) => opn.value === value)
+    return opn ? opn.label || opn.value : value
+  }
+}
+function onLstSelChecked(chk: boolean, propKey: string, opnKey: string) {
+  const selKeys = formState[propKey].map((itm: any) => itm.key)
+  if (chk) {
+    if (!selKeys.includes(opnKey)) {
+      formState[propKey].push(opnKey)
+    }
+  } else {
+    formState[propKey].splice(selKeys.indexOf(opnKey), 1)
+  }
+}
+function onFieldChanged(newVal: any) {
+  setProp(formState, props.skey, newVal)
+  if (valState.onChange) {
+    valState.onChange(formState, newVal)
+  }
+}
+function chkInSlot(suffix?: string) {
+  const key = props.skey + (suffix || '')
+  const slotKey = !!useSlots()[key]
+  return slotKey && key !== 'default'
+}
 </script>

@@ -44,7 +44,7 @@ export class BaseMapper {
     this.onChange = () => undefined
   }
 
-  static copy(src: any, tgt?: BaseMapper, force = false): BaseMapper {
+  static copy(src: any, tgt?: BaseMapper): BaseMapper {
     tgt = tgt || new BaseMapper()
     tgt.label = src.label || tgt.label
     tgt.desc = src.desc || tgt.desc
@@ -91,7 +91,7 @@ export class InputMapper extends BaseMapper {
     this.onBlur = () => undefined
   }
 
-  static copy(src: any, tgt?: InputMapper, force = false): InputMapper {
+  static copy(src: any, tgt?: InputMapper): InputMapper {
     tgt = tgt || new InputMapper()
     BaseMapper.copy(src, tgt)
     tgt.iptType = src.iptType || tgt.iptType
@@ -118,7 +118,7 @@ export class TextareaMapper extends BaseMapper {
     this.onBlur = () => undefined
   }
 
-  static copy(src: any, tgt?: TextareaMapper, force = false): TextareaMapper {
+  static copy(src: any, tgt?: TextareaMapper): TextareaMapper {
     tgt = tgt || new TextareaMapper()
     BaseMapper.copy(src, tgt)
     tgt.maxRows = src.maxRows || tgt.maxRows
@@ -149,7 +149,7 @@ export class SelectMapper extends BaseMapper {
     this.onDropdown = () => undefined
   }
 
-  static copy(src: any, tgt?: SelectMapper, force = false): SelectMapper {
+  static copy(src: any, tgt?: SelectMapper): SelectMapper {
     tgt = tgt || new SelectMapper()
     BaseMapper.copy(src, tgt)
     tgt.loading = typeof src.loading !== 'undefined' ? src.loading : tgt.loading
@@ -187,7 +187,7 @@ export class CheckboxMapper extends BaseMapper {
     this.chkLabels = ['否', '是']
   }
 
-  static copy(src: any, tgt?: CheckboxMapper, force = false): CheckboxMapper {
+  static copy(src: any, tgt?: CheckboxMapper): CheckboxMapper {
     tgt = tgt || new CheckboxMapper()
     BaseMapper.copy(src, tgt)
     tgt.chkLabels = src.chkLabels || tgt.chkLabels
@@ -217,7 +217,7 @@ export class ButtonMapper extends BaseMapper {
     this.onClick = () => undefined
   }
 
-  static copy(src: any, tgt?: ButtonMapper, force = false): ButtonMapper {
+  static copy(src: any, tgt?: ButtonMapper): ButtonMapper {
     tgt = tgt || new ButtonMapper()
     BaseMapper.copy(src, tgt)
     tgt.inner = src.inner || tgt.inner
@@ -286,7 +286,7 @@ export class TableMapper extends BaseMapper {
     this.delable = true
   }
 
-  static copy(src: any, tgt?: TableMapper, force = false): TableMapper {
+  static copy(src: any, tgt?: TableMapper): TableMapper {
     tgt = tgt || new TableMapper()
     BaseMapper.copy(src, tgt)
     tgt.mapper = src.mapper ? Mapper.copy(src.mapper, tgt.mapper) : tgt.mapper
@@ -319,7 +319,7 @@ export class SelOrIptMapper extends BaseMapper {
     this.options = []
   }
 
-  static copy(src: any, tgt?: SelOrIptMapper, force = false): SelOrIptMapper {
+  static copy(src: any, tgt?: SelOrIptMapper): SelOrIptMapper {
     tgt = tgt || new SelOrIptMapper()
     BaseMapper.copy(src, tgt)
     tgt.mode = src.mode || tgt.mode
@@ -351,7 +351,7 @@ export class LstOpnType {
     this.href = ''
   }
 
-  static copy(src: any, tgt?: LstOpnType, force = false): LstOpnType {
+  static copy(src: any, tgt?: LstOpnType): LstOpnType {
     tgt = tgt || new LstOpnType()
     tgt.title = src.title || tgt.title
     tgt.key = src.key || tgt.key
@@ -378,7 +378,7 @@ export class LstSelMapper extends BaseMapper {
     this.options = []
   }
 
-  static copy(src: any, tgt?: LstSelMapper, force = false): LstSelMapper {
+  static copy(src: any, tgt?: LstSelMapper): LstSelMapper {
     tgt = tgt || new LstSelMapper()
     BaseMapper.copy(src, tgt)
     tgt.height = src.height || tgt.height
@@ -432,7 +432,7 @@ export class EdtLstMapper extends BaseMapper {
     this.onSaved = () => Promise.resolve()
   }
 
-  static copy(src: any, tgt?: EdtLstMapper, force = false): EdtLstMapper {
+  static copy(src: any, tgt?: EdtLstMapper): EdtLstMapper {
     tgt = tgt || new EdtLstMapper()
     BaseMapper.copy(src, tgt)
     tgt.lblProp = src.lblProp || tgt.lblProp
@@ -464,7 +464,7 @@ export class GroupMapper extends BaseMapper {
     this.items = {}
   }
 
-  static copy(src: any, tgt?: GroupMapper, force = false): GroupMapper {
+  static copy(src: any, tgt?: GroupMapper): GroupMapper {
     tgt = tgt || new GroupMapper()
     BaseMapper.copy(src, tgt)
     tgt.fold = typeof src.fold !== 'undefined' ? JSON.parse(src.fold) : tgt.fold
@@ -486,7 +486,7 @@ export class CdEdtMapper extends BaseMapper {
     this.lang = 'javascript'
   }
 
-  static copy(src: any, tgt?: CdEdtMapper, force = false): CdEdtMapper {
+  static copy(src: any, tgt?: CdEdtMapper): CdEdtMapper {
     tgt = tgt || new CdEdtMapper()
     BaseMapper.copy(src, tgt)
     tgt.lang = src.lang || tgt.lang
@@ -519,7 +519,7 @@ export class UploadMapper extends BaseMapper {
     this.onBeforeUpload = () => true
   }
 
-  static copy(src: any, tgt?: UploadMapper, force = false): UploadMapper {
+  static copy(src: any, tgt?: UploadMapper): UploadMapper {
     tgt = tgt || new UploadMapper()
     BaseMapper.copy(src, tgt)
     tgt.path = src.path || tgt.path
@@ -544,7 +544,7 @@ export class RadioMapper extends SelectMapper {
     this.style = 'circle'
   }
 
-  static copy(src: any, tgt?: RadioMapper, force = false): RadioMapper {
+  static copy(src: any, tgt?: RadioMapper): RadioMapper {
     tgt = tgt || new RadioMapper()
     SelectMapper.copy(src, tgt)
     tgt.style = src.style || tgt.style
