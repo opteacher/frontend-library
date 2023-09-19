@@ -4,6 +4,7 @@ import FormItem from './FormItem.vue'
 import Mapper from '../types/mapper'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
 import { ref } from 'vue'
+import { FormInstance } from 'ant-design-vue'
 
 defineProps({
   lblWid: { type: Number, default: 4 },
@@ -15,7 +16,9 @@ defineProps({
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
-const refer = ref()
+const refer = ref<FormInstance>()
+
+defineExpose({ refer })
 </script>
 
 <template>
@@ -28,7 +31,10 @@ const refer = ref()
   >
     <template v-for="(value, key) in mapper" :key="key">
       <template v-if="value.type === 'FormGroup' && validConds(form, value.display)">
-        <div v-if="value.fold" class="border border-solid border-gray-300 pt-7 px-2.5 my-7 relative rounded">
+        <div
+          v-if="value.fold"
+          class="border border-solid border-gray-300 pt-7 px-2.5 my-7 relative rounded"
+        >
           <a-button
             type="link"
             size="small"
@@ -52,7 +58,7 @@ const refer = ref()
             :key="k"
             :form="form"
             :skey="k.toString()"
-            :value="(v as Object)"
+            :value="v as Object"
             :editable="editable"
             :viewOnly="viewOnly"
           >
@@ -89,7 +95,7 @@ const refer = ref()
       <FormItem
         v-else
         :form="form"
-        :skey="(key as string)"
+        :skey="key as string"
         :value="value"
         :editable="editable"
         :viewOnly="viewOnly"

@@ -24,7 +24,7 @@
               @submit="(info: any) => onBatchSubmit(info, 'import')"
             />
           </a-space>
-          <a-button type="primary" @click="onEditClicked()">添加</a-button>
+          <a-button type="primary" :loading="loading" @click="onEditClicked()">添加</a-button>
         </template>
         <slot name="extra" />
       </a-space>
@@ -54,7 +54,10 @@
           v-if="column.searchable"
           :style="{ color: filtered ? '@primary-color' : undefined }"
         />
-        <AntdIcons.FilterFilled v-else :style="{ color: filtered ? '@primary-color' : undefined }" />
+        <AntdIcons.FilterFilled
+          v-else
+          :style="{ color: filtered ? '@primary-color' : undefined }"
+        />
       </template>
       <template
         #customFilterDropdown="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }"
@@ -188,7 +191,6 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
-import Column from '../types/column'
 import Mapper from '../types/mapper'
 import SelColBox from './SelColBox.vue'
 import { pickOrIgnore, upperFirst, waitFor } from '../utils'
@@ -201,6 +203,7 @@ import CellCard from './CellCard.vue'
 import BchImpBox from './BchImpBox.vue'
 import BchExpBox from './BchExpBox.vue'
 import { v4 as uuid } from 'uuid'
+import Column from '../types/column'
 
 const emit = defineEmits([
   'add',
@@ -256,6 +259,9 @@ const fmtIeIgnCols = computed(() =>
 onMounted(refresh)
 if (props.emitter) {
   props.emitter.on('refresh', refresh)
+  props.emitter.on('load', (load: boolean) => {
+    loading.value = load
+  })
 }
 fmtColumns()
 
@@ -324,15 +330,30 @@ async function refresh(data?: any[], params?: any) {
     }
   }
   records.total = props.api.count ? await props.api.count() : 0
-  const orgData =
-    data ||
-    (records.filters
-      ? await props.api.filter(records.filters)
-      : await props.api.all({
-          axiosConfig: {
-            params: pickOrIgnore(records, Array.from(ignPams))
-          }
-        }))
+  let orgData = []
+  if (data) {
+    orgData = data
+  } else if (props.api.filter) {
+    orgData = await props.api.filter(records.filters)
+  } else {
+    orgData = await props.api.all({
+      axiosConfig: {
+        params: pickOrIgnore(records, Array.from(ignPams))
+      }
+    })
+    orgData = orgData.filter((record: any) => {
+      for (const [prop, content] of Object.entries(searchState).map(([prop, value]) => [
+        prop,
+        value.content
+      ])) {
+        if (!content) {
+          continue
+        }
+        return record[prop].includes(content)
+      }
+      return true
+    })
+  }
   records.data = orgData.filter(props.filter).map((item: any) => props.copy(item))
   if (!records.total) {
     records.total = records.data.length
@@ -450,6 +471,15 @@ function fmtColumns(columns?: Column[]) {
         const textmetrics = context.measureText(column.title)
         width = textmetrics.width * 2.5
         column.width = width
+      }
+      if (column.filterable) {
+        ;(column as any).filters = Array.from(
+          new Set(records.data.map((record: any) => record[column.dataIndex]))
+        ).map(item => ({
+          text: column.dict && typeof column.dict[item] !== 'undefined' ? column.dict[item] : item,
+          value: item
+        }))
+        column.onFilter = (value: string, record: any) => record[column.dataIndex] == value
       }
       return Object.assign(
         {

@@ -11,10 +11,11 @@ export default class Column {
   defaultSortOrder: string
   notDisplay: boolean
   resizable: boolean
+  filterable: boolean
   fixed?: 'left' | 'right'
   searchable: boolean
   customFilterDropdown: boolean
-  dict: Record<string, string>
+  dict: any
   onFilter?: (value: string, record: any) => boolean
   custCell: any
   custHdCell: any
@@ -35,7 +36,7 @@ export default class Column {
       notDisplay?: boolean
       resizable?: boolean
       fixed?: 'left' | 'right'
-      dict?: Record<string, string>
+      dict?: Record<string, any>
       filter?: (value: string, record: any) => boolean
       custCell?: any
       custHdCell?: any
@@ -44,28 +45,41 @@ export default class Column {
   ) {
     this.title = title
     this.dataIndex = dataIdx
-    this.group = options && options.group ? options.group : []
-    this.key = options && options.key ? options.key : dataIdx
-    if (options && options.width) {
-      this.width = options.width
+    this.searchable = false
+    if (options) {
+      this.group = options.group ? options.group : []
+      this.key = options.key ? options.key : dataIdx
+      if (options.width) {
+        this.width = options.width
+      }
+      this.align = options.align ? options.align : 'left'
+      this.sorter = options.sortable ? (a: any, b: any) => a[dataIdx] - b[dataIdx] : undefined
+      this.defaultSortOrder = typeof options.defaultSort !== 'undefined' ? options.defaultSort : ''
+      this.notDisplay = typeof options.notDisplay !== 'undefined' ? options.notDisplay : false
+      this.resizable = typeof options.resizable !== 'undefined' ? options.resizable : false
+      this.filterable = typeof options.filterable !== 'undefined' ? options.filterable : false
+      this.fixed = options.fixed ? options.fixed : undefined
+      this.searchable = options.searchable as boolean
+      this.dict = options.dict ? options.dict : {}
+      this.onFilter = options.filter ? options.filter : undefined
+      this.custCell = options?.custCell
+      this.custHdCell = options?.custHdCell
+      this.children =
+        options.children && options.children.length
+          ? options.children.map(col => Column.copy(col))
+          : []
+    } else {
+      this.group = []
+      this.key = ''
+      this.align = 'center'
+      this.defaultSortOrder = ''
+      this.notDisplay = false
+      this.resizable = false
+      this.filterable = false
+      this.dict = {}
+      this.children = []
     }
-    this.align = options && options.align ? options.align : 'left'
-    this.sorter =
-      options && options.sortable ? (a: any, b: any) => a[dataIdx] - b[dataIdx] : undefined
-    this.defaultSortOrder =
-      options && typeof options.defaultSort !== 'undefined' ? options.defaultSort : ''
-    this.notDisplay =
-      options && typeof options.notDisplay !== 'undefined' ? options.notDisplay : false
-    this.resizable = options && typeof options.resizable !== 'undefined' ? options.resizable : false
-    this.fixed = options && options.fixed ? options.fixed : undefined
-    this.searchable = (options && options.searchable) as boolean
     this.customFilterDropdown = this.searchable
-    this.dict = options && options.dict ? options.dict : {}
-    this.onFilter = options && options.filter ? options.filter : undefined
-    this.custCell = options?.custCell
-    this.custHdCell = options?.custHdCell
-    this.children = options && options.children && options.children.length
-      ? options.children.map(col => Column.copy(col)) : []
   }
 
   reset() {
@@ -79,6 +93,7 @@ export default class Column {
     this.defaultSortOrder = ''
     this.notDisplay = false
     this.resizable = false
+    this.filterable = false
     this.fixed = undefined
     this.searchable = false
     this.customFilterDropdown = false
@@ -111,14 +126,20 @@ export default class Column {
         : ''
     tgt.notDisplay = typeof src.notDisplay !== 'undefined' ? src.notDisplay : tgt.notDisplay
     tgt.resizable = typeof src.resizable !== 'undefined' ? src.resizable : tgt.resizable
+    tgt.filterable = typeof src.filterable !== 'undefined' ? src.filterable : tgt.filterable
     tgt.fixed = src.fixed || tgt.fixed
     tgt.searchable = typeof src.searchable !== 'undefined' ? src.searchable : tgt.searchable
-    tgt.customFilterDropdown = src.customFilterDropdown || src.searchable || tgt.customFilterDropdown
+    tgt.customFilterDropdown =
+      src.customFilterDropdown || src.searchable || tgt.customFilterDropdown
     tgt.dict = src.dict || tgt.dict
     tgt.onFilter = src.filter || src.onFilter || tgt.onFilter
     tgt.custCell = src.custCell || tgt.custCell
     tgt.custHdCell = src.custHdCell || tgt.custHdCell
-    tgt.children.splice(0, tgt.children.length, ...(src.children || []).map((col: any) => Column.copy(col)))
+    tgt.children.splice(
+      0,
+      tgt.children.length,
+      ...(src.children || []).map((col: any) => Column.copy(col))
+    )
     return tgt
   }
 }

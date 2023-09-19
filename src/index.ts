@@ -26,5 +26,5 @@ export const components = {
 }
 
 export default function (app: App) {
-    Object.values(components).map(component => app.component(component.name, component))
+    Object.values(components).map(component => app.component(component.name || component.__name as string, component))
 }
