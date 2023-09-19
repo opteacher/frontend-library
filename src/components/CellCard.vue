@@ -20,107 +20,93 @@
   </span>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup name="CellCard">
 import { endsWith, fmtStrByObj } from '../utils'
-import { computed, defineComponent } from 'vue'
+import { defineProps, computed } from 'vue'
 import dayjs from 'dayjs'
 import HighLight from './HighLight.vue'
 import Cell, { Cells } from '../types/cell'
 
-export default defineComponent({
-  name: 'CellCard',
-  components: {
-    HighLight
-  },
-  props: {
-    cell: { type: Cells, required: true },
-    text: { type: String, required: true },
-    selected: { type: Boolean, default: false },
-    mapper: { type: Object, default: () => ({}) },
-    record: { type: Object, default: null },
-    keyword: { type: String, default: '' }
-  },
-  setup(props) {
-    const pcsCell = computed<Cell>((): Cell => {
-      const ret = props.cell
-      if (ret.cdCell) {
-        for (const [cond, cell] of Object.entries(ret.cdCell)) {
-          const conds = cond.split('_')
-          const prop = conds[0]
-          const cmp = conds[1]
-          const tgtVal = conds[2]
-          const srcVal = props.record[prop]
-          switch (cmp) {
-            case '==':
-              if (srcVal == tgtVal) {
-                return cell as Cell
-              }
-              break
-            case '!=':
-              if (srcVal != tgtVal) {
-                return cell as Cell
-              }
-              break
-            case '>':
-              if (srcVal > tgtVal) {
-                return cell as Cell
-              }
-              break
-            case '>=':
-              if (srcVal >= tgtVal) {
-                return cell as Cell
-              }
-              break
-            case '<':
-              if (srcVal < tgtVal) {
-                return cell as Cell
-              }
-              break
-            case '<=':
-              if (srcVal <= tgtVal) {
-                return cell as Cell
-              }
-              break
-          }
-        }
-      }
-      return ret as Cell
-    })
-    const fmtTxt = computed(() => {
-      let ret = props.text.toString()
-      switch (pcsCell.value.ctype) {
-        case 'Number':
-          if (pcsCell.value.format.fix > 0) {
-            ret = Number.parseFloat(ret).toFixed(pcsCell.value.format.fix)
-          }
-          if (pcsCell.value.format.unit) {
-            ret += pcsCell.value.format.unit
+const props = defineProps({
+  cell: { type: Cells, required: true },
+  text: { type: String, required: true },
+  selected: { type: Boolean, default: false },
+  mapper: { type: Object, default: () => ({}) },
+  record: { type: Object, default: null },
+  keyword: { type: String, default: '' }
+})
+const pcsCell = computed<Cell>((): Cell => {
+  const ret = props.cell
+  if (ret.cdCell) {
+    for (const [cond, cell] of Object.entries(ret.cdCell)) {
+      const conds = cond.split('_')
+      const prop = conds[0]
+      const cmp = conds[1]
+      const tgtVal = conds[2]
+      const srcVal = props.record[prop]
+      switch (cmp) {
+        case '==':
+          if (srcVal == tgtVal) {
+            return cell as Cell
           }
           break
-        case 'DateTime':
-          if (pcsCell.value.format.pattern) {
-            ret = dayjs(ret).format(pcsCell.value.format.pattern)
+        case '!=':
+          if (srcVal != tgtVal) {
+            return cell as Cell
           }
+          break
+        case '>':
+          if (srcVal > tgtVal) {
+            return cell as Cell
+          }
+          break
+        case '>=':
+          if (srcVal >= tgtVal) {
+            return cell as Cell
+          }
+          break
+        case '<':
+          if (srcVal < tgtVal) {
+            return cell as Cell
+          }
+          break
+        case '<=':
+          if (srcVal <= tgtVal) {
+            return cell as Cell
+          }
+          break
       }
-      return [
-        pcsCell.value.prefix && !ret.startsWith(pcsCell.value.prefix)
-          ? pcsCell.value.prefix
-          : '',
-        ret,
-        pcsCell.value.suffix && !endsWith(ret, pcsCell.value.suffix)
-          ? pcsCell.value.suffix
-          : ''
-      ].join('')
-    })
-    const fmtHref = computed(() =>
-      fmtStrByObj(/\s?@.+?(?=\s)/g, props.record, pcsCell.value.format.href)
-    )
-    return {
-      pcsCell,
-      fmtTxt,
-      fmtHref,
-      endsWith
     }
   }
+  return ret as Cell
 })
+const fmtTxt = computed(() => {
+  let ret = props.text.toString()
+  switch (pcsCell.value.ctype) {
+    case 'Number':
+      if (pcsCell.value.format.fix > 0) {
+        ret = Number.parseFloat(ret).toFixed(pcsCell.value.format.fix)
+      }
+      if (pcsCell.value.format.unit) {
+        ret += pcsCell.value.format.unit
+      }
+      break
+    case 'DateTime':
+      if (pcsCell.value.format.pattern) {
+        ret = dayjs(ret).format(pcsCell.value.format.pattern)
+      }
+  }
+  return [
+    pcsCell.value.prefix && !ret.startsWith(pcsCell.value.prefix)
+      ? pcsCell.value.prefix
+      : '',
+    ret,
+    pcsCell.value.suffix && !endsWith(ret, pcsCell.value.suffix)
+      ? pcsCell.value.suffix
+      : ''
+  ].join('')
+})
+const fmtHref = computed(() =>
+  fmtStrByObj(/\s?@.+?(?=\s)/g, props.record, pcsCell.value.format.href)
+)
 </script>

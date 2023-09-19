@@ -52,7 +52,7 @@ export default class Column {
       if (options.width) {
         this.width = options.width
       }
-      this.align = options.align ? options.align : 'left'
+      this.align = options.align || 'left'
       this.sorter = options.sortable ? (a: any, b: any) => a[dataIdx] - b[dataIdx] : undefined
       this.defaultSortOrder = typeof options.defaultSort !== 'undefined' ? options.defaultSort : ''
       this.notDisplay = typeof options.notDisplay !== 'undefined' ? options.notDisplay : false
@@ -70,8 +70,8 @@ export default class Column {
           : []
     } else {
       this.group = []
-      this.key = ''
-      this.align = 'center'
+      this.key = dataIdx
+      this.align = 'left'
       this.defaultSortOrder = ''
       this.notDisplay = false
       this.resizable = false

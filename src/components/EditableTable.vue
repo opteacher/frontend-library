@@ -187,7 +187,7 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, defineProps, defineEmits } from 'vue'
 import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'

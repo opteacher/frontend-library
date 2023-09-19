@@ -13,14 +13,11 @@
   <template v-else>{{ text }}</template>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup name="HighLight">
+import { defineProps } from 'vue'
 
-export default defineComponent({
-  name: 'HighLight',
-  props: {
-    text: { type: String, required: true },
-    search: { type: String, required: true }
-  }
+defineProps({
+  text: { type: String, required: true },
+  search: { type: String, required: true }
 })
 </script>
