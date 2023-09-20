@@ -72,7 +72,6 @@ import { read } from 'xlsx'
 import { Cond } from '../types'
 import { upperFirst } from '../utils'
 import { genDspColumns, genDspRecords } from '../utils'
-import Batch from '../types/batch'
 
 export default defineComponent({
   name: 'BchExpBox',

@@ -371,7 +371,7 @@
 <script lang="ts" setup name="FormItem">
 import type { OpnType } from '../types'
 import Column from '../types/column'
-import { computed, reactive, useSlots, watch } from 'vue'
+import { defineProps, computed, reactive, useSlots, watch } from 'vue'
 import {
   InfoCircleOutlined,
   CloseCircleOutlined,

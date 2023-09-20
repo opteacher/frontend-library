@@ -3,7 +3,7 @@ import { validConds } from '../utils'
 import FormItem from './FormItem.vue'
 import Mapper from '../types/mapper'
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
-import { ref } from 'vue'
+import { defineProps, defineExpose, ref } from 'vue'
 import { FormInstance } from 'ant-design-vue'
 
 defineProps({

@@ -87,7 +87,6 @@ import {
   EnterOutlined,
   CloseOutlined
 } from '@ant-design/icons-vue'
-import Batch from '../types/batch'
 
 export default defineComponent({
   name: 'BchImpBox',

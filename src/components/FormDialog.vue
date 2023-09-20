@@ -56,7 +56,7 @@
 <script lang="ts" setup name="FormDialog">
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Mapper from '../types/mapper'
-import { onMounted, reactive, ref, watch } from 'vue'
+import { defineProps, defineEmits, onMounted, reactive, ref, watch } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormGroup from './FormGroup.vue'
 import { getProp } from '../utils'
