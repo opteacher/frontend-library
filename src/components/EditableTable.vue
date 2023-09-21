@@ -138,7 +138,7 @@
           v-else
           :cell="getCells(column.dataIndex)"
           :text="getCellTxt(text, column.dict)"
-          :mapper="mapper[column.key] || {}"
+          :mapper="mapper[column.key]"
           :record="record"
           :keyword="column.dataIndex in searchState ? searchState[column.dataIndex].content : ''"
         />
@@ -222,7 +222,7 @@ const props = defineProps({
   cells: { type: Array, default: () => [] },
   mapper: { type: Mapper, default: new Mapper() },
   copy: { type: Function, default: (src: any) => src },
-  emitter: { type: Emitter, default: null },
+  emitter: { type: Emitter, default: new Emitter() },
   title: { type: String, default: '' },
   description: { type: String, default: '' },
   size: { type: String, default: 'default' },
@@ -267,10 +267,8 @@ fmtColumns()
 
 async function refresh(data?: any[], params?: any) {
   loading.value = true
-  waitFor('ant-table-body', { getBy: 'class' }).then(tblBdy => {
-    if (!tblBdy) {
-      return
-    }
+  const tblBdy = await waitFor('ant-table-body', { getBy: 'class' })
+  if (tblBdy) {
     let colHgt = 0
     switch (props.size) {
       case 'small':
@@ -287,8 +285,10 @@ async function refresh(data?: any[], params?: any) {
     }
     const layNum =
       Math.max(...props.columns.map((column: any) => (column.group ? column.group.length : 0))) + 1
-    tblBdy.style.top = layNum * colHgt + 'px'
-  })
+    if (tblBdy.style) {
+      tblBdy.style.top = layNum * colHgt + 'px'
+    }
+  }
   records.offset = 0
   records.limit = 10
   records.filters = undefined
@@ -378,7 +378,7 @@ function onEditClicked(record?: any) {
   props.emitter.emit('update:show', {
     show: true,
     viewOnly: false,
-    cpyRcd: (form: any) => props.copy(record, form)
+    cpyRcd: (form: any) => props.copy(record || {}, form)
   })
 }
 async function onRecordSave(record: any, reset: Function) {
@@ -470,7 +470,6 @@ function fmtColumns(columns?: Column[]) {
       if (!column.width) {
         const textmetrics = context.measureText(column.title)
         width = textmetrics.width * 2.5
-        column.width = width
       }
       if (column.filterable) {
         ;(column as any).filters = Array.from(
@@ -481,24 +480,23 @@ function fmtColumns(columns?: Column[]) {
         }))
         column.onFilter = (value: string, record: any) => record[column.dataIndex] == value
       }
-      return Object.assign(
-        {
-          customHeaderCell: () => ({
-            ...(column.custHdCell || {}),
-            style: { width }
-          }),
-          customCell: () => ({
-            ...(column.custCell || {}),
-            style: {
-              'white-space': 'nowrap',
-              'text-overflow': 'ellipsis',
-              overflow: 'hidden',
-              width
-            }
-          })
-        },
-        pickOrIgnore(column, ['custHdCell', 'custCell', 'dict', 'notDisplay'])
-      )
+      return {
+        customHeaderCell: () => ({
+          ...(column.custHdCell || {}),
+          style: { width }
+        }),
+        customCell: () => ({
+          ...(column.custCell || {}),
+          style: {
+            'white-space': 'nowrap',
+            'text-overflow': 'ellipsis',
+            overflow: 'hidden',
+            width
+          }
+        }),
+        width,
+        ...pickOrIgnore(column, ['width', 'custHdCell', 'custCell', 'dict', 'notDisplay'])
+      }
     })
   if (props.editable || props.delable) {
     cols.push(new Column('操作', 'opera', { width: 80, fixed: 'right' }))

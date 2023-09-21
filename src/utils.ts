@@ -362,7 +362,7 @@ export async function waitFor(
         ret = document.getElementsByClassName(iden)
         break
     }
-    if (!ret || !ret.length) {
+    if (!ret) {
       await new Promise(res => setTimeout(res, 200))
       continue
     } else if (ret.length) {

@@ -72,7 +72,7 @@ const props = defineProps({
   mapper: { type: Mapper, required: true },
   emitter: { type: Emitter, default: null }
 })
-const visible = ref(props.show)
+const visible = ref<boolean>(props.show)
 const editable = ref(true)
 const viewOnly = ref(false)
 const okLoading = ref(false)
@@ -104,6 +104,7 @@ if (props.emitter) {
       if (args.cpyRcd) {
         args.cpyRcd(formState)
       }
+      console.log(args)
       visible.value = args.show
     }
   )

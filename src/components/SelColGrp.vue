@@ -16,38 +16,28 @@
   <a-divider class="my-2" />
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import Column from '../types/column'
-import { defineComponent, ref } from 'vue'
+import { defineProps, ref } from 'vue'
 
-export default defineComponent({
-  props: {
-    group: { type: String, required: true },
-    columns: { type: Array, required: true },
-    selCols: { type: Array, required: true },
-    chkSelState: { type: Function, required: true }
-  },
-  setup(props) {
-    const indSelCols = ref<boolean>(false)
-
-    function onAllColsChange(e: { target: { checked: boolean } }) {
-      (props.columns as Column[]).map((column: Column) => {
-        column.notDisplay = !e.target.checked
-      })
-      indSelCols.value = false
-    }
-    function onDspColSelect(checkeds: string[]) {
-      (props.columns as Column[]).map((column: Column) => {
-        column.notDisplay = !checkeds.includes(column.key)
-      })
-      indSelCols.value = props.chkSelState(props.columns, false)
-    }
-    return {
-      indSelCols,
-
-      onAllColsChange,
-      onDspColSelect
-    }
-  },
+const props = defineProps({
+  group: { type: String, required: true },
+  columns: { type: Array, required: true },
+  selCols: { type: Array, required: true },
+  chkSelState: { type: Function, required: true }
 })
+const indSelCols = ref<boolean>(false)
+
+function onAllColsChange(e: { target: { checked: boolean } }) {
+  (props.columns as Column[]).map((column: Column) => {
+    column.notDisplay = !e.target.checked
+  })
+  indSelCols.value = false
+}
+function onDspColSelect(checkeds: string[]) {
+  (props.columns as Column[]).map((column: Column) => {
+    column.notDisplay = !checkeds.includes(column.key)
+  })
+  indSelCols.value = props.chkSelState(props.columns, false)
+}
 </script>

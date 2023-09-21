@@ -28,87 +28,63 @@
   </a-modal>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup name="SelColBox">
 import Column from '../types/column'
-import { computed, defineComponent, onMounted, reactive, ref, watch } from 'vue'
+import { defineEmits, defineProps, computed, onMounted, reactive, ref, watch } from 'vue'
 import { InsertRowAboveOutlined } from '@ant-design/icons-vue'
 import SelColGrp from './SelColGrp.vue'
 
-export default defineComponent({
-  name: 'SelColBox',
-  components: {
-    InsertRowAboveOutlined,
-    SelColGrp
-  },
-  emits: ['change'],
-  props: {
-    columns: { type: Array, required: true }
-  },
-  setup(props, { emit }) {
-    const colsState = reactive(props.columns as Column[])
-    const selColsVsb = ref(false)
-    const allSelCols = ref(true)
-    const indSelCols = ref(false)
-    const grps = reactive<string[]>([])
-    const dspCols = computed(() => colsState
-      .filter((column: Column) => !column.notDisplay)
-      .map((column: Column) => column.key)
-    )
-
-    onMounted(refresh)
-    watch(() => props.columns, refresh)
-
-    function refresh() {
-      colsState.splice(0, colsState.length, ...(props.columns as Column[]))
-      grps.splice(0, grps.length, ...Array.from(new Set(colsState
-        .filter((col: Column) => col.group && col.group.length)
-        .map((col: Column) => col.group[0])
-      )))
-      allSelCols.value = chkSelState(colsState, true)
-      indSelCols.value = chkSelState(colsState, false)
-    }
-    function getColsByGrp(grp: string) {
-      return colsState.filter((column: Column) =>
-        column.group.length && column.group[0] === grp
-      )
-    }
-    function chkSelState(cols: Column[], allSel: boolean) {
-      return cols.reduce((prev: boolean, col: Column) => (
-        allSel ? (prev && !col.notDisplay) : (prev || col.notDisplay)
-      ), allSel)
-    }
-    function onAllColsChange(e: { target: { checked: boolean } }) {
-      colsState.map((column: Column) => {
-        column.notDisplay = !e.target.checked
-      })
-      allSelCols.value = e.target.checked
-      indSelCols.value = false
-      emit('change', colsState)
-    }
-    function onDspColSelect(checkeds: string[]) {
-      colsState
-        .filter((col: Column) => !col.group.length)
-        .map((column: Column) => {
-          column.notDisplay = !checkeds.includes(column.key)
-        })
-      indSelCols.value = chkSelState(colsState, false)
-      emit('change', colsState)
-    }
-    return {
-      Column,
-
-      colsState,
-      grps,
-      dspCols,
-      selColsVsb,
-      allSelCols,
-      indSelCols,
-
-      chkSelState,
-      getColsByGrp,
-      onAllColsChange,
-      onDspColSelect
-    }
-  }
+const emit = defineEmits(['change'])
+const props = defineProps({
+  columns: { type: Array, required: true }
 })
+const colsState = reactive<Column[]>(props.columns as Column[])
+const selColsVsb = ref(false)
+const allSelCols = ref(true)
+const indSelCols = ref(false)
+const grps = reactive<string[]>([])
+const dspCols = computed(() => colsState
+  .filter((column: Column) => !column.notDisplay)
+  .map((column: Column) => column.key)
+)
+
+onMounted(refresh)
+watch(() => [...props.columns], refresh)
+
+function refresh() {
+  colsState.splice(0, colsState.length, ...(props.columns as Column[]))
+  grps.splice(0, grps.length, ...Array.from(new Set(colsState
+    .filter((col: Column) => col.group && col.group.length)
+    .map((col: Column) => col.group[0])
+  )))
+  allSelCols.value = chkSelState(colsState, true)
+  indSelCols.value = chkSelState(colsState, false)
+}
+function getColsByGrp(grp: string) {
+  return colsState.filter((column: Column) =>
+    column.group.length && column.group[0] === grp
+  )
+}
+function chkSelState(cols: Column[], allSel: boolean) {
+  return cols.reduce((prev: boolean, col: Column) => (
+    allSel ? (prev && !col.notDisplay) : (prev || col.notDisplay)
+  ), allSel)
+}
+function onAllColsChange(e: { target: { checked: boolean } }) {
+  colsState.map((column: Column) => {
+    column.notDisplay = !e.target.checked
+  })
+  allSelCols.value = e.target.checked
+  indSelCols.value = false
+  emit('change', colsState)
+}
+function onDspColSelect(checkeds: string[]) {
+  colsState
+    .filter((col: Column) => !col.group.length)
+    .map((column: Column) => {
+      column.notDisplay = !checkeds.includes(column.key)
+    })
+  indSelCols.value = chkSelState(colsState, false)
+  emit('change', colsState)
+}
 </script>
