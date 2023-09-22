@@ -25,7 +25,7 @@ export interface RequestOptions {
   orgRes?: boolean
 }
 
-const getDftPjt = () => process.env.VUE_APP_PJT || 'frontend-library'
+const getDftPjt = () => import.meta.env.VITE_APP_PJT || 'frontend-library'
 
 export async function makeRequest(pms: Promise<any>, options?: RequestOptions): Promise<any> {
   if (!options) {

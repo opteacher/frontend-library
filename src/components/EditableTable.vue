@@ -378,7 +378,7 @@ function onEditClicked(record?: any) {
   props.emitter.emit('update:show', {
     show: true,
     viewOnly: false,
-    cpyRcd: (form: any) => props.copy(record || {}, form)
+    object: record || {}
   })
 }
 async function onRecordSave(record: any, reset: Function) {
@@ -413,7 +413,7 @@ function onRowClick(record: any) {
   props.emitter.emit('update:show', {
     show: true,
     viewOnly: true,
-    cpyRcd: (form: any) => props.copy(record, form)
+    object: record
   })
 }
 async function onBatchSubmit(info: any, opera: 'import' | 'export') {

@@ -106,7 +106,7 @@ export default class Column {
 
   static copy(src: any, tgt?: Column): Column {
     tgt = tgt || new Column('', '')
-    tgt.key = src.key || src._id || tgt.key
+    tgt.key = src.key || src.dataIndex || tgt.key
     tgt.title = src.title || tgt.title
     tgt.dataIndex = src.dataIndex || tgt.dataIndex
     tgt.group = src.group || tgt.group

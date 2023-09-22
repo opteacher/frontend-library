@@ -229,8 +229,8 @@
               onClick: () => {
                 valState.emitter.emit('update:show', {
                   show: true,
-                  viewOnly: !valState.editable,
-                  cpyRcd: (form: any) => valState.copy(record, form)
+                  object: record,
+                  viewOnly: !valState.editable
                 })
                 valState.onEdit(formState)
               }
