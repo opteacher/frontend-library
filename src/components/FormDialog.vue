@@ -90,7 +90,7 @@ const viewOnly = ref(false)
 const okLoading = ref(false)
 const formRef = ref()
 const formMapper = reactive(props.mapper)
-const formState = ref(props.object || props.copy({}))
+const formState = reactive(props.object || props.copy({}))
 const formRules = Object.fromEntries(
   Object.entries(props.mapper).map(entry => {
     return [entry[0], entry[1].rules]
@@ -114,7 +114,7 @@ if (props.emitter) {
       }
       viewOnly.value = typeof args.viewOnly != 'undefined' ? args.viewOnly : false
       if (args.object) {
-        formState.value = args.object
+        props.copy(args.object, formState, true)
       }
       visible.value = args.show
     }
@@ -122,8 +122,8 @@ if (props.emitter) {
   props.emitter.on('update:data', (data?: any) => {
     if (data) {
       props.copy(data, formState, true)
-    } else if (formState.value.reset) {
-      formState.value.reset()
+    } else if (formState.reset) {
+      formState.reset()
     } else {
       props.copy({}, formState, true)
     }
@@ -156,7 +156,7 @@ async function onOkClick() {
     emit('submit', formState, () => {
       okLoading.value = false
       formRef.value.refer.resetFields()
-      formState.value.reset && formState.value.reset()
+      formState.reset && formState.reset()
       visible.value = false
       emit('update:show', false)
     })
@@ -166,7 +166,7 @@ async function onOkClick() {
 }
 function onCclClick() {
   formRef.value.refer.resetFields()
-  formState.value.reset && formState.value.reset()
+  formState.reset && formState.reset()
   visible.value = false
   emit('update:show', false)
 }
