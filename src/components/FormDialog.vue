@@ -1,12 +1,20 @@
 <template>
   <a-modal
     v-model:visible="visible"
-    :title="title"
     :width="width"
     :confirmLoading="!editable || okLoading"
     :footer="viewOnly ? null : undefined"
     @cancel="onCclClick"
   >
+    <template #title>
+      {{ title }}
+      <a-button v-if="operable" type="text" @click="viewOnly = !viewOnly">
+        <template #icon>
+          <FormOutlined v-if="viewOnly" />
+          <EyeOutlined v-else />
+        </template>
+      </a-button>
+    </template>
     <template #footer>
       <template v-if="$slots['footer']">
         <slot name="footer" v-bind="formState" />
@@ -37,10 +45,12 @@
           :copy="value.copy"
           :emitter="value.emitter"
           :object="value.editing"
-          @submit="(form: any, next: Function) => {
-            value.onSaved(form, getProp(formState, key as string))
-            next()
-          }"
+          @submit="
+            (form: any, next: Function) => {
+              value.onSaved(form, getProp(formState, key as string))
+              next()
+            }
+          "
         />
       </template>
       <template v-for="(_, name) in $slots" :key="name" #[name]>
@@ -60,6 +70,7 @@ import { defineProps, defineEmits, onMounted, reactive, ref, watch } from 'vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormGroup from './FormGroup.vue'
 import { getProp } from '../utils'
+import { FormOutlined, EyeOutlined } from '@ant-design/icons-vue'
 
 const emit = defineEmits(['initialize', 'update:show', 'submit'])
 const props = defineProps({
@@ -70,7 +81,8 @@ const props = defineProps({
   title: { type: String, default: 'Form Dialog' },
   object: { type: Object, default: null },
   mapper: { type: Mapper, required: true },
-  emitter: { type: Emitter, default: null }
+  emitter: { type: Emitter, default: null },
+  operable: { type: Boolean, default: false }
 })
 const visible = ref<boolean>(props.show)
 const editable = ref(true)
