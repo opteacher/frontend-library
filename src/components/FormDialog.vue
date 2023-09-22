@@ -104,7 +104,6 @@ if (props.emitter) {
       if (args.cpyRcd) {
         args.cpyRcd(formState)
       }
-      console.log(args)
       visible.value = args.show
     }
   )

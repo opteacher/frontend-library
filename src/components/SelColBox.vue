@@ -11,10 +11,10 @@
     </a-checkbox>
     <a-divider class="my-2" />
     <SelColGrp
-      v-for="grp in grps"
-      :key="grp"
-      :group="grp"
-      :columns="getColsByGrp(grp)"
+      v-for="group in groups"
+      :key="group"
+      :group="group"
+      :columns="getColsByGrp(group)"
       :selCols="dspCols"
       :chkSelState="chkSelState"
     />
@@ -42,8 +42,8 @@ const colsState = reactive<Column[]>(props.columns as Column[])
 const selColsVsb = ref(false)
 const allSelCols = ref(true)
 const indSelCols = ref(false)
-const grps = reactive<string[]>([])
-const dspCols = computed(() => colsState
+const groups = ref<string[]>([])
+const dspCols = computed<string[]>(() => colsState
   .filter((column: Column) => !column.notDisplay)
   .map((column: Column) => column.key)
 )
@@ -53,7 +53,7 @@ watch(() => [...props.columns], refresh)
 
 function refresh() {
   colsState.splice(0, colsState.length, ...(props.columns as Column[]))
-  grps.splice(0, grps.length, ...Array.from(new Set(colsState
+  groups.value.splice(0, groups.value.length, ...Array.from(new Set(colsState
     .filter((col: Column) => col.group && col.group.length)
     .map((col: Column) => col.group[0])
   )))

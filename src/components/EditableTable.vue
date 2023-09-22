@@ -162,7 +162,7 @@
     </a-table>
     <FormDialog
       :copy="copy"
-      :title="title || undefined"
+      :title="title || (editKey ? '编辑项' : '增加项')"
       :emitter="emitter"
       :mapper="mapper"
       @submit="onRecordSave"
