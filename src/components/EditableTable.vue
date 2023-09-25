@@ -161,6 +161,9 @@
       <template v-if="pagable" #footer>总共&nbsp;{{ records.data.length }}&nbsp;条记录</template>
     </a-table>
     <FormDialog
+      v-model:show="fmDlg.visible"
+      v-model:vw-only="fmDlg.vwOnly"
+      v-model:object="fmDlg.object"
       :copy="copy"
       :title="title || (editKey ? '编辑项' : '增加项')"
       :emitter="emitter"
@@ -222,7 +225,7 @@ const props = defineProps({
   cells: { type: Array, default: () => [] },
   mapper: { type: Mapper, default: new Mapper() },
   copy: { type: Function, default: (src: any) => src },
-  emitter: { type: Emitter, default: new Emitter() },
+  emitter: { type: Emitter, default: null },
   title: { type: String, default: '' },
   description: { type: String, default: '' },
   size: { type: String, default: 'default' },
@@ -255,6 +258,11 @@ const searchState = reactive<Record<string, { content: string; reset: Function }
 const fmtIeIgnCols = computed(() =>
   (props.ieIgnCols as string[]).concat('opera').map(col => `col${upperFirst(col)}`)
 )
+const fmDlg = reactive({
+  visible: false,
+  vwOnly: false,
+  object: props.copy({})
+})
 
 onMounted(refresh)
 if (props.emitter) {
@@ -364,7 +372,11 @@ async function refresh(data?: any[], params?: any) {
     }
   })
   editKey.value = ''
-  props.emitter.emit('update:show', false)
+  if (props.emitter) {
+    props.emitter.emit('update:show', false)
+  } else {
+    fmDlg.visible = false
+  }
   loading.value = false
   fmtColumns()
   loading.value = false
@@ -375,11 +387,15 @@ function onEditClicked(record?: any) {
   if (record) {
     editKey.value = record.key || ''
   }
-  props.emitter.emit('update:show', {
-    show: true,
-    viewOnly: false,
-    object: record || {}
-  })
+  if (props.emitter) {
+    props.emitter.emit('update:show', {
+      show: true,
+      viewOnly: false,
+      object: record || {}
+    })
+  } else {
+    fmDlg.visible = true
+  }
 }
 async function onRecordSave(record: any, reset: Function) {
   loading.value = true
@@ -397,7 +413,11 @@ async function onRecordDel(record: any) {
   loading.value = true
   await props.api.remove(record)
   emit('delete', record, refresh)
-  props.emitter.emit('update:show', false)
+  if (props.emitter) {
+    props.emitter.emit('update:show', false)
+  } else {
+    fmDlg.visible = false
+  }
   await refresh()
 }
 function onRowExpand(record: { key: string }) {
@@ -410,11 +430,17 @@ function onRowExpand(record: { key: string }) {
   emit('expand', { expand, record })
 }
 function onRowClick(record: any) {
-  props.emitter.emit('update:show', {
-    show: true,
-    viewOnly: true,
-    object: record
-  })
+  if (props.emitter) {
+    props.emitter.emit('update:show', {
+      show: true,
+      viewOnly: true,
+      object: record
+    })
+  } else {
+    fmDlg.visible = true
+    fmDlg.vwOnly = true
+    fmDlg.object = record
+  }
 }
 async function onBatchSubmit(info: any, opera: 'import' | 'export') {
   loading.value = true

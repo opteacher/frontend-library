@@ -72,9 +72,16 @@ import FormGroup from './FormGroup.vue'
 import { getProp } from '../utils'
 import { FormOutlined, EyeOutlined } from '@ant-design/icons-vue'
 
-const emit = defineEmits(['initialize', 'update:show', 'submit'])
+const emit = defineEmits([
+  'initialize',
+  'update:show',
+  'update:vwOnly',
+  'update:object',
+  'submit'
+])
 const props = defineProps({
   show: { type: Boolean, default: false },
+  vwOnly: { type: Boolean, default: false },
   copy: { type: Function, required: true },
   width: { type: String, default: '50vw' },
   lblWid: { type: Number, default: 4 },
@@ -148,6 +155,10 @@ watch(
   () => visible.value,
   () => emit('update:show', visible.value)
 )
+watch(() => props.vwOnly, (vwOnly: boolean) => { viewOnly.value = vwOnly })
+watch(() => viewOnly, () => emit('update:vwOnly', viewOnly.value))
+watch(() => props.object, (obj: any) => props.copy(obj, formState))
+watch(() => formState, () => emit('update:object', formState))
 
 async function onOkClick() {
   try {
