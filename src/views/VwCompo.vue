@@ -78,10 +78,10 @@ async function refresh() {
               class="mb-3"
               :form="attrs"
               :skey="k"
-              :value="(v as Object)"
+              :mapper="(v as Object)"
             />
           </div>
-          <FormItem v-else class="mb-3" :form="attrs" :skey="(key as string)" :value="value" />
+          <FormItem v-else class="mb-3" :form="attrs" :skey="(key as string)" :mapper="value" />
         </template>
       </a-form>
     </a-layout-sider>

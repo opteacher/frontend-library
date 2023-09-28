@@ -29,8 +29,6 @@
     </div>
     <FormGroup
       ref="formRef"
-      :copy="copy"
-      :object="object"
       :mapper="formMapper"
       :form="formState"
       :rules="formRules"
@@ -42,7 +40,6 @@
         <FormDialog
           :title="value.label"
           :mapper="value.mapper"
-          :copy="value.copy"
           :emitter="value.emitter"
           :object="value.editing"
           @submit="
@@ -65,27 +62,23 @@
 
 <script lang="ts" setup name="FormDialog">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Mapper from '../types/mapper'
-import { defineProps, defineEmits, onMounted, reactive, ref, watch } from 'vue'
+import { EyeOutlined, FormOutlined } from '@ant-design/icons-vue'
+import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import FormGroup from './FormGroup.vue'
-import { getProp } from '../utils'
-import { FormOutlined, EyeOutlined } from '@ant-design/icons-vue'
+import { defineEmits, defineProps, onMounted, ref, watch } from 'vue'
 
-const emit = defineEmits([
-  'initialize',
-  'update:show',
-  'update:vwOnly',
-  'update:object',
-  'submit'
-])
+import Mapper from '../types/mapper'
+import { getProp } from '../utils'
+import FormGroup from './FormGroup.vue'
+
+const emit = defineEmits(['initialize', 'update:show', 'update:vwOnly', 'submit'])
 const props = defineProps({
   show: { type: Boolean, default: false },
   vwOnly: { type: Boolean, default: false },
-  copy: { type: Function, required: true },
   width: { type: String, default: '50vw' },
   lblWid: { type: Number, default: 4 },
   title: { type: String, default: 'Form Dialog' },
+  newFun: { type: Function, default: () => ({}) },
   object: { type: Object, default: null },
   mapper: { type: Mapper, required: true },
   emitter: { type: Emitter, default: null },
@@ -96,8 +89,8 @@ const editable = ref(true)
 const viewOnly = ref(false)
 const okLoading = ref(false)
 const formRef = ref()
-const formMapper = reactive(props.mapper)
-const formState = reactive(props.object || props.copy({}))
+const formMapper = ref<Mapper>(props.mapper)
+const formState = ref(updateState())
 const formRules = Object.fromEntries(
   Object.entries(props.mapper).map(entry => {
     return [entry[0], entry[1].rules]
@@ -121,22 +114,22 @@ if (props.emitter) {
       }
       viewOnly.value = typeof args.viewOnly != 'undefined' ? args.viewOnly : false
       if (args.object) {
-        props.copy(args.object, formState, true)
+        formState.value = cloneDeep(args.object)
       }
       visible.value = args.show
     }
   )
   props.emitter.on('update:data', (data?: any) => {
     if (data) {
-      props.copy(data, formState, true)
-    } else if (formState.reset) {
-      formState.reset()
+      formState.value = cloneDeep(data)
+    } else if (formState.value.reset) {
+      formState.value.reset()
     } else {
-      props.copy({}, formState, true)
+      formState.value = props.newFun()
     }
   })
   props.emitter.on('update:mapper', (mapper: any) => {
-    Mapper.copy(mapper, formMapper)
+    formMapper.value = cloneDeep(mapper)
   })
   props.emitter.on('viewOnly', (vwOnly: boolean) => {
     viewOnly.value = vwOnly
@@ -149,27 +142,41 @@ watch(
   () => props.show,
   (show: boolean) => {
     visible.value = show
+    if (show && !props.emitter) {
+      formState.value = updateState()
+    }
   }
 )
 watch(
   () => visible.value,
   () => emit('update:show', visible.value)
 )
-watch(() => props.vwOnly, (vwOnly: boolean) => { viewOnly.value = vwOnly })
-watch(() => viewOnly, () => emit('update:vwOnly', viewOnly.value))
-watch(() => props.object, (obj: any) => props.copy(obj, formState))
-watch(() => formState, () => emit('update:object', formState))
+watch(
+  () => props.vwOnly,
+  (vwOnly: boolean) => {
+    viewOnly.value = vwOnly
+  }
+)
+watch(
+  () => viewOnly,
+  () => emit('update:vwOnly', viewOnly.value)
+)
+watch(
+  () => props.object,
+  (obj: any) => {
+    formState.value = cloneDeep(obj)
+  }
+)
 
 async function onOkClick() {
   try {
     okLoading.value = true
     await formRef.value.refer.validate()
-    emit('submit', formState, () => {
+    emit('submit', formState.value, () => {
       okLoading.value = false
       formRef.value.refer.resetFields()
-      formState.reset && formState.reset()
-      visible.value = false
-      emit('update:show', false)
+      resetState()
+      onDlgClose()
     })
   } catch (e) {
     console.log(e)
@@ -177,8 +184,26 @@ async function onOkClick() {
 }
 function onCclClick() {
   formRef.value.refer.resetFields()
-  formState.reset && formState.reset()
+  resetState()
+  onDlgClose()
+}
+function resetState() {
+  if (formState.value.reset) {
+    formState.value.reset()
+  } else {
+    formState.value = props.newFun()
+  }
+}
+function onDlgClose() {
   visible.value = false
   emit('update:show', false)
+  for (const value of Object.values(formMapper.value)) {
+    if (typeof value.fold !== 'undefined') {
+      value.fold = false
+    }
+  }
+}
+function updateState() {
+  return props.object ? cloneDeep(props.object) : props.newFun()
 }
 </script>

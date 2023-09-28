@@ -1,15 +1,14 @@
 <script lang="ts" setup name="FormGroup">
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { FormInstance } from 'ant-design-vue'
+import { defineExpose, defineProps, ref } from 'vue'
+
+import Mapper from '../types/mapper'
 import { validConds } from '../utils'
 import FormItem from './FormItem.vue'
-import Mapper from '../types/mapper'
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons-vue'
-import { defineProps, defineExpose, ref } from 'vue'
-import { FormInstance } from 'ant-design-vue'
 
 defineProps({
   lblWid: { type: Number, default: 4 },
-  copy: { type: Function, required: true },
-  object: { type: Object, default: null },
   mapper: { type: Mapper, required: true },
   form: { type: Object, required: true },
   rules: { type: Object, required: true },
@@ -30,7 +29,7 @@ defineExpose({ refer })
     :wrapper-col="{ span: 24 - lblWid }"
   >
     <template v-for="(value, key) in mapper" :key="key">
-      <template v-if="value.type === 'FormGroup' && validConds(form, value.display)">
+      <template v-if="value.type === 'FormGroup' && validConds(form, value.display, true)">
         <div
           v-if="value.fold"
           class="border border-solid border-gray-300 pt-7 px-2.5 my-7 relative rounded"
@@ -58,7 +57,7 @@ defineExpose({ refer })
             :key="k"
             :form="form"
             :skey="k.toString()"
-            :value="v as Object"
+            :mapper="v as Object"
             :editable="editable"
             :viewOnly="viewOnly"
           >
@@ -96,7 +95,7 @@ defineExpose({ refer })
         v-else
         :form="form"
         :skey="key as string"
-        :value="value"
+        :mapper="value"
         :editable="editable"
         :viewOnly="viewOnly"
       >

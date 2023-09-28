@@ -176,8 +176,8 @@ const mapper = new Mapper({
     type: 'Number',
     iptType: 'number',
     display: [
-      Cond.copy({ key: 'file.length', cmp: '!=', val: 0 }),
-      Cond.copy({ key: 'file[0].status', cmp: '!=', val: 'done' })
+      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
+      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
     ]
   },
   dtRowNo: {
@@ -185,16 +185,16 @@ const mapper = new Mapper({
     type: 'Number',
     iptType: 'number',
     display: [
-      Cond.copy({ key: 'file.length', cmp: '!=', val: 0 }),
-      Cond.copy({ key: 'file[0].status', cmp: '!=', val: 'done' })
+      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
+      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
     ]
   },
   itfcTable: {
     label: '指定对照列',
     type: 'Unknown',
     display: [
-      Cond.copy({ key: 'file.length', cmp: '!=', val: 0 }),
-      Cond.copy({ key: 'file[0].status', cmp: '!=', val: 'done' })
+      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
+      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
     ]
   },
   filterCols: {

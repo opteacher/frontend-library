@@ -207,7 +207,7 @@ const mapper = new Mapper({
         }
       }
     },
-    disabled: [Cond.copy({ key: 'loading', cmp: '=', val: true })]
+    disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
   },
   hdRowNo: {
     label: '标题行号',
@@ -220,10 +220,10 @@ const mapper = new Mapper({
       }
     ],
     display: [
-      Cond.copy({ key: 'file.length', cmp: '!=', val: 0 }),
-      Cond.copy({ key: 'file[0].status', cmp: '!=', val: 'done' })
+      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
+      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
     ],
-    disabled: [Cond.copy({ key: 'loading', cmp: '=', val: true })]
+    disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
   },
   dtRowNo: {
     label: '数据开始行号',
@@ -236,25 +236,25 @@ const mapper = new Mapper({
       }
     ],
     display: [
-      Cond.copy({ key: 'file.length', cmp: '!=', val: 0 }),
-      Cond.copy({ key: 'file[0].status', cmp: '!=', val: 'done' })
+      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
+      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
     ],
-    disabled: [Cond.copy({ key: 'loading', cmp: '=', val: true })]
+    disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
   },
   itfcTable: {
     label: '对接表',
     type: 'Unknown',
     display: [
-      Cond.copy({ key: 'file.length', cmp: '!=', val: 0 }),
-      Cond.copy({ key: 'file[0].status', cmp: '!=', val: 'done' })
+      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
+      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
     ]
   },
   advanced: {
     label: '高级',
     type: 'FormGroup',
     display: [
-      Cond.copy({ key: 'file.length', cmp: '!=', val: 0 }),
-      Cond.copy({ key: 'file[0].status', cmp: '!=', val: 'done' })
+      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
+      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
     ],
     items: {
       boolMapper: {
@@ -266,7 +266,7 @@ const mapper = new Mapper({
         type: 'Input'
       }
     },
-    disabled: [Cond.copy({ key: 'loading', cmp: '=', val: true })]
+    disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
   }
 })
 </script>

@@ -8,10 +8,10 @@ export class Cond {
   cmp: '=' | '!=' | 'in'
   val: any
 
-  constructor() {
-    this.key = ''
-    this.cmp = '='
-    this.val = undefined
+  constructor(params: { key: string, cmp: '=' | '!=' | 'in', val: any }) {
+    this.key = params.key
+    this.cmp = params.cmp
+    this.val = params.val
   }
 
   isValid(object: Record<string, any>) {
@@ -30,10 +30,6 @@ export class Cond {
           return getProperty(object, this.key) === this.val
         }
     }
-  }
-
-  static copy(src: any, tgt?: Cond): Cond {
-    return gnlCpy(Cond, src, tgt, { force: true })
   }
 }
 
@@ -64,6 +60,7 @@ export const cmpLblMap = {
   CodeEditor: '代码编辑框',
   EditList: '可编辑列表',
   Carousel: '滚动展示框',
+  ColorSelect: '颜色选择框',
   Row: '横向容器',
   Col: '纵向容器',
   Card: '卡片',

@@ -1,5 +1,5 @@
 <template>
-  <template v-for="item in value" :key="item">
+  <template v-for="item in mapper.mapper.deps.options" :key="item">
     <a-tag closable @close="onRmvTagClick(item)">
       <LabelItem :value="item as any" :prop="mapper.lblProp" :mapper="mapper.lblMapper" />
     </a-tag>
@@ -11,45 +11,33 @@
   <slot name="FormDialog" />
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup name="TagList">
+import { defineEmits, defineProps } from 'vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import LabelItem from './LabelItem.vue'
 
-export default defineComponent({
-  name: 'TagList',
-  components: {
-    PlusOutlined,
-    LabelItem
-  },
-  emits: ['update:value'],
-  props: {
-    mapper: { type: Object, required: true },
-    value: { type: Array, required: true }
-  },
-  setup(props, { emit }) {
-    props.mapper.emitter.on('update:value', (array: any) => {
-      emit('update:value', array)
-    })
-
-    async function onNewTagClick() {
-      if (props.mapper.onAdded) {
-        await props.mapper.onAdded(props.mapper)
-      }
-      props.mapper.emitter.emit('update:show', true)
-      props.mapper.emitter.emit('update:data', props.value)
-    }
-    async function onRmvTagClick(key: any) {
-      const index = props.value.indexOf(key)
-      props.mapper.emitter.emit(
-        'update:value',
-        props.value.slice(0, index).concat(props.value.slice(index))
-      )
-    }
-    return {
-      onNewTagClick,
-      onRmvTagClick
-    }
-  }
+const emit = defineEmits(['update:value'])
+const props = defineProps({
+  mapper: { type: Object, required: true },
+  value: { type: Array, required: true }
 })
+
+props.mapper.emitter.on('update:value', (array: any) => {
+  emit('update:value', array)
+})
+
+async function onNewTagClick() {
+  if (props.mapper.onAdded) {
+    await props.mapper.onAdded(props.mapper)
+  }
+  props.mapper.emitter.emit('update:show', true)
+  props.mapper.emitter.emit('update:data', props.value)
+}
+async function onRmvTagClick(key: any) {
+  const index = props.value.indexOf(key)
+  props.mapper.emitter.emit(
+    'update:value',
+    props.value.slice(0, index).concat(props.value.slice(index))
+  )
+}
 </script>

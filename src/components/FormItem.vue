@@ -1,10 +1,10 @@
 <template>
-  <a-form-item v-show="display" class="flex-auto" :ref="skey" :name="skey" :rules="valState.rules">
-    <template v-if="valState.label" #label>
-      {{ valState.label }}&nbsp;
-      <a-tooltip v-if="valState.desc">
+  <a-form-item v-show="display" class="flex-auto" :ref="skey" :name="skey" :rules="mapState.rules">
+    <template v-if="mapState.label" #label>
+      {{ mapState.label }}&nbsp;
+      <a-tooltip v-if="mapState.desc">
         <template #title>
-          <pre>{{ valState.desc }}</pre>
+          <pre>{{ mapState.desc }}</pre>
         </template>
         <InfoCircleOutlined />
       </a-tooltip>
@@ -13,41 +13,41 @@
       <slot v-if="chkInSlot('VW')" :name="skey + 'VW'" v-bind="{ formState }" />
       <template
         v-else-if="
-          valState.type === 'Input' ||
-          valState.type === 'Number' ||
-          valState.type === 'Delable' ||
-          valState.type === 'SelOrIpt' ||
-          valState.type === 'DateTime'
+          mapState.type === 'Input' ||
+          mapState.type === 'Number' ||
+          mapState.type === 'Delable' ||
+          mapState.type === 'SelOrIpt' ||
+          mapState.type === 'DateTime'
         "
       >
         {{ getProp(formState, skey) }}
       </template>
-      <template v-else-if="valState.type === 'Textarea' || valState.type === 'CodeEditor'">
+      <template v-else-if="mapState.type === 'Textarea' || mapState.type === 'CodeEditor'">
         <pre class="mb-0">{{ getProp(formState, skey) }}</pre>
       </template>
-      <template v-else-if="valState.type === 'Select' || valState.type === 'Cascader'">
-        {{ fmtDrpdwnValue(valState.options, getProp(formState, skey)) }}
+      <template v-else-if="mapState.type === 'Select' || mapState.type === 'Cascader'">
+        {{ fmtDrpdwnValue(mapState.options, getProp(formState, skey)) }}
       </template>
-      <template v-else-if="valState.type === 'Checkbox'">
+      <template v-else-if="mapState.type === 'Checkbox'">
         {{
           getProp(formState, skey)
-            ? valState.chkLabels
-              ? valState.chkLabels[1]
+            ? mapState.chkLabels
+              ? mapState.chkLabels[1]
               : '是'
-            : valState.chkLabels
-            ? valState.chkLabels[0]
+            : mapState.chkLabels
+            ? mapState.chkLabels[0]
             : '否'
         }}
       </template>
-      <template v-else-if="valState.type === 'EditList' || valState.type === 'UploadFile'">
+      <template v-else-if="mapState.type === 'EditList' || mapState.type === 'UploadFile'">
         <ul class="pl-0 list-none mb-0">
           <li v-for="item in getProp(formState, skey)" :key="item">{{ item }}</li>
         </ul>
       </template>
-      <template v-else-if="valState.type === 'Table'">
+      <template v-else-if="mapState.type === 'Table'">
         <a-table
           v-show="getProp(formState, skey) && getProp(formState, skey).length"
-          :columns="valState.columns"
+          :columns="mapState.columns"
           :data-source="getProp(formState, skey)"
           :pagination="false"
           size="small"
@@ -58,53 +58,53 @@
     <slot v-else-if="chkInSlot()" :name="skey" v-bind="{ formState }" />
     <template v-else>
       <a-input
-        v-if="valState.type === 'Input'"
+        v-if="mapState.type === 'Input'"
         :value="getProp(formState, skey)"
-        :type="valState.iptType || 'text'"
+        :type="mapState.iptType || 'text'"
         :disabled="disabled"
-        :addon-before="valState.prefix"
-        :addon-after="valState.suffix"
-        :placeholder="valState.placeholder || '请输入'"
+        :addon-before="mapState.prefix"
+        :addon-after="mapState.suffix"
+        :placeholder="mapState.placeholder || '请输入'"
         @change="(e: any) => onFieldChanged(e.target.value)"
-        @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
+        @blur="(e: any) => mapState.onBlur && mapState.onBlur(formState, e.target.value)"
       />
       <a-input-number
-        v-else-if="valState.type === 'Number'"
+        v-else-if="mapState.type === 'Number'"
         class="w-full"
         type="number"
         :value="getProp(formState, skey)"
-        :placeholder="valState.placeholder || '请输入'"
+        :placeholder="mapState.placeholder || '请输入'"
         :disabled="disabled"
-        :addon-before="valState.prefix"
-        :addon-after="valState.suffix"
+        :addon-before="mapState.prefix"
+        :addon-after="mapState.suffix"
         @change="onFieldChanged"
-        @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
+        @blur="(e: any) => mapState.onBlur && mapState.onBlur(formState, e.target.value)"
       />
       <a-input-password
-        v-else-if="valState.type === 'Password'"
+        v-else-if="mapState.type === 'Password'"
         :value="getProp(formState, skey)"
-        :placeholder="valState.placeholder || '请输入'"
+        :placeholder="mapState.placeholder || '请输入'"
         :disabled="disabled"
         @change="(e: any) => onFieldChanged(e.target.value)"
-        @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
+        @blur="(e: any) => mapState.onBlur && mapState.onBlur(formState, e.target.value)"
       />
       <a-select
-        v-else-if="valState.type === 'Select'"
+        v-else-if="mapState.type === 'Select'"
         class="w-full"
-        :options="valState.options"
+        :options="mapState.options"
         :value="getProp(formState, skey) || undefined"
-        :placeholder="valState.placeholder || '请选择'"
+        :placeholder="mapState.placeholder || '请选择'"
         :disabled="disabled"
-        :allowClear="valState.allowClear"
-        @dropdownVisibleChange="valState.onDropdown"
+        :allowClear="mapState.allowClear"
+        @dropdownVisibleChange="mapState.onDropdown"
         @change="onFieldChanged"
       >
-        <template v-if="valState.loading" #notFoundContent>
+        <template v-if="mapState.loading" #notFoundContent>
           <a-spin size="small" />
         </template>
       </a-select>
-      <a-tooltip v-else-if="valState.type === 'Checkbox'">
-        <template #title>{{ valState.placeholder || '请确认' }}</template>
+      <a-tooltip v-else-if="mapState.type === 'Checkbox'">
+        <template #title>{{ mapState.placeholder || '请确认' }}</template>
         <a-checkbox
           :name="skey"
           :checked="getProp(formState, skey)"
@@ -113,99 +113,91 @@
         >
           {{
             getProp(formState, skey)
-              ? valState.chkLabels
-                ? valState.chkLabels[1]
+              ? mapState.chkLabels
+                ? mapState.chkLabels[1]
                 : '是'
-              : valState.chkLabels
-              ? valState.chkLabels[0]
+              : mapState.chkLabels
+              ? mapState.chkLabels[0]
               : '否'
           }}
         </a-checkbox>
       </a-tooltip>
-      <a-tooltip v-else-if="valState.type === 'Switch'">
+      <a-tooltip v-else-if="mapState.type === 'Switch'">
         <a-switch
           :checked="getProp(formState, skey)"
-          :checked-children="valState.chkLabels ? valState.chkLabels[1] : ''"
-          :un-checked-children="valState.chkLabels ? valState.chkLabels[0] : ''"
+          :checked-children="mapState.chkLabels ? mapState.chkLabels[1] : ''"
+          :un-checked-children="mapState.chkLabels ? mapState.chkLabels[0] : ''"
           @change="onFieldChanged"
         />
       </a-tooltip>
       <a-radio-group
-        v-else-if="valState.type === 'Radio'"
+        v-else-if="mapState.type === 'Radio'"
         button-style="solid"
         :disabled="disabled"
         :value="getProp(formState, skey)"
         @change="(e: any) => onFieldChanged(e.target.value)"
       >
-        <template v-if="valState.style === 'button'">
-          <a-radio-button
-            v-for="opn in valState.options"
-            :key="opn.value"
-            :value="opn.value"
-          >
+        <template v-if="mapState.style === 'button'">
+          <a-radio-button v-for="opn in mapState.options" :key="opn.value" :value="opn.value">
             {{ opn.label }}
           </a-radio-button>
         </template>
         <template v-else>
-          <a-radio
-            v-for="opn in valState.options"
-            :key="opn.value"
-            :value="opn.value"
-          >
+          <a-radio v-for="opn in mapState.options" :key="opn.value" :value="opn.value">
             {{ opn.label }}
           </a-radio>
         </template>
       </a-radio-group>
       <a-textarea
-        v-else-if="valState.type === 'Textarea'"
+        v-else-if="mapState.type === 'Textarea'"
         :value="getProp(formState, skey)"
-        :rows="valState.maxRows"
-        :placeholder="valState.placeholder || '请输入'"
+        :rows="mapState.maxRows"
+        :placeholder="mapState.placeholder || '请输入'"
         :disabled="disabled"
         @change="(e: any) => onFieldChanged(e.target.value)"
-        @blur="(e: any) => valState.onBlur && valState.onBlur(formState, e.target.value)"
+        @blur="(e: any) => mapState.onBlur && mapState.onBlur(formState, e.target.value)"
       />
       <a-cascader
-        v-else-if="valState.type === 'Cascader'"
-        :options="valState.options"
-        :placeholder="valState.placeholder || '请选择'"
+        v-else-if="mapState.type === 'Cascader'"
+        :options="mapState.options"
+        :placeholder="mapState.placeholder || '请选择'"
         :value="getProp(formState, skey)"
         change-on-select
         :disabled="disabled"
         @change="onFieldChanged"
       />
-      <a-tooltip v-else-if="valState.type === 'Button'">
-        <template #title>{{ valState.placeholder || '请点击' }}</template>
+      <a-tooltip v-else-if="mapState.type === 'Button'">
+        <template #title>{{ mapState.placeholder || '请点击' }}</template>
         <a-button
           class="w-full"
           :disabled="disabled"
-          :danger="valState.danger"
-          :type="valState.primary ? 'primary' : 'default'"
+          :danger="mapState.danger"
+          :type="mapState.primary ? 'primary' : 'default'"
           ghost
-          :loading="valState.loading"
-          @click="() => valState.onClick(formState)"
+          :loading="mapState.loading"
+          @click="() => mapState.onClick(formState)"
         >
-          {{ valState.inner }}
+          {{ mapState.inner }}
         </a-button>
       </a-tooltip>
       <a-date-picker
-        v-else-if="valState.type === 'DateTime'"
+        v-else-if="mapState.type === 'DateTime'"
         class="w-full"
         show-time
-        :placeholder="valState.placeholder || '请选择'"
+        :placeholder="mapState.placeholder || '请选择'"
         :disabled="disabled"
         :value="getProp(formState, skey)"
         @change="onFieldChanged"
       />
-      <template v-else-if="valState.type === 'Table'">
+      <template v-else-if="mapState.type === 'Table'">
         <a-space>
           <a-button
-            v-if="validConds(formState, valState.addable)"
+            v-if="validConds(formState, mapState.addable)"
             type="primary"
             @click="
               () => {
-                valState.emitter.emit('update:show', { show: true, viewOnly: false })
-                valState.onEdit(formState)
+                mapState.emitter.emit('update:show', { show: true, viewOnly: false })
+                mapState.onEdit(formState)
               }
             "
           >
@@ -214,34 +206,34 @@
           <slot name="FormDialog" />
           <a-typography-text type="secondary">
             <InfoCircleOutlined />
-            {{ valState.placeholder || '点击添加' }}
+            {{ mapState.placeholder || '点击添加' }}
           </a-typography-text>
         </a-space>
         <a-table
           class="mt-1.5"
           v-if="getProp(formState, skey) && getProp(formState, skey).length"
-          :columns="valState.columns.concat([new Column('操作', 'opera', { width: 80 })])"
+          :columns="mapState.columns.concat([new Column('操作', 'opera', { width: 80 })])"
           :data-source="getProp(formState, skey)"
           :pagination="false"
           size="small"
           :custom-row="
             (record: any) => ({
               onClick: () => {
-                valState.emitter.emit('update:show', {
+                mapState.emitter.emit('update:show', {
                   show: true,
                   object: record,
-                  viewOnly: !valState.editable
+                  viewOnly: !mapState.editable
                 })
-                valState.onEdit(formState)
+                mapState.onEdit(formState)
               }
             })
           "
         >
-          <template v-if="validConds(formState, valState.delable)" #bodyCell="{ column, record }">
+          <template v-if="validConds(formState, mapState.delable)" #bodyCell="{ column, record }">
             <template v-if="column.dataIndex === 'opera'">
               <a-popconfirm
                 title="确定删除该字段"
-                @confirm.stop="valState.onDeleted(record.key, getProp(formState, skey))"
+                @confirm.stop="mapState.onDeleted(record.key, getProp(formState, skey))"
               >
                 <a-button danger size="small" @click.stop="() => {}">删除</a-button>
               </a-popconfirm>
@@ -250,36 +242,36 @@
         </a-table>
       </template>
       <UploadFile
-        v-else-if="valState.type === 'UploadFile'"
+        v-else-if="mapState.type === 'UploadFile'"
         :form="formState"
-        :path="valState.path"
-        :params="valState.params"
-        :headers="valState.headers"
-        :directory="valState.directory"
+        :path="mapState.path"
+        :params="mapState.params"
+        :headers="mapState.headers"
+        :directory="mapState.directory"
         :value="getProp(formState, skey)"
-        :onBeforeUpload="valState.onBeforeUpload"
-        :onChange="valState.onChange"
+        :onBeforeUpload="mapState.onBeforeUpload"
+        :onChange="mapState.onChange"
         :disabled="disabled"
         @update:value="(val: any) => setProp(formState, skey, val)"
       />
-      <a-space v-else-if="valState.type === 'Delable'">
+      <a-space v-else-if="mapState.type === 'Delable'">
         {{ getProp(formState, skey) || '-' }}
-        <CloseCircleOutlined @click="valState.onDeleted(formState.key)" />
+        <CloseCircleOutlined @click="mapState.onDeleted(formState.key)" />
       </a-space>
-      <a-input-group v-else-if="valState.type === 'SelOrIpt'" compact class="flex">
+      <a-input-group v-else-if="mapState.type === 'SelOrIpt'" compact class="flex">
         <a-select
-          v-if="valState.mode === 'select'"
+          v-if="mapState.mode === 'select'"
           class="flex-auto"
-          :options="valState.options"
+          :options="mapState.options"
           :value="getProp(formState, skey)"
-          :placeholder="valState.placeholder || '请选择'"
+          :placeholder="mapState.placeholder || '请选择'"
           :disabled="disabled"
           @change="onFieldChanged"
         />
         <a-input
           v-else
           class="flex-auto"
-          :placeholder="valState.placeholder || '请输入'"
+          :placeholder="mapState.placeholder || '请输入'"
           :value="getProp(formState, skey)"
           :disabled="disabled"
           @change="(e: any) => onFieldChanged(e.target.value)"
@@ -287,26 +279,26 @@
         <a-button
           @click="
             () => {
-              valState.mode = valState.mode === 'select' ? 'input' : 'select'
+              mapState.mode = mapState.mode === 'select' ? 'input' : 'select'
             }
           "
           :disabled="disabled"
         >
           <template #icon>
-            <SelectOutlined v-if="valState.mode === 'select'" />
+            <SelectOutlined v-if="mapState.mode === 'select'" />
             <EditOutlined v-else />
           </template>
         </a-button>
       </a-input-group>
-      <a-form-item-rest v-else-if="valState.type === 'ListSelect'">
+      <a-form-item-rest v-else-if="mapState.type === 'ListSelect'">
         <a-list
           item-layout="horizontal"
-          :data-source="valState.options"
+          :data-source="mapState.options"
           size="small"
           bordered
           class="overflow-y-auto"
           :style="{
-            'max-height': `${valState.height}px`
+            'max-height': `${mapState.height}px`
           }"
         >
           <template #renderItem="{ item: option }">
@@ -335,30 +327,30 @@
         </a-list>
       </a-form-item-rest>
       <EditList
-        v-else-if="valState.type === 'EditList'"
-        :mapper="valState"
+        v-else-if="mapState.type === 'EditList'"
+        :mapper="mapState"
         :value="getProp(formState, skey)"
         @update:value="onFieldChanged"
       >
-        <template #formItem="{ form, skey, value }">
-          <FormItem :form="form" :skey="skey" :value="value" />
+        <template #formItem="{ form, elKey, value }">
+          <FormItem :form="form" :skey="elKey" :mapper="value" />
         </template>
       </EditList>
       <CodeEditor
-        v-else-if="valState.type === 'CodeEditor'"
-        :lang="valState.lang"
+        v-else-if="mapState.type === 'CodeEditor'"
+        :lang="mapState.lang"
         :value="getProp(formState, skey)"
         @update:value="(val: string) => setProp(formState, skey, val)"
         :disabled="disabled"
       />
       <TagList
-        v-else-if="valState.type === 'TagList'"
-        :mapper="valState"
+        v-else-if="mapState.type === 'TagList'"
+        :mapper="mapState"
         :value="getProp(formState, skey)"
         @update:value="(val: string) => setProp(formState, skey, val)"
       >
         <template #FormDialog>
-          <slot name="FormDialog" v-bind="{ value: valState, key: skey }" />
+          <slot name="FormDialog" v-bind="{ value: mapState, key: skey }" />
         </template>
       </TagList>
       <template v-else>
@@ -369,39 +361,48 @@
 </template>
 
 <script lang="ts" setup name="FormItem">
+import {
+  AppstoreOutlined,
+  CloseCircleOutlined,
+  EditOutlined,
+  InfoCircleOutlined,
+  SelectOutlined
+} from '@ant-design/icons-vue'
+import { cloneDeep } from 'lodash'
+import { computed, defineProps, ref, useSlots, watch } from 'vue'
+
 import type { OpnType } from '../types'
 import Column from '../types/column'
-import { defineProps, computed, reactive, useSlots, watch } from 'vue'
-import {
-  InfoCircleOutlined,
-  CloseCircleOutlined,
-  SelectOutlined,
-  EditOutlined,
-  AppstoreOutlined
-} from '@ant-design/icons-vue'
-import { getCopy } from '../types/mapper'
+import { getProp, setProp, validConds } from '../utils'
 import CodeEditor from './CodeEditor.vue'
-import UploadFile from './UploadFile.vue'
-import TagList from './TagList.vue'
 import EditList from './EditList.vue'
-import { validConds, getProp, setProp } from '../utils'
+import TagList from './TagList.vue'
+import UploadFile from './UploadFile.vue'
 
 const props = defineProps({
   form: { type: Object, required: true },
   skey: { type: String, required: true },
-  value: { type: Object, required: true },
+  mapper: { type: Object, required: true },
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
-const formState = reactive(props.form)
-const valState = reactive(props.value)
-const display = computed(() => validConds(formState, valState.display, true))
-const disabled = computed(() => validConds(formState, valState.disabled) || !props.editable)
+const formState = ref(props.form)
+const mapState = ref(props.mapper)
+const display = computed(() => validConds(formState.value, mapState.value.display, true))
+const disabled = computed(
+  () => validConds(formState.value, mapState.value.disabled) || !props.editable
+)
 
 watch(
-  () => props.value,
+  () => props.mapper,
   () => {
-    getCopy(props.value, valState)
+    mapState.value = cloneDeep(props.mapper)
+  }
+)
+watch(
+  () => props.form,
+  (form: any) => {
+    formState.value = form
   }
 )
 
@@ -431,19 +432,19 @@ function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   }
 }
 function onLstSelChecked(chk: boolean, propKey: string, opnKey: string) {
-  const selKeys = formState[propKey].map((itm: any) => itm.key)
+  const selKeys = formState.value[propKey].map((itm: any) => itm.key)
   if (chk) {
     if (!selKeys.includes(opnKey)) {
-      formState[propKey].push(opnKey)
+      formState.value[propKey].push(opnKey)
     }
   } else {
-    formState[propKey].splice(selKeys.indexOf(opnKey), 1)
+    formState.value[propKey].splice(selKeys.indexOf(opnKey), 1)
   }
 }
 function onFieldChanged(newVal: any) {
-  setProp(formState, props.skey, newVal)
-  if (valState.onChange) {
-    valState.onChange(formState, newVal)
+  setProp(formState.value, props.skey, newVal)
+  if (mapState.value.onChange) {
+    mapState.value.onChange(formState.value, newVal)
   }
 }
 function chkInSlot(suffix?: string) {

@@ -163,8 +163,8 @@
     <FormDialog
       v-model:show="fmDlg.visible"
       v-model:vw-only="fmDlg.vwOnly"
-      v-model:object="fmDlg.object"
-      :copy="copy"
+      :new-fun="newFun"
+      :object="fmDlg.object"
       :title="title || (editKey ? '编辑项' : '增加项')"
       :emitter="emitter"
       :mapper="mapper"
@@ -207,6 +207,7 @@ import BchImpBox from './BchImpBox.vue'
 import BchExpBox from './BchExpBox.vue'
 import { v4 as uuid } from 'uuid'
 import Column from '../types/column'
+import { cloneDeep } from 'lodash'
 
 const emit = defineEmits([
   'add',
@@ -224,7 +225,7 @@ const props = defineProps({
   columns: { type: Array, required: true },
   cells: { type: Array, default: () => [] },
   mapper: { type: Mapper, default: new Mapper() },
-  copy: { type: Function, default: (src: any) => src },
+  newFun: { type: Function, default: () => ({}) },
   emitter: { type: Emitter, default: null },
   title: { type: String, default: '' },
   description: { type: String, default: '' },
@@ -261,7 +262,7 @@ const fmtIeIgnCols = computed(() =>
 const fmDlg = reactive({
   visible: false,
   vwOnly: false,
-  object: props.copy({})
+  object: props.newFun()
 })
 
 onMounted(refresh)
@@ -362,7 +363,7 @@ async function refresh(data?: any[], params?: any) {
       return true
     })
   }
-  records.data = orgData.filter(props.filter).map((item: any) => props.copy(item))
+  records.data = orgData.filter(props.filter).map((item: any) => cloneDeep(item))
   if (!records.total) {
     records.total = records.data.length
   }
@@ -391,10 +392,12 @@ function onEditClicked(record?: any) {
     props.emitter.emit('update:show', {
       show: true,
       viewOnly: false,
-      object: record || {}
+      object: record || props.newFun()
     })
   } else {
     fmDlg.visible = true
+    fmDlg.vwOnly = false
+    fmDlg.object = record || props.newFun()
   }
 }
 async function onRecordSave(record: any, reset: Function) {
@@ -449,7 +452,7 @@ async function onBatchSubmit(info: any, opera: 'import' | 'export') {
 }
 function genCpyFun<B extends Batch>(b: { new (): B; copy: Function }, genDft: () => any) {
   return (src: any, tgt?: any, force = false) => {
-    const devKeys = Object.keys(props.copy({}))
+    const devKeys = Object.keys(props.newFun())
     tgt =
       tgt ||
       Object.assign(

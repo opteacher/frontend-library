@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { BaseTypes, CompoType } from '.'
+import { TinyEmitter as Emitter } from 'tiny-emitter'
 
 export default class Field {
   key: string
@@ -71,7 +72,7 @@ function cvtValByType(value: any, type: BaseTypes) {
     case 'Object':
       return typeof value === 'string' ? JSON.parse(value) : value
     case 'Function':
-      return typeof value === 'string' ? eval(`(function () {${value}})()`) : value
+      return typeof value === 'string' ? new Function(value) : value
     default:
       return value
   }

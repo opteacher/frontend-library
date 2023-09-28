@@ -10,7 +10,7 @@
     @finish="onEdtLstAdd"
   >
     <template v-for="(value, key) in mapper.mapper">
-      <slot name="formItem" v-bind="{ form: addState, skey: key, value }" />
+      <slot name="formItem" v-bind="{ form: addState, elKey: key.toString(), value }" />
     </template>
     <div class="flex justify-end space-x-2">
       <a-button class="bg-primary" type="primary" html-type="submit">确定</a-button>
@@ -32,75 +32,60 @@
   </template>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
+<script lang="ts" setup name="EditList">
+import { cloneDeep } from 'lodash'
+import { defineEmits, defineProps, onMounted, reactive, ref, watch } from 'vue'
+
 import LabelItem from './LabelItem.vue'
 
-export default defineComponent({
-  name: 'EditList',
-  components: { LabelItem },
-  emits: ['update:value'],
-  props: {
-    label: { type: String, default: '项' },
-    value: { type: Array, default: () => [] },
-    mapper: { type: Object, required: true }
-  },
-  setup(props, { emit }) {
-    const addMod = ref(false)
-    const addState = reactive(props.mapper.copy({}))
-    const list = reactive([] as any[])
+const emit = defineEmits(['update:value'])
+const props = defineProps({
+  label: { type: String, default: '项' },
+  value: { type: Array, default: () => [] },
+  mapper: { type: Object, required: true }
+})
+const addMod = ref(false)
+const addState = ref(props.mapper.newFun())
+const list = reactive([] as any[])
 
-    onMounted(refresh)
-    watch(() => props.value, refresh)
+onMounted(refresh)
+watch(() => [...props.value], refresh)
 
-    function refresh() {
-      list.splice(0, list.length, ...props.value)
-    }
-    function onEdtLstAdd() {
-      let newItm = props.mapper.copy(addState)
-      if (props.mapper.flatItem) {
-        newItm = Object.values(newItm)
-        if (newItm.length === 1) {
-          newItm = newItm[0]
-        }
-      }
-      list.push(newItm)
-      addMod.value = false
-      emit('update:value', list)
-    }
-    function onEdtLstCcl() {
-      if (addState.reset) {
-        addState.reset()
-      } else {
-        props.mapper.copy({}, addState)
-      }
-      addMod.value = false
-    }
-    async function onEdtLstShow() {
-      if (props.mapper.onAdded) {
-        await props.mapper.onAdded(props.mapper)
-      }
-      if (addState.reset) {
-        addState.reset()
-      } else {
-        props.mapper.copy({}, addState)
-      }
-      addMod.value = true
-    }
-    function onEdtLstDel(index: number) {
-      list.splice(index, 1)
-      emit('update:value', list)
-    }
-    return {
-      addMod,
-      addState,
-      list,
-
-      onEdtLstShow,
-      onEdtLstAdd,
-      onEdtLstCcl,
-      onEdtLstDel
+function refresh() {
+  list.splice(0, list.length, ...props.value)
+}
+function onEdtLstAdd() {
+  let newItm = cloneDeep(addState.value)
+  if (props.mapper.flatItem) {
+    newItm = Object.values(newItm)
+    if (newItm.length === 1) {
+      newItm = newItm[0]
     }
   }
-})
+  list.push(newItm)
+  addMod.value = false
+  emit('update:value', list)
+}
+function onEdtLstCcl() {
+  resetState()
+  addMod.value = false
+}
+async function onEdtLstShow() {
+  if (props.mapper.onAdded) {
+    await props.mapper.onAdded(props.mapper)
+  }
+  resetState()
+  addMod.value = true
+}
+function onEdtLstDel(index: number) {
+  list.splice(index, 1)
+  emit('update:value', list)
+}
+function resetState() {
+  if (addState.value.reset) {
+    addState.value.reset()
+  } else {
+    addState.value = props.mapper.newFun()
+  }
+}
 </script>
