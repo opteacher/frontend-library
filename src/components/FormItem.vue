@@ -192,12 +192,12 @@
       <template v-else-if="mapState.type === 'Table'">
         <a-space>
           <a-button
-            v-if="validConds(formState, mapState.addable)"
+            v-if="validConds(formState, mapState.addable, true)"
             type="primary"
             @click="
               () => {
                 mapState.emitter.emit('update:show', { show: true, viewOnly: false })
-                mapState.onEdit(formState)
+                mapState.onEdit && mapState.onEdit(formState)
               }
             "
           >
@@ -290,42 +290,13 @@
           </template>
         </a-button>
       </a-input-group>
-      <a-form-item-rest v-else-if="mapState.type === 'ListSelect'">
-        <a-list
-          item-layout="horizontal"
-          :data-source="mapState.options"
-          size="small"
-          bordered
-          class="overflow-y-auto"
-          :style="{
-            'max-height': `${mapState.height}px`
-          }"
-        >
-          <template #renderItem="{ item: option }">
-            <a-list-item>
-              <a-list-item-meta :description="option.subTitle">
-                <template #title>
-                  <a v-if="option.href" :href="option.href">{{ option.title }}</a>
-                  <p class="mb-0" v-else>{{ option.title }}</p>
-                </template>
-                <template #avatar>
-                  <a-avatar :src="option.avatar">
-                    <template v-if="!option.avatar" #icon>
-                      <AppstoreOutlined />
-                    </template>
-                  </a-avatar>
-                </template>
-              </a-list-item-meta>
-              <template #actions>
-                <a-checkbox
-                  :checked="getProp(formState, skey).includes(option.key)"
-                  @change="(e: any) => onLstSelChecked(e.target.checked, skey as string, option.key)"
-                />
-              </template>
-            </a-list-item>
-          </template>
-        </a-list>
-      </a-form-item-rest>
+      <ListSelect
+        v-else-if="mapState.type === 'ListSelect'"
+        :options="mapState.options"
+        :height="mapState.height"
+        :value="getProp(formState, skey)"
+        @update:value="onFieldChanged"
+      />
       <EditList
         v-else-if="mapState.type === 'EditList'"
         :mapper="mapState"
@@ -347,10 +318,10 @@
         v-else-if="mapState.type === 'TagList'"
         :mapper="mapState"
         :value="getProp(formState, skey)"
-        @update:value="(val: string) => setProp(formState, skey, val)"
+        @update:value="(val: any[]) => setProp(formState, skey, val)"
       >
         <template #FormDialog>
-          <slot name="FormDialog" v-bind="{ value: mapState, key: skey }" />
+          <slot name="FormDialog" />
         </template>
       </TagList>
       <template v-else>
@@ -362,7 +333,6 @@
 
 <script lang="ts" setup name="FormItem">
 import {
-  AppstoreOutlined,
   CloseCircleOutlined,
   EditOutlined,
   InfoCircleOutlined,
@@ -376,6 +346,7 @@ import Column from '../types/column'
 import { getProp, setProp, validConds } from '../utils'
 import CodeEditor from './CodeEditor.vue'
 import EditList from './EditList.vue'
+import ListSelect from './ListSelect.vue'
 import TagList from './TagList.vue'
 import UploadFile from './UploadFile.vue'
 
@@ -402,7 +373,7 @@ watch(
 watch(
   () => props.form,
   (form: any) => {
-    formState.value = form
+    formState.value = cloneDeep(form)
   }
 )
 
@@ -429,16 +400,6 @@ function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   } else {
     const opn = options.find((opn: OpnType) => opn.value === value)
     return opn ? opn.label || opn.value : value
-  }
-}
-function onLstSelChecked(chk: boolean, propKey: string, opnKey: string) {
-  const selKeys = formState.value[propKey].map((itm: any) => itm.key)
-  if (chk) {
-    if (!selKeys.includes(opnKey)) {
-      formState.value[propKey].push(opnKey)
-    }
-  } else {
-    formState.value[propKey].splice(selKeys.indexOf(opnKey), 1)
   }
 }
 function onFieldChanged(newVal: any) {

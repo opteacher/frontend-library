@@ -1,7 +1,12 @@
 <template>
-  <template v-for="item in mapper.mapper.deps.options" :key="item">
+  <template v-for="item in value" :key="item">
     <a-tag closable @close="onRmvTagClick(item)">
-      <LabelItem :value="item as any" :prop="mapper.lblProp" :mapper="mapper.lblMapper" />
+      <LabelItem
+        :value="item as any"
+        :prop="mapper.lblProp"
+        :mapper="mapper.lblMapper"
+        :tooltip="mapper.subProp"
+      />
     </a-tag>
   </template>
   <a-button type="dashed" size="small" @click="onNewTagClick">
@@ -12,8 +17,9 @@
 </template>
 
 <script lang="ts" setup name="TagList">
-import { defineEmits, defineProps } from 'vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
+import { defineEmits, defineProps } from 'vue'
+
 import LabelItem from './LabelItem.vue'
 
 const emit = defineEmits(['update:value'])
@@ -30,8 +36,7 @@ async function onNewTagClick() {
   if (props.mapper.onAdded) {
     await props.mapper.onAdded(props.mapper)
   }
-  props.mapper.emitter.emit('update:show', true)
-  props.mapper.emitter.emit('update:data', props.value)
+  props.mapper.emitter.emit('update:show', { show: true, object: props.value })
 }
 async function onRmvTagClick(key: any) {
   const index = props.value.indexOf(key)

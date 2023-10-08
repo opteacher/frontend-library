@@ -152,7 +152,7 @@ export class TableMapper extends BaseMapper {
   mapper: Mapper
   columns: Column[]
   emitter: Emitter
-  copy: (one: any) => any
+  newFun: () => any
   onEdit: (record: any) => void
   onSaved: (record: any, extra?: any) => void
   onDeleted: (key: any, extra?: any) => void
@@ -165,10 +165,10 @@ export class TableMapper extends BaseMapper {
     this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
-    this.copy = () => undefined
+    this.newFun = () => ({})
     this.onEdit = () => undefined
     this.onSaved = <T extends { key: string }>(nItm: T, array: T[]) => {
-      array.push(this.copy(nItm))
+      array.push(cloneDeep(nItm))
       this.emitter.emit('update:show', false)
     }
     this.onDeleted = <T extends { key: string }>(key: string, array: T[]) => {
@@ -188,10 +188,10 @@ export class TableMapper extends BaseMapper {
     this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
-    this.copy = () => undefined
+    this.newFun = () => ({})
     this.onEdit = () => undefined
     this.onSaved = <T extends { key: string }>(nItm: T, array: T[]) => {
-      array.push(this.copy(nItm))
+      array.push(cloneDeep(nItm))
       this.emitter.emit('update:show', false)
     }
     this.onDeleted = <T extends { key: string }>(key: string, array: T[]) => {
@@ -253,6 +253,8 @@ export class EdtLstMapper extends BaseMapper {
   //      这样的问题），所以两者最好不要同时为真
   // 如果抹平，则取新元素第一个字段，反之调用copy
   flatItem: boolean
+  // 子标题字段
+  subProp: string
   mapper: Mapper
   // 数据发生变化后必须触发update:value，重写onSaved也必须注意这一点！
   emitter: Emitter
@@ -266,6 +268,7 @@ export class EdtLstMapper extends BaseMapper {
     this.lblMapper = {}
     this.inline = true
     this.flatItem = true
+    this.subProp = ''
     this.mapper = new Mapper()
     this.emitter = new Emitter()
     this.newFun = () => ({})
@@ -279,6 +282,7 @@ export class EdtLstMapper extends BaseMapper {
     this.lblMapper = {}
     this.inline = true
     this.flatItem = true
+    this.subProp = ''
     this.mapper = new Mapper({})
     this.emitter = new Emitter()
     this.newFun = () => ({})

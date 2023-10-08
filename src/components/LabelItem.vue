@@ -4,7 +4,8 @@ import { computed, defineProps } from 'vue'
 const props = defineProps({
   value: { type: [Object, String, Number], required: true },
   prop: { type: String, default: '' },
-  mapper: { type: Object, default: () => ({}) }
+  mapper: { type: Object, default: () => ({}) },
+  tooltip: { type: String, default: '' }
 })
 const fnlText = computed(() => {
   let val: string
@@ -17,4 +18,10 @@ const fnlText = computed(() => {
 })
 </script>
 
-<template>{{ fnlText }}</template>
+<template>
+  <a-tooltip v-if="tooltip">
+    <template #title>{{ (value as any)[tooltip] }}</template>
+    {{ fnlText }}
+  </a-tooltip>
+  <template v-else>{{ fnlText }}</template>
+</template>

@@ -41,10 +41,11 @@
           :title="value.label"
           :mapper="value.mapper"
           :emitter="value.emitter"
+          :newFun="value.newFun"
           :object="value.editing"
           @submit="
-            (form: any, next: Function) => {
-              value.onSaved(form, getProp(formState, key as string))
+            async (form: any, next: Function) => {
+              await value.onSaved(form, getProp(formState, key as string))
               next()
             }
           "
@@ -68,7 +69,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { defineEmits, defineProps, onMounted, ref, watch } from 'vue'
 
 import Mapper from '../types/mapper'
-import { getProp } from '../utils'
+import { getProp, setProp } from '../utils'
 import FormGroup from './FormGroup.vue'
 
 const emit = defineEmits(['initialize', 'update:show', 'update:vwOnly', 'submit'])
@@ -130,6 +131,11 @@ if (props.emitter) {
   })
   props.emitter.on('update:mapper', (mapper: any) => {
     formMapper.value = cloneDeep(mapper)
+  })
+  props.emitter.on('update:mprop', (mapper: Record<string, any>) => {
+    for (const [prop, value] of Object.entries(mapper)) {
+      setProp(formMapper.value, prop, value)
+    }
   })
   props.emitter.on('viewOnly', (vwOnly: boolean) => {
     viewOnly.value = vwOnly
