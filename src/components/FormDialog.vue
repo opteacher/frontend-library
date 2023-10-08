@@ -30,7 +30,7 @@
     <FormGroup
       ref="formRef"
       :mapper="formMapper"
-      :form="formState"
+      v-model:form="formState"
       :rules="formRules"
       :editable="editable"
       :viewOnly="viewOnly"

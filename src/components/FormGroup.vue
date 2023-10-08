@@ -1,7 +1,7 @@
 <script lang="ts" setup name="FormGroup">
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { FormInstance } from 'ant-design-vue'
-import { defineExpose, defineProps, ref } from 'vue'
+import { defineExpose, defineProps, defineEmits, ref } from 'vue'
 
 import Mapper from '../types/mapper'
 import { validConds } from '../utils'
@@ -15,6 +15,7 @@ defineProps({
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
+const emit = defineEmits(['update:form'])
 const refer = ref<FormInstance>()
 
 defineExpose({ refer })
@@ -60,6 +61,7 @@ defineExpose({ refer })
             :mapper="v as Object"
             :editable="editable"
             :viewOnly="viewOnly"
+            @update:form="(fm: any) => emit('update:form', fm)"
           >
             <template v-if="k in $slots" #[k]>
               <slot :name="k" v-bind="{ formState: form }" />
@@ -98,6 +100,7 @@ defineExpose({ refer })
         :mapper="value"
         :editable="editable"
         :viewOnly="viewOnly"
+        @update:form="(fm: any) => emit('update:form', fm)"
       >
         <template v-if="key in $slots" #[key]>
           <slot :name="key" v-bind="{ formState: form }" />

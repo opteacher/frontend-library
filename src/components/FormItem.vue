@@ -252,7 +252,7 @@
         :onBeforeUpload="mapState.onBeforeUpload"
         :onChange="mapState.onChange"
         :disabled="disabled"
-        @update:value="(val: any) => setProp(formState, skey, val)"
+        @update:value="onFieldChanged"
       />
       <a-space v-else-if="mapState.type === 'Delable'">
         {{ getProp(formState, skey) || '-' }}
@@ -311,14 +311,14 @@
         v-else-if="mapState.type === 'CodeEditor'"
         :lang="mapState.lang"
         :value="getProp(formState, skey)"
-        @update:value="(val: string) => setProp(formState, skey, val)"
+        @update:value="onFieldChanged"
         :disabled="disabled"
       />
       <TagList
         v-else-if="mapState.type === 'TagList'"
         :mapper="mapState"
         :value="getProp(formState, skey)"
-        @update:value="(val: any[]) => setProp(formState, skey, val)"
+        @update:value="onFieldChanged"
       >
         <template #FormDialog>
           <slot name="FormDialog" />
@@ -339,7 +339,7 @@ import {
   SelectOutlined
 } from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
-import { computed, defineProps, ref, useSlots, watch } from 'vue'
+import { computed, defineEmits, defineProps, ref, useSlots, watch } from 'vue'
 
 import type { OpnType } from '../types'
 import Column from '../types/column'
@@ -357,6 +357,7 @@ const props = defineProps({
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
+const emit = defineEmits(['update:form'])
 const formState = ref(props.form)
 const mapState = ref(props.mapper)
 const display = computed(() => validConds(formState.value, mapState.value.display, true))
@@ -407,6 +408,7 @@ function onFieldChanged(newVal: any) {
   if (mapState.value.onChange) {
     mapState.value.onChange(formState.value, newVal)
   }
+  emit('update:form', formState.value)
 }
 function chkInSlot(suffix?: string) {
   const key = props.skey + (suffix || '')
