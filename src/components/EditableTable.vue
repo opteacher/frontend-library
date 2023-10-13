@@ -196,7 +196,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
 import Mapper from '../types/mapper'
 import SelColBox from './SelColBox.vue'
-import { pickOrIgnore, upperFirst, waitFor } from '../utils'
+import { pickOrIgnore, setProp, upperFirst, waitFor } from '../utils'
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
 import BchImport from '../types/bchImport'
@@ -270,6 +270,18 @@ if (props.emitter) {
   props.emitter.on('refresh', refresh)
   props.emitter.on('load', (load: boolean) => {
     loading.value = load
+  })
+  props.emitter.on('update:cprop', (column: Record<string, any>) => {
+    for (const [prop, value] of Object.entries(column)) {
+      const fstPoi = prop.indexOf('.')
+      const colKey = prop.substring(0, fstPoi !== -1 ? fstPoi : prop.length)
+      const col = colsState.find(col => col.key === colKey)
+      if (!col) {
+        return
+      }
+      setProp(col, prop.substring(fstPoi !== -1 ? fstPoi + 1 : 0), value)
+    }
+    fmtColumns(colsState)
   })
 }
 fmtColumns()
