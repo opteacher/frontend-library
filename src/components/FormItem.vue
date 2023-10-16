@@ -107,7 +107,7 @@
         <template #title>{{ mapState.placeholder || '请确认' }}</template>
         <a-checkbox
           :name="skey"
-          :checked="getProp(formState, skey)"
+          :checked="getProp(formState, skey, false)"
           :disabled="disabled"
           @change="(e: any) => onFieldChanged(e.target.checked)"
         >
@@ -320,8 +320,8 @@
         :value="getProp(formState, skey)"
         @update:value="onFieldChanged"
       >
-        <template #FormDialog>
-          <slot name="FormDialog" />
+        <template #formItem="{ form, elKey, value }">
+          <FormItem :form="form" :skey="elKey" :mapper="value" />
         </template>
       </TagList>
       <template v-else>

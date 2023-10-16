@@ -602,7 +602,7 @@ export function validConds(
   }
 }
 
-export function getProp(obj: any, prop: string) {
+export function getProp(obj: any, prop: string, dftVal: any = undefined) {
   if (!prop) {
     return obj
   }
@@ -612,23 +612,31 @@ export function getProp(obj: any, prop: string) {
   for (const p of prop.split('.')) {
     if (p === '') {
       continue
+    } else if (!obj) {
+      return dftVal
     } else if (p.endsWith(']')) {
       if (p.endsWith('}]')) {
         const result = /^(\w+)\[\{(\w+):("?\w+"?)\}\]$/.exec(p)
         if (!result || result.length < 4) {
-          throw new Error()
+          return dftVal
         }
         const sub = result[1]
         const key = result[2]
         const val = result[3]
+        if (!(sub in obj)) {
+          return dftVal
+        }
         obj = obj[sub].find((itm: any) => itm[key] == val)
       } else {
         const result = /^(\w+)\[(\d+)\]$/.exec(p)
         if (!result || result.length < 3) {
-          throw new Error()
+          return dftVal
         }
         const sub = result[1]
         const idx = parseInt(result[2])
+        if (!(sub in obj)) {
+          return dftVal
+        }
         obj = obj[sub][idx]
       }
     } else {
