@@ -18,7 +18,7 @@
               @submit="(info: any) => onBatchSubmit(info, 'export')"
             />
             <BchImpBox
-              :upload-url="imExport.uploadUrl"
+              :upload-url="(imExport as any).uploadUrl"
               :columns="colsState"
               :ignCols="fmtIeIgnCols"
               :copyFun="genCpyFun(BchImport, () => '')"
@@ -236,7 +236,7 @@ const props = defineProps({
   editable: { type: Boolean, default: true },
   addable: { type: Boolean, default: true },
   delable: { type: Boolean, default: true },
-  imExport: { type: Object, default: () => false },
+  imExport: { type: [Object, Boolean], default: () => false },
   ieIgnCols: { type: Array, default: () => [] },
   disable: { type: Function, default: () => false },
   clkable: { type: Boolean, default: true },

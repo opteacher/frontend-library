@@ -9,7 +9,7 @@
       />
     </a-tag>
   </template>
-  <a-button type="dashed" size="small" @click="onNewTagClick">
+  <a-button :type="addFlag ? 'primary' : 'dashed'" size="small" @click="onNewTagClick">
     <template #icon><plus-outlined /></template>
     添加
   </a-button>
@@ -28,6 +28,7 @@
 
 <script lang="ts" setup name="TagList">
 import { PlusOutlined } from '@ant-design/icons-vue'
+import { cloneDeep } from 'lodash'
 import { ref } from 'vue'
 
 import LabelItem from './LabelItem.vue'
@@ -40,25 +41,29 @@ const props = defineProps({
 const addFlag = ref(false)
 const addState = ref(props.mapper.newFun())
 
-props.mapper.emitter.on('update:value', (array: any) => {
-  emit('update:value', array)
-})
-
 function onNewTagClick() {
-  if (props.mapper.onAdded) {
-    props.mapper.onAdded(addState.value)
+  if (!addFlag.value && props.mapper.onAdded) {
+    props.mapper.onAdded(addState.value, props.value)
   }
-  addFlag.value = true
+  addFlag.value = !addFlag.value
 }
 async function onRmvTagClick(key: any) {
   const index = props.value.indexOf(key)
-  props.mapper.emitter.emit(
-    'update:value',
-    props.value.slice(0, index).concat(props.value.slice(index))
-  )
+  emit('update:value', props.value.slice(0, index).concat(props.value.slice(index + 1)))
 }
 function onAddTagSubmit(form: any) {
-  console.log(form)
+  // 根据需要打平新增项
+  if (props.mapper.flatItem) {
+    form = Object.values(form)[0]
+  }
+  emit(
+    'update:value',
+    props.mapper.onSaved
+      ? props.mapper.onSaved(form, props.value)
+      : props.value.concat(cloneDeep(form))
+  )
+  addFlag.value = false
+  addState.value = props.mapper.newFun()
 }
 function onCclClick() {
   addFlag.value = false

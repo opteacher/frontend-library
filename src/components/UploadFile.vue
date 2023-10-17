@@ -20,10 +20,10 @@
 </template>
 
 <script lang="ts" setup name="UploadFile">
-import { ref, watch, onMounted } from 'vue'
 import { UploadOutlined } from '@ant-design/icons-vue'
-import type { UploadChangeParam, UploadProps, UploadFile } from 'ant-design-vue'
+import type { UploadChangeParam, UploadFile, UploadProps } from 'ant-design-vue'
 import { v4 } from 'uuid'
+import { onMounted, ref, watch } from 'vue'
 
 const emit = defineEmits(['update:value'])
 const props = defineProps({
@@ -58,10 +58,7 @@ function refresh() {
 function onUploadChange(info: UploadChangeParam) {
   props.onChange(props.form, info)
   if (
-    info.fileList.reduce(
-      (prev: boolean, file: UploadFile) => prev && file.status === 'done',
-      true
-    )
+    info.fileList.reduce((prev: boolean, file: UploadFile) => prev && file.status === 'done', true)
   ) {
     emit(
       'update:value',

@@ -28,7 +28,7 @@
           <template #actions>
             <a-checkbox
               :checked="value.includes(option.key)"
-              @change="(e: any) => onLstSelChecked(e.target.checked, option.key)"
+              @change="(e: any) => onItemChecked(e.target.checked, option.key)"
             />
           </template>
         </a-list-item>
@@ -52,12 +52,12 @@ const valState = ref(props.value)
 watch(
   () => [...props.value],
   () => {
-    valState.value.splice(0, valState.value.length, ...props.value)
+    valState.value = props.value
   }
 )
 
-function onLstSelChecked(chk: boolean, opnKey: string) {
-  const selKeys = valState.value.map((itm: any) => itm.key)
+function onItemChecked(chk: boolean, opnKey: string) {
+  const selKeys = valState.value.map((itm: any) => itm.key || itm)
   if (chk) {
     if (!selKeys.includes(opnKey)) {
       valState.value.push(opnKey)

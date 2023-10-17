@@ -21,5 +21,11 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest'
+  },
+  globals: {
+    defineEmits: "readonly",
+    defineExpose: "readonly",
+    defineProps: "readonly",
+    withDefaults: "readonly",
   }
 }

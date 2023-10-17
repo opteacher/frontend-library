@@ -107,15 +107,16 @@
 </template>
 
 <script lang="ts" setup name="BchImpBox">
-import { reactive, ref, watch } from 'vue'
-import FormDialog from './FormDialog.vue'
+import { CloseOutlined, ImportOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import Mapper from '../types/mapper'
+import { reactive, watch } from 'vue'
 import { WorkBook, read, utils } from 'xlsx'
+
 import { Cond } from '../types'
-import { getDftPjt, charInc, revsKeyVal } from '../utils'
 import Column from '../types/column'
-import { ImportOutlined, InfoCircleOutlined, CloseOutlined } from '@ant-design/icons-vue'
+import Mapper from '../types/mapper'
+import { getDftPjt } from '../utils'
+import FormDialog from './FormDialog.vue'
 
 const props = defineProps({
   uploadUrl: { type: String, default: `/${getDftPjt()}/api/v1/excel/upload` },

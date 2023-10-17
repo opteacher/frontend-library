@@ -17,8 +17,9 @@
 </template>
 
 <script lang="ts" setup>
-import Column from '../types/column'
 import { ref } from 'vue'
+
+import Column from '../types/column'
 
 const props = defineProps({
   group: { type: String, required: true },
@@ -29,13 +30,13 @@ const props = defineProps({
 const indSelCols = ref<boolean>(false)
 
 function onAllColsChange(e: { target: { checked: boolean } }) {
-  (props.columns as Column[]).map((column: Column) => {
+  ;(props.columns as Column[]).map((column: Column) => {
     column.notDisplay = !e.target.checked
   })
   indSelCols.value = false
 }
 function onDspColSelect(checkeds: string[]) {
-  (props.columns as Column[]).map((column: Column) => {
+  ;(props.columns as Column[]).map((column: Column) => {
     column.notDisplay = !checkeds.includes(column.key)
   })
   indSelCols.value = props.chkSelState(props.columns, false)

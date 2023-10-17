@@ -29,9 +29,10 @@
 </template>
 
 <script lang="ts" setup name="SelColBox">
-import Column from '../types/column'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { InsertRowAboveOutlined } from '@ant-design/icons-vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+
+import Column from '../types/column'
 import SelColGrp from './SelColGrp.vue'
 
 const emit = defineEmits(['change'])
@@ -43,9 +44,8 @@ const selColsVsb = ref(false)
 const allSelCols = ref(true)
 const indSelCols = ref(false)
 const groups = ref<string[]>([])
-const dspCols = computed<string[]>(() => colsState
-  .filter((column: Column) => !column.notDisplay)
-  .map((column: Column) => column.key)
+const dspCols = computed<string[]>(() =>
+  colsState.filter((column: Column) => !column.notDisplay).map((column: Column) => column.key)
 )
 
 onMounted(refresh)
@@ -53,22 +53,28 @@ watch(() => [...props.columns], refresh)
 
 function refresh() {
   colsState.splice(0, colsState.length, ...(props.columns as Column[]))
-  groups.value.splice(0, groups.value.length, ...Array.from(new Set(colsState
-    .filter((col: Column) => col.group && col.group.length)
-    .map((col: Column) => col.group[0])
-  )))
+  groups.value.splice(
+    0,
+    groups.value.length,
+    ...Array.from(
+      new Set(
+        colsState
+          .filter((col: Column) => col.group && col.group.length)
+          .map((col: Column) => col.group[0])
+      )
+    )
+  )
   allSelCols.value = chkSelState(colsState, true)
   indSelCols.value = chkSelState(colsState, false)
 }
 function getColsByGrp(grp: string) {
-  return colsState.filter((column: Column) =>
-    column.group.length && column.group[0] === grp
-  )
+  return colsState.filter((column: Column) => column.group.length && column.group[0] === grp)
 }
 function chkSelState(cols: Column[], allSel: boolean) {
-  return cols.reduce((prev: boolean, col: Column) => (
-    allSel ? (prev && !col.notDisplay) : (prev || col.notDisplay)
-  ), allSel)
+  return cols.reduce(
+    (prev: boolean, col: Column) => (allSel ? prev && !col.notDisplay : prev || col.notDisplay),
+    allSel
+  )
 }
 function onAllColsChange(e: { target: { checked: boolean } }) {
   colsState.map((column: Column) => {
