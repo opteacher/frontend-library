@@ -1,5 +1,5 @@
 <script lang="ts" setup name="LabelItem">
-import { computed, defineProps } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   value: { type: [Object, String, Number], required: true },

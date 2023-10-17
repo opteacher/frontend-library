@@ -339,7 +339,7 @@ import {
   SelectOutlined
 } from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
-import { computed, defineEmits, defineProps, ref, useSlots, watch } from 'vue'
+import { computed, ref, useSlots, watch } from 'vue'
 
 import type { OpnType } from '../types'
 import Column from '../types/column'

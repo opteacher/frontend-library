@@ -11,13 +11,14 @@
       <a-space>
         <SelColBox v-if="dspCols" :columns="columns" @change="fmtColumns" />
         <template v-if="addable">
-          <a-space v-if="imExpable">
+          <a-space v-if="imExport">
             <BchExpBox
               :columns="colsState"
               :copyFun="genCpyFun(BchExport, () => ({ column: '', compare: '=' }))"
               @submit="(info: any) => onBatchSubmit(info, 'export')"
             />
             <BchImpBox
+              :upload-url="imExport.uploadUrl"
               :columns="colsState"
               :ignCols="fmtIeIgnCols"
               :copyFun="genCpyFun(BchImport, () => '')"
@@ -190,7 +191,7 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { computed, onMounted, reactive, ref, defineProps, defineEmits } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import FormDialog from './FormDialog.vue'
@@ -235,7 +236,7 @@ const props = defineProps({
   editable: { type: Boolean, default: true },
   addable: { type: Boolean, default: true },
   delable: { type: Boolean, default: true },
-  imExpable: { type: Boolean, default: false },
+  imExport: { type: Object, default: () => false },
   ieIgnCols: { type: Array, default: () => [] },
   disable: { type: Function, default: () => false },
   clkable: { type: Boolean, default: true },

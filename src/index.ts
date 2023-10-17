@@ -10,6 +10,7 @@ import CodeEditor from './components/CodeEditor.vue'
 import EditableTable from './components/EditableTable.vue'
 import BchExpBox from './components/BchExpBox.vue'
 import BchImpBox from './components/BchImpBox.vue'
+import CButton from './components/CButton.vue'
 
 export const components = {
     ColorSelect,
@@ -22,7 +23,8 @@ export const components = {
     CodeEditor,
     EditableTable,
     BchExpBox,
-    BchImpBox
+    BchImpBox,
+    CButton
 }
 
 export default function (app: App) {

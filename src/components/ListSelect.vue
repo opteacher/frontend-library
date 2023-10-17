@@ -39,7 +39,7 @@
 
 <script setup lang="ts" name="ListSelect">
 import { AppstoreOutlined } from '@ant-design/icons-vue'
-import { defineEmits, defineProps, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   value: { type: Array, default: () => [] },

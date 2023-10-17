@@ -30,7 +30,7 @@
 
 <script lang="ts" setup name="SelColBox">
 import Column from '../types/column'
-import { defineEmits, defineProps, computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { InsertRowAboveOutlined } from '@ant-design/icons-vue'
 import SelColGrp from './SelColGrp.vue'
 

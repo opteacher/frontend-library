@@ -22,7 +22,7 @@
 
 <script lang="ts" setup name="CellCard">
 import { endsWith, fmtStrByObj } from '../utils'
-import { defineProps, computed } from 'vue'
+import { computed } from 'vue'
 import dayjs from 'dayjs'
 import HighLight from './HighLight.vue'
 import Cell, { Cells } from '../types/cell'

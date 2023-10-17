@@ -14,8 +14,6 @@
 </template>
 
 <script lang="ts" setup name="HighLight">
-import { defineProps } from 'vue'
-
 defineProps({
   text: { type: String, required: true },
   search: { type: String, required: true }

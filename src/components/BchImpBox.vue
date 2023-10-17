@@ -1,38 +1,64 @@
 <template>
-  <a-button @click="visible = true">
+  <a-button @click="() => emitter.emit('update:show', true)">
     <template #icon><import-outlined /></template>
     批量导入
   </a-button>
   <FormDialog
     title="导入登记在案的资产"
     width="70vw"
-    v-model:show="visible"
-    :copy="copyFun"
+    :new-fun="() => ({ file: [] })"
     :emitter="emitter"
     :mapper="mapper"
     @submit="onSubmit"
   >
     <template #itfcTable="{ formState }">
       <a-form-item-rest>
-        <a-space class="mb-2.5">
-          <a-input v-model:value="startCol" placeholder="开始列号" />
-          <a-button
-            :disabled="!formState.worksheet"
-            type="primary"
-            ghost
-            @click="onOrderFill(formState)"
-          >
-            <template #icon><arrow-right-outlined /></template>
-            顺序填入
-          </a-button>
-          <a-button :disabled="!formState.worksheet" danger ghost @click="onClrCols(formState)">
-            <template #icon><close-outlined /></template>
-            清空
-          </a-button>
-        </a-space>
+        <a-form class="mb-2.5" layout="inline">
+          <a-form-item>
+            <template #label>
+              表头行&nbsp;
+              <a-tooltip>
+                <template #title>其下一行即为数据开始行</template>
+                <InfoCircleOutlined />
+              </a-tooltip>
+            </template>
+            <a-input-number
+              :min="-1"
+              :max="excInf.totalNum"
+              v-model:value="excInf.hdRowNos[excInf.actTab]"
+              @change="reloadExcel"
+            />
+          </a-form-item>
+          <a-form-item label="绑定列">
+            <div class="space-x-2">
+              <a-tooltip v-for="col in dbInf.cols" :key="col.key">
+                <template #title>拖拽到下表列头中绑定</template>
+                <c-button
+                  size="small"
+                  :type="col.key in binds.colors ? binds.colors[col.key] : 'default'"
+                  :draggable="true"
+                  @dragstart="(e: any) => onColDragStart(e, col)"
+                >
+                  {{ col.title }}
+                </c-button>
+              </a-tooltip>
+            </div>
+          </a-form-item>
+        </a-form>
+        <a-tabs v-model:activeKey="excInf.actTab" type="editable-card" @change="reloadExcel">
+          <a-tab-pane v-for="sheet in excInf.sheets" :key="sheet" :tab="sheet">
+            <template #closeIcon>
+              <a-tooltip>
+                <template #title>关闭工作表代表该表不会导入</template>
+                <CloseOutlined />
+              </a-tooltip>
+            </template>
+          </a-tab-pane>
+        </a-tabs>
         <a-table
-          :columns="genDspColumns(formState as Batch)"
-          :data-source="genDspRecords(formState as Batch)"
+          id="tblItfc"
+          :columns="excInf.columns"
+          :data-source="excInf.data"
           :scroll="{ x: 'max-content' }"
           :loading="formState.loading"
           size="small"
@@ -40,20 +66,28 @@
           bordered
         >
           <template #headerCell="{ column }">
-            {{ column.title }}&nbsp;
-            <enter-outlined :rotate="-90" />
-            <a-select
-              class="mt-0.5 min-w-full"
-              size="small"
-              allowClear
-              placeholder="填入……"
-              :style="{ 'max-width': `${column.width}px` }"
-              :value="getSelCol(formState, column.dataIndex)"
-              :options="cols.map((col: Column) => ({ label: col.title, value: `col${upperFirst(col.dataIndex)}` }))"
-              @select="(selected: string) => onBdPropSelect(formState, selected, column.dataIndex)"
-            />
+            <div
+              class="p-2"
+              :class="{
+                'bg-slate-600': dbInf.dragon === column.key,
+                'text-white': dbInf.dragon === column.key || column.key in binds.colors
+              }"
+              :style="
+                column.key in binds.colors
+                  ? {
+                      'background-color': clrMap[binds.colors[column.key]]
+                    }
+                  : undefined
+              "
+              @drop="e => onColBindDrop(e, column)"
+              @dragenter="() => onSetDragonCol(column)"
+              @dragleave="() => onSetDragonCol()"
+              @dragover="e => e.preventDefault()"
+            >
+              {{ column.title }}
+            </div>
           </template>
-          <template #footer>.....</template>
+          <template #footer>总共{{ excInf.totalNum }}条记录，此处展示10条</template>
         </a-table>
       </a-form-item-rest>
     </template>
@@ -72,117 +106,141 @@
   </FormDialog>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, ref, watch } from 'vue'
+<script lang="ts" setup name="BchImpBox">
+import { reactive, ref, watch } from 'vue'
 import FormDialog from './FormDialog.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import Mapper from '../types/mapper'
-import { read } from 'xlsx'
+import { WorkBook, read, utils } from 'xlsx'
 import { Cond } from '../types'
-import { charInc, upperFirst, genDspColumns, genDspRecords, revsKeyVal } from '../utils'
+import { getDftPjt, charInc, revsKeyVal } from '../utils'
 import Column from '../types/column'
-import {
-  ImportOutlined,
-  ArrowRightOutlined,
-  EnterOutlined,
-  CloseOutlined
-} from '@ant-design/icons-vue'
+import { ImportOutlined, InfoCircleOutlined, CloseOutlined } from '@ant-design/icons-vue'
 
-export default defineComponent({
-  name: 'BchImpBox',
-  components: {
-    FormDialog,
-    ImportOutlined,
-    ArrowRightOutlined,
-    EnterOutlined,
-    CloseOutlined
-  },
-  emits: ['refresh', 'submit'],
-  props: {
-    columns: { type: Array, required: true },
-    ignCols: { type: Array, default: () => [] },
-    copyFun: { type: Function, required: true }
-  },
-  setup(props, { emit }) {
-    const emitter = new Emitter()
-    const visible = ref(false)
-    const cols = reactive(props.columns.map(col => Column.copy(col)))
-    const startCol = ref('A')
+const props = defineProps({
+  uploadUrl: { type: String, default: `/${getDftPjt()}/api/v1/excel/upload` },
+  columns: { type: Array, required: true },
+  ignCols: { type: Array, default: () => [] },
+  copyFun: { type: Function, required: true }
+})
+const emit = defineEmits(['refresh', 'submit'])
 
-    watch(
-      () => props.columns.length,
-      () => cols.splice(0, cols.length, ...props.columns.map(col => Column.copy(col)))
-    )
-
-    async function onSubmit(info: any, next: () => void) {
-      emit('submit', info)
-      next()
-    }
-    function onBdPropSelect(formState: any, selected: string, prop: string) {
-      for (const [key, val] of Object.entries(formState)) {
-        if (key.startsWith('col') && val === prop) {
-          formState[key] = ''
-          break
-        }
-      }
-      formState[selected] = prop
-      // cols.splice(
-      //   0,
-      //   cols.length,
-      //   ...(props.columns as Column[]).filter(
-      //     (col: Column) => !formState[`col${upperFirst(col.dataIndex)}`]
-      //   )
-      // )
-    }
-    function getSelCol(formState: any, selColKey: string) {
-      return revsKeyVal(formState)[selColKey]
-    }
-    function onOrderFill(formState: any) {
-      if (!formState.worksheet) {
-        return
-      }
-      const usdVals = Object.values(formState).filter(val => val)
-      let begColNo = startCol.value
-      for (const colKey of Object.keys(formState).filter(
-        col => col.startsWith('col') && !props.ignCols.includes(col)
-      )) {
-        if (!formState[colKey]) {
-          while (usdVals.includes(begColNo)) {
-            begColNo = charInc(begColNo)
-          }
-          formState[colKey] = begColNo
-          begColNo = charInc(begColNo)
-        }
-      }
-    }
-    function onClrCols(formState: any) {
-      for (const key of Object.keys(formState)) {
-        if (key.startsWith('col')) {
-          formState[key] = ''
-        }
-      }
-    }
-    return {
-      Mapper,
-
-      visible,
-      emitter,
-      mapper,
-      cols,
-      startCol,
-
-      onSubmit,
-      getSelCol,
-      upperFirst,
-      genDspColumns,
-      genDspRecords,
-      onBdPropSelect,
-      onOrderFill,
-      onClrCols
-    }
-  }
+const emitter = new Emitter()
+const dbInf = reactive<{
+  cols: Column[]
+  dragon: string
+}>({
+  cols: props.columns.map(col => Column.copy(col)),
+  dragon: ''
+})
+const excInf = reactive<{
+  actTab: string
+  book: WorkBook | null
+  sheets: string[]
+  columns: Column[]
+  data: any[]
+  totalNum: number
+  hdRowNos: Record<string, number>
+}>({
+  actTab: '',
+  book: null,
+  sheets: [],
+  columns: [],
+  data: [],
+  totalNum: 0,
+  hdRowNos: {}
+})
+const binds = reactive<{
+  // Record<string(excel表的列索引), string(数据库表的列索引)>
+  mapper: Record<string, string>
+  // Record<string(excel表的列索引/数据库表的列索引), Color(颜色)>
+  colors: Record<string, Color>
+}>({
+  mapper: {},
+  colors: {}
 })
 
+watch(
+  () => [...props.columns],
+  () => {
+    dbInf.cols = props.columns as Column[]
+  }
+)
+
+async function onSubmit(info: any, next: () => void) {
+  emit('submit', info)
+  next()
+}
+function reloadExcel() {
+  if (!excInf.book) {
+    return
+  }
+  for (const sname of Object.keys(excInf.book.Sheets)) {
+    if (!(sname in excInf.hdRowNos)) {
+      excInf.hdRowNos[sname] = 0
+    }
+  }
+  const worksheet = excInf.book.Sheets[excInf.actTab]
+  const allData = utils.sheet_to_json<any[]>(worksheet, { header: 1 })
+  excInf.totalNum = allData.length
+  // 默认使用第一行作为表头
+  const hdRowNo = excInf.hdRowNos[excInf.actTab]
+  const header =
+    hdRowNo !== -1
+      ? allData[hdRowNo]
+      : [...new Array(allData[0]).keys()].map((nCol: number) => utils.encode_col(nCol))
+  excInf.columns.splice(0, excInf.columns.length, ...header.map(prop => new Column(prop, prop)))
+  // 表头的下一行为数据开始行
+  const begRowNo = hdRowNo + 1
+  excInf.data = allData
+    .slice(begRowNo, begRowNo + 10)
+    .map(item => Object.fromEntries(header.map((hdItm, idx) => [hdItm, item[idx]])))
+  return worksheet
+}
+function onColDragStart(e: DragEvent, col: Column) {
+  e.dataTransfer?.setData('text/plain', col.key)
+}
+function onColBindDrop(e: DragEvent, col: Column) {
+  dbInf.dragon = ''
+  const exCol = col.key
+  const dbCol = e.dataTransfer?.getData('text/plain') as string
+  binds.mapper[exCol] = dbCol
+  binds.colors[exCol] = colors[Math.floor(Math.random() * colors.length)]
+  binds.colors[dbCol] = binds.colors[exCol]
+}
+function onSetDragonCol(column?: Column) {
+  dbInf.dragon = column ? column.key : ''
+}
+
+const colors: Color[] = [
+  'warning',
+  'error',
+  'success',
+  'primary',
+  'cyan',
+  'black',
+  'purple',
+  'pink',
+  'red',
+  'orange',
+  'green',
+  'blue'
+]
+const clrMap = {
+  warning: '#ff9900',
+  error: '#ff3300',
+  success: '#00cc66',
+  primary: '#2db7f5',
+  cyan: '#04c1e1',
+  black: '#131313',
+  purple: '#b500fe',
+  pink: '#c41d7f',
+  red: '#cf1322',
+  orange: '#d46b08',
+  green: '#389e0d',
+  blue: '#0958d9'
+}
+type Color = keyof typeof clrMap
 const mapper = new Mapper({
   file: {
     label: '上传在案资产',
@@ -193,52 +251,22 @@ const mapper = new Mapper({
         message: '必须选择要上传的Excel文件！'
       }
     ],
-    path: '/police-assets/api/v1/excel/upload',
+    path: props.uploadUrl,
     headers: { authorization: `Bearer ${localStorage.getItem('token')}` },
     onChange: async (form: any, info: any) => {
       form.loading = true
-      if (info.file.status === 'done') {
+      if (info.file && info.file.status === 'done') {
         const reader = new FileReader()
         reader.readAsArrayBuffer(info.file.originFileObj)
         reader.onload = () => {
-          const workbook = read(reader.result)
-          form.worksheet = workbook.Sheets[workbook.SheetNames[0]]
+          excInf.book = read(reader.result)
+          excInf.sheets = excInf.book.SheetNames
+          excInf.actTab = excInf.book.SheetNames[0]
+          form.worksheet = reloadExcel()
           form.loading = false
         }
       }
     },
-    disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
-  },
-  hdRowNo: {
-    label: '标题行号',
-    type: 'Number',
-    iptType: 'number',
-    rules: [
-      {
-        required: true,
-        message: '必须填写填写标题行号，用于收集标题信息！'
-      }
-    ],
-    display: [
-      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
-      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
-    ],
-    disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
-  },
-  dtRowNo: {
-    label: '数据开始行号',
-    type: 'Number',
-    iptType: 'number',
-    rules: [
-      {
-        required: true,
-        message: '必须填写填写标题行号，用于收集数据！'
-      }
-    ],
-    display: [
-      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
-      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
-    ],
     disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
   },
   itfcTable: {
@@ -270,3 +298,9 @@ const mapper = new Mapper({
   }
 })
 </script>
+
+<style>
+#tblItfc th.ant-table-cell {
+  padding: 0 !important;
+}
+</style>

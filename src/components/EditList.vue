@@ -34,7 +34,7 @@
 
 <script lang="ts" setup name="EditList">
 import { cloneDeep } from 'lodash'
-import { defineEmits, defineProps, onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 
 import LabelItem from './LabelItem.vue'
 

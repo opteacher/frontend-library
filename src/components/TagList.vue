@@ -28,7 +28,7 @@
 
 <script lang="ts" setup name="TagList">
 import { PlusOutlined } from '@ant-design/icons-vue'
-import { defineEmits, defineProps, ref } from 'vue'
+import { ref } from 'vue'
 
 import LabelItem from './LabelItem.vue'
 

@@ -1,7 +1,7 @@
 <script lang="ts" setup name="FormGroup">
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { FormInstance } from 'ant-design-vue'
-import { defineExpose, defineProps, defineEmits, ref } from 'vue'
+import { ref } from 'vue'
 
 import Mapper from '../types/mapper'
 import { validConds } from '../utils'

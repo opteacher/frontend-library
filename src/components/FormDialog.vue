@@ -66,7 +66,7 @@
 import { EyeOutlined, FormOutlined } from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { defineEmits, defineProps, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
 import Mapper from '../types/mapper'
 import { getProp, setProp } from '../utils'
