@@ -233,7 +233,9 @@
             <template v-if="column.dataIndex === 'opera'">
               <a-popconfirm
                 title="确定删除该字段"
-                @confirm.stop="mapper.onDeleted(record.key, getProp(formState, skey))"
+                @confirm.stop="
+                  mapper.onDeleted && mapper.onDeleted(record.key, getProp(formState, skey))
+                "
               >
                 <a-button danger size="small" @click.stop="() => {}">删除</a-button>
               </a-popconfirm>
