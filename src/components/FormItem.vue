@@ -267,6 +267,7 @@
         :placeholder="mapper.placeholder"
         :mode="mapper.mode"
         :disabled="disabled"
+        @update:value="onFieldChanged"
       />
       <ListSelect
         v-else-if="mapper.type === 'ListSelect'"
