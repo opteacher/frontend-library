@@ -35,6 +35,7 @@
       :editable="editable"
       :viewOnly="viewOnly"
       :lblWid="lblWid"
+      @update:fprop="values => Object.entries(values).map(([k, v]) => setProp(formState, k, v))"
     >
       <template #FormDialog="{ value, key }">
         <FormDialog

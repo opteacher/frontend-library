@@ -15,7 +15,7 @@ defineProps({
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
-const emit = defineEmits(['update:form'])
+const emit = defineEmits(['update:fprop'])
 const refer = ref<FormInstance>()
 
 defineExpose({ refer })
@@ -61,7 +61,7 @@ defineExpose({ refer })
             :mapper="v as Object"
             :editable="editable"
             :viewOnly="viewOnly"
-            @update:form="(fm: any) => emit('update:form', fm)"
+            @update:fprop="(fm: any) => emit('update:fprop', fm)"
           >
             <template v-if="k in $slots" #[k]>
               <slot :name="k" v-bind="{ formState: form }" />
@@ -100,7 +100,7 @@ defineExpose({ refer })
         :mapper="value"
         :editable="editable"
         :viewOnly="viewOnly"
-        @update:form="(fm: any) => emit('update:form', fm)"
+        @update:fprop="(fm: any) => emit('update:fprop', fm)"
       >
         <template v-if="key in $slots" #[key]>
           <slot :name="key" v-bind="{ formState: form }" />

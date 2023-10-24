@@ -10,7 +10,7 @@
       </a-tooltip>
     </template>
     <template v-if="viewOnly">
-      <slot v-if="chkInSlot('VW')" :name="skey + 'VW'" v-bind="{ formState }" />
+      <slot v-if="chkInSlot('VW')" :name="skey + 'VW'" v-bind="{ formState: form }" />
       <template
         v-else-if="
           mapper.type === 'Input' ||
@@ -20,17 +20,17 @@
           mapper.type === 'DateTime'
         "
       >
-        {{ getProp(formState, skey) }}
+        {{ getProp(form, skey) }}
       </template>
       <template v-else-if="mapper.type === 'Textarea' || mapper.type === 'CodeEditor'">
-        <pre class="mb-0">{{ getProp(formState, skey) }}</pre>
+        <pre class="mb-0">{{ getProp(form, skey) }}</pre>
       </template>
       <template v-else-if="mapper.type === 'Select' || mapper.type === 'Cascader'">
-        {{ fmtDrpdwnValue(mapper.options, getProp(formState, skey)) }}
+        {{ fmtDrpdwnValue(mapper.options, getProp(form, skey)) }}
       </template>
       <template v-else-if="mapper.type === 'Checkbox'">
         {{
-          getProp(formState, skey)
+          getProp(form, skey)
             ? mapper.chkLabels
               ? mapper.chkLabels[1]
               : '是'
@@ -41,58 +41,58 @@
       </template>
       <template v-else-if="mapper.type === 'EditList' || mapper.type === 'UploadFile'">
         <ul class="pl-0 list-none mb-0">
-          <li v-for="item in getProp(formState, skey)" :key="item">{{ item }}</li>
+          <li v-for="item in getProp(form, skey)" :key="item">{{ item }}</li>
         </ul>
       </template>
       <template v-else-if="mapper.type === 'Table'">
         <a-table
-          v-show="getProp(formState, skey) && getProp(formState, skey).length"
+          v-show="getProp(form, skey) && getProp(form, skey).length"
           :columns="mapper.columns"
-          :data-source="getProp(formState, skey)"
+          :data-source="getProp(form, skey)"
           :pagination="false"
           size="small"
         />
       </template>
-      <template v-else>{{ getProp(formState, skey) }}</template>
+      <template v-else>{{ getProp(form, skey) }}</template>
     </template>
-    <slot v-else-if="chkInSlot()" :name="skey" v-bind="{ formState }" />
+    <slot v-else-if="chkInSlot()" :name="skey" v-bind="{ form }" />
     <template v-else>
       <a-input
         v-if="mapper.type === 'Input'"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         :type="mapper.iptType || 'text'"
         :disabled="disabled"
         :addon-before="mapper.prefix"
         :addon-after="mapper.suffix"
         :placeholder="mapper.placeholder || '请输入'"
         @change="(e: any) => onFieldChanged(e.target.value)"
-        @blur="(e: any) => mapper.onBlur && mapper.onBlur(formState, e.target.value)"
+        @blur="(e: any) => mapper.onBlur && mapper.onBlur(form, e.target.value)"
       />
       <a-input-number
         v-else-if="mapper.type === 'Number'"
         class="w-full"
         type="number"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         :placeholder="mapper.placeholder || '请输入'"
         :disabled="disabled"
         :addon-before="mapper.prefix"
         :addon-after="mapper.suffix"
         @change="onFieldChanged"
-        @blur="(e: any) => mapper.onBlur && mapper.onBlur(formState, e.target.value)"
+        @blur="(e: any) => mapper.onBlur && mapper.onBlur(form, e.target.value)"
       />
       <a-input-password
         v-else-if="mapper.type === 'Password'"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         :placeholder="mapper.placeholder || '请输入'"
         :disabled="disabled"
         @change="(e: any) => onFieldChanged(e.target.value)"
-        @blur="(e: any) => mapper.onBlur && mapper.onBlur(formState, e.target.value)"
+        @blur="(e: any) => mapper.onBlur && mapper.onBlur(form, e.target.value)"
       />
       <a-select
         v-else-if="mapper.type === 'Select'"
         class="w-full"
         :options="mapper.options"
-        :value="getProp(formState, skey) || undefined"
+        :value="getProp(form, skey) || undefined"
         :placeholder="mapper.placeholder || '请选择'"
         :disabled="disabled"
         :allowClear="mapper.allowClear"
@@ -107,12 +107,12 @@
         <template #title>{{ mapper.placeholder || '请确认' }}</template>
         <a-checkbox
           :name="skey"
-          :checked="getProp(formState, skey, false)"
+          :checked="getProp(form, skey, false)"
           :disabled="disabled"
           @change="(e: any) => onFieldChanged(e.target.checked)"
         >
           {{
-            getProp(formState, skey)
+            getProp(form, skey)
               ? mapper.chkLabels
                 ? mapper.chkLabels[1]
                 : '是'
@@ -124,7 +124,7 @@
       </a-tooltip>
       <a-tooltip v-else-if="mapper.type === 'Switch'">
         <a-switch
-          :checked="getProp(formState, skey)"
+          :checked="getProp(form, skey)"
           :checked-children="mapper.chkLabels ? mapper.chkLabels[1] : ''"
           :un-checked-children="mapper.chkLabels ? mapper.chkLabels[0] : ''"
           @change="onFieldChanged"
@@ -134,7 +134,7 @@
         v-else-if="mapper.type === 'Radio'"
         button-style="solid"
         :disabled="disabled"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         @change="(e: any) => onFieldChanged(e.target.value)"
       >
         <template v-if="mapper.style === 'button'">
@@ -150,18 +150,18 @@
       </a-radio-group>
       <a-textarea
         v-else-if="mapper.type === 'Textarea'"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         :rows="mapper.maxRows"
         :placeholder="mapper.placeholder || '请输入'"
         :disabled="disabled"
         @change="(e: any) => onFieldChanged(e.target.value)"
-        @blur="(e: any) => mapper.onBlur && mapper.onBlur(formState, e.target.value)"
+        @blur="(e: any) => mapper.onBlur && mapper.onBlur(form, e.target.value)"
       />
       <a-cascader
         v-else-if="mapper.type === 'Cascader'"
         :options="mapper.options"
         :placeholder="mapper.placeholder || '请选择'"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         change-on-select
         :disabled="disabled"
         @change="onFieldChanged"
@@ -175,7 +175,7 @@
           :type="mapper.primary ? 'primary' : 'default'"
           ghost
           :loading="mapper.loading"
-          @click="() => mapper.onClick(formState)"
+          @click="() => mapper.onClick(form)"
         >
           {{ mapper.inner }}
         </a-button>
@@ -186,83 +186,45 @@
         show-time
         :placeholder="mapper.placeholder || '请选择'"
         :disabled="disabled"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         @change="onFieldChanged"
       />
-      <template v-else-if="mapper.type === 'Table'">
-        <a-space>
-          <a-button
-            v-if="validConds(formState, mapper.addable, true)"
-            type="primary"
-            @click="
-              () => {
-                mapper.emitter.emit('update:show', { show: true, viewOnly: false })
-                mapper.onEdit && mapper.onEdit(formState)
-              }
-            "
-          >
-            新增
-          </a-button>
+      <FormTable
+        v-else-if="mapper.type === 'Table'"
+        :value="getProp(form, skey)"
+        :mapper="mapper"
+        :addable="validConds(form, mapper.addable, true)"
+        :delable="validConds(form, mapper.delable)"
+        @edit="() => mapper.onEdit && mapper.onEdit(form)"
+        @delete="(delKey: any, val: any) => {
+          mapper.onDeleted && mapper.onDeleted(delKey, val)
+          onFieldChanged(val)
+        }"
+      >
+        <template #FormDialog>
           <slot name="FormDialog" />
-          <a-typography-text type="secondary">
-            <InfoCircleOutlined />
-            {{ mapper.placeholder || '点击添加' }}
-          </a-typography-text>
-        </a-space>
-        <a-table
-          class="mt-1.5"
-          v-if="getProp(formState, skey) && getProp(formState, skey).length"
-          :columns="mapper.columns.concat([new Column('操作', 'opera', { width: 80 })])"
-          :data-source="getProp(formState, skey)"
-          :pagination="false"
-          size="small"
-          :custom-row="
-            (record: any) => ({
-              onClick: () => {
-                mapper.emitter.emit('update:show', {
-                  show: true,
-                  object: record,
-                  viewOnly: !mapper.editable
-                })
-                mapper.onEdit && mapper.onEdit(formState)
-              }
-            })
-          "
-        >
-          <template v-if="validConds(formState, mapper.delable)" #bodyCell="{ column, record }">
-            <template v-if="column.dataIndex === 'opera'">
-              <a-popconfirm
-                title="确定删除该字段"
-                @confirm.stop="
-                  mapper.onDeleted && mapper.onDeleted(record.key, getProp(formState, skey))
-                "
-              >
-                <a-button danger size="small" @click.stop="() => {}">删除</a-button>
-              </a-popconfirm>
-            </template>
-          </template>
-        </a-table>
-      </template>
+        </template>
+      </FormTable>
       <UploadFile
         v-else-if="mapper.type === 'UploadFile'"
-        :form="formState"
+        :form="form"
         :path="mapper.path"
         :params="mapper.params"
         :headers="mapper.headers"
         :directory="mapper.directory"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         :onBeforeUpload="mapper.onBeforeUpload"
         :onChange="mapper.onChange"
         :disabled="disabled"
         @update:value="onFieldChanged"
       />
       <a-space v-else-if="mapper.type === 'Delable'">
-        {{ getProp(formState, skey) || '-' }}
-        <CloseCircleOutlined @click="mapper.onDeleted(formState.key)" />
+        {{ getProp(form, skey) || '-' }}
+        <CloseCircleOutlined @click="mapper.onDeleted(form.key)" />
       </a-space>
       <SelOrIpt
         v-else-if="mapper.type === 'SelOrIpt'"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         :options="mapper.options"
         :placeholder="mapper.placeholder"
         :mode="mapper.mode"
@@ -273,13 +235,13 @@
         v-else-if="mapper.type === 'ListSelect'"
         :options="mapper.options"
         :height="mapper.height"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         @update:value="onFieldChanged"
       />
       <EditList
         v-else-if="mapper.type === 'EditList'"
         :mapper="mapper"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         @update:value="onFieldChanged"
       >
         <template #formItem="{ form, elKey, value }">
@@ -289,14 +251,14 @@
       <CodeEditor
         v-else-if="mapper.type === 'CodeEditor'"
         :lang="mapper.lang"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         @update:value="onFieldChanged"
         :disabled="disabled"
       />
       <TagList
         v-else-if="mapper.type === 'TagList'"
         :mapper="mapper"
-        :value="getProp(formState, skey)"
+        :value="getProp(form, skey)"
         @update:value="onFieldChanged"
       >
         <template #formItem="{ form, elKey, value }">
@@ -304,7 +266,7 @@
         </template>
       </TagList>
       <template v-else>
-        {{ getProp(formState, skey) }}
+        {{ getProp(form, skey) }}
       </template>
     </template>
   </a-form-item>
@@ -312,14 +274,13 @@
 
 <script lang="ts" setup name="FormItem">
 import { CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
-import { cloneDeep } from 'lodash'
-import { computed, ref, useSlots, watch } from 'vue'
+import { computed, useSlots } from 'vue'
 
 import type { OpnType } from '../types'
-import Column from '../types/column'
-import { getProp, setProp, validConds } from '../utils'
+import { getProp, validConds } from '../utils'
 import CodeEditor from './CodeEditor.vue'
 import EditList from './EditList.vue'
+import FormTable from './FormTable.vue'
 import ListSelect from './ListSelect.vue'
 import SelOrIpt from './SelOrIpt.vue'
 import TagList from './TagList.vue'
@@ -332,18 +293,10 @@ const props = defineProps({
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
-const emit = defineEmits(['update:form'])
-const formState = ref(props.form)
-const display = computed(() => validConds(formState.value, props.mapper.display, true))
+const emit = defineEmits(['update:fprop'])
+const display = computed(() => validConds(props.form, props.mapper.display, true))
 const disabled = computed(
-  () => validConds(formState.value, props.mapper.disabled) || !props.editable
-)
-
-watch(
-  () => props.form,
-  (form: any) => {
-    formState.value = cloneDeep(form)
-  }
+  () => validConds(props.form, props.mapper.disabled) || !props.editable
 )
 
 function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
@@ -372,11 +325,10 @@ function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   }
 }
 function onFieldChanged(newVal: any) {
-  setProp(formState.value, props.skey, newVal)
+  emit('update:fprop', { [props.skey]: newVal })
   if (props.mapper.onChange) {
-    props.mapper.onChange(formState.value, newVal)
+    props.mapper.onChange(props.form, newVal)
   }
-  emit('update:form', formState.value)
 }
 function chkInSlot(suffix?: string) {
   const key = props.skey + (suffix || '')

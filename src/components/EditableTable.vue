@@ -94,6 +94,7 @@
       <template #bodyCell="{ text, column, record }">
         <template v-if="column.key === 'opera'">
           <div v-if="operaStyle === 'button'" class="flex space-x-1.5">
+            <slot name="opera" v-bind="{ record }" />
             <a-button
               v-if="editable && !disable(record)"
               size="small"
@@ -116,6 +117,7 @@
             </a-popconfirm>
           </div>
           <div v-else-if="operaStyle === 'link'" class="flex space-x-1.5">
+            <slot name="opera" v-bind="{ record }" />
             <a
               v-if="editable && !disable(record)"
               class="text-primary"
@@ -191,24 +193,25 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { computed, onMounted, reactive, ref } from 'vue'
 import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
+import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import FormDialog from './FormDialog.vue'
-import Mapper from '../types/mapper'
-import SelColBox from './SelColBox.vue'
-import { pickOrIgnore, setProp, upperFirst, waitFor } from '../utils'
+import { v4 as uuid } from 'uuid'
+import { computed, onMounted, reactive, ref, useSlots } from 'vue'
+
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
 import BchImport from '../types/bchImport'
-import RefreshBox from './RefreshBox.vue'
 import { Cells } from '../types/cell'
-import CellCard from './CellCard.vue'
-import BchImpBox from './BchImpBox.vue'
-import BchExpBox from './BchExpBox.vue'
-import { v4 as uuid } from 'uuid'
 import Column from '../types/column'
-import { cloneDeep } from 'lodash'
+import Mapper from '../types/mapper'
+import { pickOrIgnore, setProp, upperFirst, waitFor } from '../utils'
+import BchExpBox from './BchExpBox.vue'
+import BchImpBox from './BchImpBox.vue'
+import CellCard from './CellCard.vue'
+import FormDialog from './FormDialog.vue'
+import RefreshBox from './RefreshBox.vue'
+import SelColBox from './SelColBox.vue'
 
 const emit = defineEmits([
   'add',
@@ -265,6 +268,7 @@ const fmDlg = reactive({
   vwOnly: false,
   object: props.newFun()
 })
+const slots = useSlots()
 
 onMounted(refresh)
 if (props.emitter) {
@@ -540,8 +544,10 @@ function fmtColumns(columns?: Column[]) {
         ...pickOrIgnore(column, ['width', 'custHdCell', 'custCell', 'dict', 'notDisplay'])
       }
     })
-  if (props.editable || props.delable) {
-    cols.push(new Column('操作', 'opera', { width: 80, fixed: 'right' }))
+  if (props.editable || props.delable || slots['opera']) {
+    cols.push(
+      new Column('操作', 'opera', { width: slots['opera'] ? undefined : 80, fixed: 'right' })
+    )
   }
   const col4Ist = [] as Column[]
   for (const col of cols) {
