@@ -546,7 +546,7 @@ function fmtColumns(columns?: Column[]) {
     })
   if (props.editable || props.delable || slots['opera']) {
     cols.push(
-      new Column('操作', 'opera', { width: slots['opera'] ? undefined : 80, fixed: 'right' })
+      new Column('操作', 'opera', { width: 80, fixed: 'right' })
     )
   }
   const col4Ist = [] as Column[]
