@@ -196,10 +196,12 @@
         :addable="validConds(form, mapper.addable, true)"
         :delable="validConds(form, mapper.delable)"
         @edit="() => mapper.onEdit && mapper.onEdit(form)"
-        @delete="(delKey: any, val: any) => {
-          mapper.onDeleted && mapper.onDeleted(delKey, val)
-          onFieldChanged(val)
-        }"
+        @delete="
+          (delKey: any, val: any) => {
+            mapper.onDeleted && mapper.onDeleted(delKey, val)
+            onFieldChanged(val)
+          }
+        "
       >
         <template #FormDialog>
           <slot name="FormDialog" />
@@ -245,7 +247,12 @@
         @update:value="onFieldChanged"
       >
         <template #formItem="{ form, elKey, value }">
-          <FormItem :form="form" :skey="elKey" :mapper="value" />
+          <FormItem
+            :form="form"
+            :skey="elKey"
+            :mapper="value"
+            @update:fprop="values => onFpropChanged(form, values)"
+          />
         </template>
       </EditList>
       <CodeEditor
@@ -262,7 +269,12 @@
         @update:value="onFieldChanged"
       >
         <template #formItem="{ form, elKey, value }">
-          <FormItem :form="form" :skey="elKey" :mapper="value" />
+          <FormItem
+            :form="form"
+            :skey="elKey"
+            :mapper="value"
+            @update:fprop="values => onFpropChanged(form, values)"
+          />
         </template>
       </TagList>
       <template v-else>
@@ -277,7 +289,7 @@ import { CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
 import { computed, useSlots } from 'vue'
 
 import type { OpnType } from '../types'
-import { getProp, validConds } from '../utils'
+import { getProp, setProp, validConds } from '../utils'
 import CodeEditor from './CodeEditor.vue'
 import EditList from './EditList.vue'
 import FormTable from './FormTable.vue'
@@ -295,9 +307,9 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:fprop'])
 const display = computed(() => validConds(props.form, props.mapper.display, true))
-const disabled = computed(
-  () => validConds(props.form, props.mapper.disabled) || !props.editable
-)
+const disabled = computed(() => validConds(props.form, props.mapper.disabled) || !props.editable)
+const onFpropChanged = (formState: any, values: any) =>
+  Object.entries(values).map(([k, v]) => setProp(formState, k, v))
 
 function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   if (value instanceof Array) {

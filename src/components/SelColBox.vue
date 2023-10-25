@@ -20,9 +20,11 @@
     />
     <a-checkbox-group
       :value="dspCols"
-      :options="colsState
-        .filter((column: Column) => !column.group.length)
-        .map((column: any) => ({ label: column.title, value: column.key }))"
+      :options="
+        colsState
+          .filter((column: Column) => !column.group || !column.group.length)
+          .map((column: any) => ({ label: column.title, value: column.key }))
+      "
       @change="onDspColSelect"
     />
   </a-modal>
@@ -86,7 +88,7 @@ function onAllColsChange(e: { target: { checked: boolean } }) {
 }
 function onDspColSelect(checkeds: string[]) {
   colsState
-    .filter((col: Column) => !col.group.length)
+    .filter((col: Column) => !col.group || !col.group.length)
     .map((column: Column) => {
       column.notDisplay = !checkeds.includes(column.key)
     })
