@@ -831,3 +831,11 @@ export function rgba(r: number, g: number, b: number, a: number) {
     return rgb(r, g, b) + alpha.toString(16).toUpperCase().padStart(2, '0')
   }
 }
+
+export function code2Func(code: string, args?: Record<string, any>): Function {
+  return new Function(...Object.keys(args || {}), code)
+}
+
+export function callFunc(code: string, args?: Record<string, any>): Function {
+  return code2Func(code, args)(...Object.values(args || {}))
+}
