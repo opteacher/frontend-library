@@ -35,6 +35,7 @@
       :editable="editable"
       :viewOnly="viewOnly"
       :lblWid="lblWid"
+      :lblAlgn="lblAlgn"
       @update:fprop="values => Object.entries(values).map(([k, v]) => setProp(formState, k, v))"
     >
       <template #FormDialog="{ value, key }">
@@ -79,6 +80,7 @@ const props = defineProps({
   vwOnly: { type: Boolean, default: false },
   width: { type: String, default: '50vw' },
   lblWid: { type: Number, default: 4 },
+  lblAlgn: { type: String, default: 'right' },
   title: { type: String, default: 'Form Dialog' },
   newFun: { type: Function, default: () => ({}) },
   object: { type: Object, default: null },

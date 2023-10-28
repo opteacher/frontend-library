@@ -9,6 +9,7 @@ import FormItem from './FormItem.vue'
 
 defineProps({
   lblWid: { type: Number, default: 4 },
+  lblAlgn: { type: String, default: 'right' },
   mapper: { type: Mapper, required: true },
   form: { type: Object, required: true },
   rules: { type: Object, required: true },
@@ -28,6 +29,7 @@ defineExpose({ refer })
     :rules="rules"
     :label-col="{ span: lblWid }"
     :wrapper-col="{ span: 24 - lblWid }"
+    :label-align="lblAlgn"
   >
     <template v-for="(value, key) in mapper" :key="key">
       <template v-if="value.type === 'FormGroup' && validConds(form, value.display, true)">
