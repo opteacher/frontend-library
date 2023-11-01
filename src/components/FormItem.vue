@@ -103,25 +103,26 @@
           <a-spin size="small" />
         </template>
       </a-select>
-      <a-tooltip v-else-if="mapper.type === 'Checkbox'">
-        <template #title>{{ mapper.placeholder || '请确认' }}</template>
-        <a-checkbox
-          :name="skey"
-          :checked="getProp(form, skey, false)"
-          :disabled="disabled"
-          @change="(e: any) => onFieldChanged(e.target.checked)"
-        >
-          {{
-            getProp(form, skey)
-              ? mapper.chkLabels
-                ? mapper.chkLabels[1]
-                : '是'
-              : mapper.chkLabels
-              ? mapper.chkLabels[0]
-              : '否'
-          }}
-        </a-checkbox>
-      </a-tooltip>
+      <a-checkbox
+        v-else-if="mapper.type === 'Checkbox'"
+        :name="skey"
+        :checked="getProp(form, skey, false)"
+        :disabled="disabled"
+        @change="(e: any) => onFieldChanged(e.target.checked)"
+      >
+        {{
+          getProp(form, skey)
+            ? mapper.chkLabels
+              ? mapper.chkLabels[1]
+              : '是'
+            : mapper.chkLabels
+            ? mapper.chkLabels[0]
+            : '否'
+        }}&nbsp;
+        <a-typography-text type="secondary">
+          {{ mapper.placeholder || '请确认' }}
+        </a-typography-text>
+      </a-checkbox>
       <a-tooltip v-else-if="mapper.type === 'Switch'">
         <a-switch
           :checked="getProp(form, skey)"
