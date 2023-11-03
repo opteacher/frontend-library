@@ -133,13 +133,20 @@
       </a-tooltip>
       <a-radio-group
         v-else-if="mapper.type === 'Radio'"
+        class="w-full"
         button-style="solid"
         :disabled="disabled"
         :value="getProp(form, skey)"
         @change="(e: any) => onFieldChanged(e.target.value)"
       >
         <template v-if="mapper.style === 'button'">
-          <a-radio-button v-for="opn in mapper.options" :key="opn.value" :value="opn.value">
+          <a-radio-button
+            v-for="opn in mapper.options"
+            :key="opn.value"
+            class="text-center"
+            :value="opn.value"
+            :style="{ width: 100 / mapper.options.length + '%' }"
+          >
             {{ opn.label }}
           </a-radio-button>
         </template>
