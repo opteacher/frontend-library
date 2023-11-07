@@ -380,7 +380,9 @@ async function refresh(data?: any[], params?: any) {
       return true
     })
   }
-  records.data = orgData.filter(props.filter).map((item: any) => cloneDeep(item))
+  records.data = orgData
+    .filter(props.filter as (value: any, index: number) => boolean)
+    .map((item: any) => cloneDeep(item))
   if (!records.total) {
     records.total = records.data.length
   }
@@ -545,9 +547,7 @@ function fmtColumns(columns?: Column[]) {
       }
     })
   if (props.editable || props.delable || slots['opera']) {
-    cols.push(
-      new Column('操作', 'opera', { width: 80, fixed: 'right' })
-    )
+    cols.push(new Column('操作', 'opera', { width: 80, fixed: 'right' }))
   }
   const col4Ist = [] as Column[]
   for (const col of cols) {

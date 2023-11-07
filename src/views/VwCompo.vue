@@ -3,14 +3,13 @@ import { ControlOutlined } from '@ant-design/icons-vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import Component from '../types/compo'
 import apis from '../apis'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { bsTpDefault } from '@/types'
 import FormItem from '../components/FormItem.vue'
 import { createByFields } from '@/types/mapper'
 import { setProp } from '@/utils'
 
 const route = useRoute()
-const router = useRouter()
 const compo = reactive(new Component())
 const attrs = reactive({} as Record<string, any>)
 const vmAttr = ref('')

@@ -10,7 +10,7 @@
   <a-table
     class="mt-1.5"
     v-if="value && value.length"
-    :columns="mapper.columns.concat([new Column('操作', 'opera', { width: 80 })])"
+    :columns="fmtCols()"
     :data-source="value"
     :pagination="false"
     size="small"
@@ -57,5 +57,8 @@ function onRowClick(record: any) {
 }
 function onDelClick(record: any) {
   emit('delete', record.key, props.value)
+}
+function fmtCols() {
+  return props.mapper.columns.concat([new Column('操作', 'opera', { width: 80 })])
 }
 </script>
