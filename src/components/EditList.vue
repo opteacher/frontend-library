@@ -44,7 +44,7 @@ const props = defineProps({
   mapper: { type: Object, required: true }
 })
 const addMod = ref(false)
-const addState = ref(props.mapper.newFun())
+const addState = ref(props.mapper.newFun ? props.mapper.newFun() : {})
 const list = reactive([] as any[])
 
 onMounted(refresh)
@@ -84,7 +84,7 @@ function resetState() {
   if (addState.value.reset) {
     addState.value.reset()
   } else {
-    addState.value = props.mapper.newFun()
+    addState.value = props.mapper.newFun ? props.mapper.newFun() : {}
   }
 }
 </script>
