@@ -110,15 +110,18 @@ export class SelectMapper extends BaseMapper {
 export class CheckboxMapper extends BaseMapper {
   // 0为false，1为true
   chkLabels: [string, string]
+  options: OpnType[]
 
   constructor() {
     super()
     this.chkLabels = ['否', '是']
+    this.options = []
   }
 
   reset() {
     super.reset()
     this.chkLabels = ['否', '是']
+    this.options = []
   }
 }
 
@@ -380,6 +383,7 @@ const mapTypeTemps = {
   TagList: () => new EdtLstMapper(),
   ListSelect: () => new LstSelMapper(),
   CodeEditor: () => new CdEdtMapper(),
+  JsonEditor: () => new TextareaMapper(),
   EditList: () => new EdtLstMapper(),
   FormGroup: () => new GroupMapper()
 } as { [mapType: string]: () => any }

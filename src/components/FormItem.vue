@@ -22,7 +22,11 @@
       >
         {{ getProp(form, skey) }}
       </template>
-      <template v-else-if="mapper.type === 'Textarea' || mapper.type === 'CodeEditor'">
+      <template
+        v-else-if="
+          mapper.type === 'Textarea' || mapper.type === 'CodeEditor' || mapper.type === 'JsonEditor'
+        "
+      >
         <pre class="mb-0">{{ getProp(form, skey) }}</pre>
       </template>
       <template v-else-if="mapper.type === 'Select' || mapper.type === 'Cascader'">
@@ -103,26 +107,36 @@
           <a-spin size="small" />
         </template>
       </a-select>
-      <a-checkbox
-        v-else-if="mapper.type === 'Checkbox'"
-        :name="skey"
-        :checked="getProp(form, skey, false)"
-        :disabled="disabled"
-        @change="(e: any) => onFieldChanged(e.target.checked)"
-      >
-        {{
-          getProp(form, skey)
-            ? mapper.chkLabels
-              ? mapper.chkLabels[1]
-              : '是'
-            : mapper.chkLabels
-            ? mapper.chkLabels[0]
-            : '否'
-        }}&nbsp;
-        <a-typography-text type="secondary">
-          {{ mapper.placeholder || '请确认' }}
-        </a-typography-text>
-      </a-checkbox>
+      <template v-else-if="mapper.type === 'Checkbox'">
+        <a-checkbox-group
+          v-if="mapper.options && mapper.options.length"
+          :name="skey"
+          :value="getProp(form, skey, false)"
+          :options="mapper.options"
+          :disabled="disabled"
+          @change="(checkeds: any) => onFieldChanged(checkeds)"
+        />
+        <a-checkbox
+          v-else
+          :name="skey"
+          :checked="getProp(form, skey, false)"
+          :disabled="disabled"
+          @change="(e: any) => onFieldChanged(e.target.checked)"
+        >
+          {{
+            getProp(form, skey)
+              ? mapper.chkLabels
+                ? mapper.chkLabels[1]
+                : '是'
+              : mapper.chkLabels
+              ? mapper.chkLabels[0]
+              : '否'
+          }}&nbsp;
+          <a-typography-text type="secondary">
+            {{ mapper.placeholder || '请确认' }}
+          </a-typography-text>
+        </a-checkbox>
+      </template>
       <a-tooltip v-else-if="mapper.type === 'Switch'">
         <a-switch
           :checked="getProp(form, skey)"
@@ -265,10 +279,15 @@
       </EditList>
       <CodeEditor
         v-else-if="mapper.type === 'CodeEditor'"
+        :disabled="disabled"
         :lang="mapper.lang"
         :value="getProp(form, skey)"
         @update:value="onFieldChanged"
-        :disabled="disabled"
+      />
+      <JsonEditor
+        v-else-if="mapper.type === 'JsonEditor'"
+        :value="getProp(form, skey)"
+        @update:value="onFieldChanged"
       />
       <TagList
         v-else-if="mapper.type === 'TagList'"
@@ -301,6 +320,7 @@ import { getProp, setProp, validConds } from '../utils'
 import CodeEditor from './CodeEditor.vue'
 import EditList from './EditList.vue'
 import FormTable from './FormTable.vue'
+import JsonEditor from './JsonEditor.vue'
 import ListSelect from './ListSelect.vue'
 import SelOrIpt from './SelOrIpt.vue'
 import TagList from './TagList.vue'

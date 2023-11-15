@@ -58,6 +58,7 @@ export const cmpLblMap = {
   ListSelect: '列表选择框',
   TagList: '标签列表',
   CodeEditor: '代码编辑框',
+  JsonEditor: 'JSON编辑框',
   EditList: '可编辑列表',
   Carousel: '滚动展示框',
   ColorSelect: '颜色选择框',
@@ -99,6 +100,8 @@ export function compoDftVal(ctype: CompoType) {
     case 'Radio':
     default:
       return ''
+    case 'JsonEditor':
+      return '{}'
   }
 }
 

@@ -7,6 +7,7 @@ import FormItem from './components/FormItem.vue'
 import FormGroup from './components/FormGroup.vue'
 import FormDialog from './components/FormDialog.vue'
 import CodeEditor from './components/CodeEditor.vue'
+import JsonEditor from './components/JsonEditor.vue'
 import EditableTable from './components/EditableTable.vue'
 import BchExpBox from './components/BchExpBox.vue'
 import BchImpBox from './components/BchImpBox.vue'
@@ -21,6 +22,7 @@ export const components = {
     FormGroup,
     FormDialog,
     CodeEditor,
+    JsonEditor,
     EditableTable,
     BchExpBox,
     BchImpBox,
