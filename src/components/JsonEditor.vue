@@ -4,7 +4,7 @@
 
 <script setup lang="ts" name="JsonEditor">
 import { setProp } from '@/utils'
-import { JSONContent, JSONEditor, Mode } from 'vanilla-jsoneditor'
+import { JSONEditor, Mode } from 'vanilla-jsoneditor'
 import { onMounted, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -20,7 +20,7 @@ const props = defineProps({
 })
 console.log(props.value)
 const emit = defineEmits(['update:value'])
-const content = reactive<JSONContent>({
+const content = reactive<{ json: any }>({
   json: props.value
 })
 const editor = ref()
