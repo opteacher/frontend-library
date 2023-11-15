@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts" name="JsonEditor">
-import { setProp } from '@/utils'
+import { setProp } from '../utils'
 import { JSONEditor, Mode } from 'vanilla-jsoneditor'
 import { onMounted, reactive, ref, watch } from 'vue'
 
@@ -18,7 +18,6 @@ const props = defineProps({
   navigationBar: { type: Boolean, default: true },
   statusBar: { type: Boolean, default: true }
 })
-console.log(props.value)
 const emit = defineEmits(['update:value'])
 const content = reactive<{ json: any }>({
   json: props.value
