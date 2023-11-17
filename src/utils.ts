@@ -20,6 +20,7 @@ export interface RequestOptions {
     succeed?: string
     failed?: string
   }
+  action?: string
   ignores?: string[]
   axiosConfig?: AxiosRequestConfig<any>
   copy?: (src: any, tgt?: any) => any
@@ -110,8 +111,9 @@ export async function reqAll(path: string, options?: RequestOptions): Promise<an
       paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
     })
   }
+  const action = options.action ? fixStartsWith(options.action, '/') : ''
   return makeRequest(
-    axios.get(`/${options.project}/${reqType(options)}/v1/${path}/s`, options.axiosConfig),
+    axios.get(`/${options.project}/${reqType(options)}/v1/${path}/s${action}`, options.axiosConfig),
     options
   )
 }
@@ -140,9 +142,11 @@ export async function reqGet(path: string, iden?: any, options?: RequestOptions)
       paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
     })
   }
+  const key = iden ? '/' + iden : ''
+  const action = options.action ? fixStartsWith(options.action, '/') : ''
   return makeRequest(
     axios.get(
-      `/${options.project}/${reqType(options)}/v1/${path}${iden ? '/' + iden : ''}`,
+      `/${options.project}/${reqType(options)}/v1/${path}${key}${action}`,
       options.axiosConfig
     ),
     options
@@ -173,9 +177,10 @@ export function reqPost(path: string, body?: any, options?: RequestOptions): Pro
   } else if (!options.ignores.includes('key')) {
     options.ignores.push('key')
   }
+  const action = options.action ? fixStartsWith(options.action, '/') : ''
   return makeRequest(
     axios.post(
-      `/${options.project}/${reqType(options)}/v1/${path}`,
+      `/${options.project}/${reqType(options)}/v1/${path}${action}`,
       body ? pickOrIgnore(body, options.ignores) : undefined,
       options.axiosConfig
     ),
@@ -207,8 +212,9 @@ export function reqDelete(path: string, iden: any, options?: RequestOptions): Pr
       paramsSerializer: (params: any) => qs.stringify(params, { indices: false })
     })
   }
+  const action = options.action ? fixStartsWith(options.action, '/') : ''
   return makeRequest(
-    axios.delete(`/${options.project}/${reqType(options)}/v1/${path}/${iden}`, options.axiosConfig),
+    axios.delete(`/${options.project}/${reqType(options)}/v1/${path}/${iden}${action}`, options.axiosConfig),
     options
   )
 }
@@ -242,9 +248,10 @@ export function reqPut(
   } else if (!options.ignores.includes('key')) {
     options.ignores.push('key')
   }
+  const action = options.action ? fixStartsWith(options.action, '/') : ''
   return makeRequest(
     axios.put(
-      `/${options.project}/${reqType(options)}/v1/${path}/${iden}`,
+      `/${options.project}/${reqType(options)}/v1/${path}/${iden}${action}`,
       body ? pickOrIgnore(body, options.ignores) : undefined,
       options.axiosConfig
     ),
@@ -278,13 +285,14 @@ export function reqLink(
   if (!options.messages.succeed) {
     options.messages.succeed = '提交成功！'
   }
+  const action = options.action ? fixStartsWith(options.action, '/') : ''
   const url = [
     `/${options.project}/${reqType(options)}/v1`,
     body.parent[0],
     body.parent[1],
     body.child[0],
     body.child[1]
-  ].join('/')
+  ].join('/') + action
   if (link) {
     return makeRequest(axios.put(url, options.axiosConfig), options)
   } else {
