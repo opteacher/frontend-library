@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getProperty, gnlCpy } from '../utils'
+import { getProperty } from '../utils'
 import dayjs from 'dayjs'
 
 export class Cond {

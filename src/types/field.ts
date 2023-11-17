@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { BaseTypes, CompoType } from '.'
-import { TinyEmitter as Emitter } from 'tiny-emitter'
 
 export default class Field {
   key: string
