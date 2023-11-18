@@ -4,7 +4,7 @@
       v-model:value="editing"
       :lang="lang"
       theme="chrome"
-      class="h-80"
+      class="h-full"
       :readonly="disabled"
       :options="{ tabSize: 2 }"
     />

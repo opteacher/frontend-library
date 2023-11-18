@@ -401,6 +401,12 @@ export default class Mapper {
           value.type = 'Unknown'
         }
         this[key] = Object.assign(mapTypeTemps[value.type](), cloneDeep(value))
+        // 不复制Emitter对象
+        for (const [k, v] of Object.entries(value)) {
+          if (v instanceof Emitter) {
+            this[key][k] = v
+          }
+        }
       }
     }
   }

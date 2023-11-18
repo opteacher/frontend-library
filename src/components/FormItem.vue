@@ -279,6 +279,7 @@
       </EditList>
       <CodeEditor
         v-else-if="mapper.type === 'CodeEditor'"
+        class="h-80"
         :disabled="disabled"
         :lang="mapper.lang"
         :value="getProp(form, skey)"
