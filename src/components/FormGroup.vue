@@ -60,7 +60,7 @@ defineExpose({ refer })
             :key="k"
             :form="form"
             :skey="k.toString()"
-            :mapper="v as Object"
+            :mapper="v"
             :editable="editable"
             :viewOnly="viewOnly"
             @update:fprop="(fm: any) => emit('update:fprop', fm)"
@@ -98,7 +98,7 @@ defineExpose({ refer })
       <FormItem
         v-else
         :form="form"
-        :skey="key as string"
+        :skey="key.toString()"
         :mapper="value"
         :editable="editable"
         :viewOnly="viewOnly"
