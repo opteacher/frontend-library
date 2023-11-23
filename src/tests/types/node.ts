@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Variable from './variable'
 
@@ -22,16 +23,14 @@ export default class Node implements Record<string, any> {
   inputs: Variable[] // [0]参数 [1]槽
   outputs: Variable[]
   isFun: boolean
+  isAwait: boolean
+  isForIn: boolean
   code: string
   previous: string | null
   nexts: string[]
   relative: string
   temp: string[]
   deps: string[]
-  loop: {
-    isAwait: boolean
-    isForIn: boolean
-  }
 
   constructor() {
     this.key = ''
@@ -44,15 +43,13 @@ export default class Node implements Record<string, any> {
     this.outputs = []
     this.code = ''
     this.isFun = true
+    this.isAwait = false
+    this.isForIn = false
     this.previous = null
     this.nexts = []
     this.relative = ''
     this.temp = []
     this.deps = []
-    this.loop = {
-      isAwait: false,
-      isForIn: false
-    }
   }
 
   reset() {
@@ -66,13 +63,13 @@ export default class Node implements Record<string, any> {
     this.outputs = []
     this.code = ''
     this.isFun = true
+    this.isAwait = false
+    this.isForIn = false
     this.previous = null
     this.nexts = []
     this.relative = ''
     this.temp = []
     this.deps = []
-    this.loop.isAwait = false
-    this.loop.isForIn = false
   }
 
   static copy(src: any, tgt?: Node, force = false): Node {
@@ -113,14 +110,12 @@ export default class Node implements Record<string, any> {
       tgt.deps = []
     }
     if (src.ntype === 'traversal') {
-      if (src.loop) {
-        tgt.loop.isAwait =
-          typeof src.loop.isAwait !== 'undefined' ? src.loop.isAwait : tgt.loop.isAwait
-        tgt.loop.isForIn =
-          typeof src.loop.isForIn !== 'undefined' ? src.loop.isForIn : tgt.loop.isForIn
-      } else if (force) {
-        tgt.loop.isAwait = false
-        tgt.loop.isForIn = false
+      if (force) {
+        tgt.isAwait = false
+        tgt.isForIn = false
+      } else {
+        tgt.isAwait = typeof src.isAwait !== 'undefined' ? src.isAwait : tgt.isAwait
+        tgt.isForIn = typeof src.isForIn !== 'undefined' ? src.isForIn : tgt.isForIn
       }
     }
     return tgt
