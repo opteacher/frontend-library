@@ -110,10 +110,16 @@ if (props.emitter) {
     (args: { show: boolean; object?: Object; viewOnly?: boolean } | boolean) => {
       if (typeof args === 'boolean') {
         visible.value = args
+        if (!args) {
+          formRef.value?.refer.resetFields()
+          resetState()
+        }
         return
       }
       if (!args.show) {
         visible.value = false
+        formRef.value?.refer.resetFields()
+        resetState()
         return
       }
       viewOnly.value = typeof args.viewOnly != 'undefined' ? args.viewOnly : false
