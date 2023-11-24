@@ -1,5 +1,5 @@
 <template>
-  <a-button @click="() => emitter.emit('update:show', true)">
+  <a-button @click="() => emitter.emit('update:visible', true)">
     <template #icon><import-outlined /></template>
     批量导入
   </a-button>

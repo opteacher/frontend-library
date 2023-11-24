@@ -6,6 +6,7 @@ import Status from './status'
 import Middle from './middle'
 import Model from './model'
 import Service from './service'
+import DataBase from './database'
 
 export default class Project {
   key: string
@@ -13,7 +14,7 @@ export default class Project {
   desc: string
   port: number
   thread: number
-  database: string[]
+  database?: DataBase
   dropDbs: boolean
   commands: string
   independ: boolean
@@ -32,7 +33,7 @@ export default class Project {
     this.desc = ''
     this.port = 0
     this.thread = 0
-    this.database = []
+    this.database = undefined
     this.dropDbs = false
     this.commands = ''
     this.independ = false
@@ -52,7 +53,7 @@ export default class Project {
     this.desc = ''
     this.port = 0
     this.thread = 0
-    this.database = []
+    this.database = undefined
     this.dropDbs = false
     this.commands = ''
     this.independ = false

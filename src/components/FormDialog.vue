@@ -45,12 +45,7 @@
           :emitter="value.emitter"
           :newFun="value.newFun"
           :object="value.editing"
-          @submit="
-            async (form: any, next: Function) => {
-              await value.onSaved(form, getProp(formState, key as string))
-              next()
-            }
-          "
+          @submit="(form: any, next: Function) => onFormSubmit(key, value, form, next)"
         />
       </template>
       <template v-for="(_, name) in $slots" :key="name" #[name]>
@@ -65,16 +60,15 @@
 
 <script lang="ts" setup name="FormDialog">
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Mapper from '../types/mapper'
+import { getProp, setProp } from '../utils'
+import FormGroup from './FormGroup.vue'
 import { EyeOutlined, FormOutlined } from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { onMounted, ref, watch } from 'vue'
 
-import Mapper from '../types/mapper'
-import { getProp, setProp } from '../utils'
-import FormGroup from './FormGroup.vue'
-
-const emit = defineEmits(['initialize', 'update:show', 'update:vwOnly', 'submit'])
+const emit = defineEmits(['initialize', 'update:visible', 'update:vwOnly', 'submit'])
 const props = defineProps({
   show: { type: Boolean, default: false },
   vwOnly: { type: Boolean, default: false },
@@ -106,7 +100,7 @@ if (props.emitter) {
     editable.value = edtb
   })
   props.emitter.on(
-    'update:show',
+    'update:visible',
     (args: { show: boolean; object?: Object; viewOnly?: boolean } | boolean) => {
       if (typeof args === 'boolean') {
         visible.value = args
@@ -164,7 +158,12 @@ watch(
 )
 watch(
   () => visible.value,
-  () => emit('update:show', visible.value)
+  (newVsb: boolean) => {
+    emit('update:visible', visible.value)
+    if (newVsb && props.emitter) {
+      props.emitter.emit('show')
+    }
+  }
 )
 watch(
   () => props.vwOnly,
@@ -211,7 +210,7 @@ function resetState() {
 }
 function onDlgClose() {
   visible.value = false
-  emit('update:show', false)
+  emit('update:visible', false)
   for (const value of Object.values(formMapper.value)) {
     if (typeof value.fold !== 'undefined') {
       value.fold = false
@@ -220,5 +219,9 @@ function onDlgClose() {
 }
 function updateState() {
   return props.object ? cloneDeep(props.object) : props.newFun()
+}
+async function onFormSubmit(key: string | number, value: any, form: any, next: Function) {
+  await value.onSaved(form, getProp(formState, key as string))
+  next()
 }
 </script>

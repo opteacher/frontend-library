@@ -33,6 +33,7 @@
     <RefreshBox v-if="refOptions.length" :tblRfsh="refOptions" @click="refresh" />
     <a-table
       class="flex-1 overflow-hidden"
+      :class="{ 'edtble-table': minHeight }"
       :columns="colsState"
       :data-source="records.data"
       :size="size"
@@ -193,12 +194,6 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
-import { cloneDeep } from 'lodash'
-import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { v4 as uuid } from 'uuid'
-import { computed, onMounted, reactive, ref, useSlots } from 'vue'
-
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
 import BchImport from '../types/bchImport'
@@ -212,6 +207,11 @@ import CellCard from './CellCard.vue'
 import FormDialog from './FormDialog.vue'
 import RefreshBox from './RefreshBox.vue'
 import SelColBox from './SelColBox.vue'
+import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
+import { cloneDeep } from 'lodash'
+import { TinyEmitter as Emitter } from 'tiny-emitter'
+import { v4 as uuid } from 'uuid'
+import { computed, onMounted, reactive, ref, useSlots } from 'vue'
 
 const emit = defineEmits([
   'add',
@@ -246,7 +246,8 @@ const props = defineProps({
   refOptions: { type: Array, default: () => [] },
   operaStyle: { type: String, default: 'link' },
   dspCols: { type: Boolean, default: false },
-  sclHeight: { type: String, default: '' }
+  sclHeight: { type: String, default: '' },
+  minHeight: { type: String, default: '' }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
@@ -393,7 +394,7 @@ async function refresh(data?: any[], params?: any) {
   })
   editKey.value = ''
   if (props.emitter) {
-    props.emitter.emit('update:show', false)
+    props.emitter.emit('update:visible', false)
   } else {
     fmDlg.visible = false
   }
@@ -408,7 +409,7 @@ function onEditClicked(record?: any) {
     editKey.value = record.key || ''
   }
   if (props.emitter) {
-    props.emitter.emit('update:show', {
+    props.emitter.emit('update:visible', {
       show: true,
       viewOnly: false,
       object: record || props.newFun()
@@ -436,7 +437,7 @@ async function onRecordDel(record: any) {
   await props.api.remove(record)
   emit('delete', record, refresh)
   if (props.emitter) {
-    props.emitter.emit('update:show', false)
+    props.emitter.emit('update:visible', false)
   } else {
     fmDlg.visible = false
   }
@@ -453,7 +454,7 @@ function onRowExpand(record: { key: string }) {
 }
 function onRowClick(record: any) {
   if (props.emitter) {
-    props.emitter.emit('update:show', {
+    props.emitter.emit('update:visible', {
       show: true,
       viewOnly: true,
       object: record
@@ -587,6 +588,10 @@ function fmtColumns(columns?: Column[]) {
 
 .ant-table-container {
   @apply h-full relative;
+}
+
+.edtble-table .ant-table-container {
+  min-height: 18rem;
 }
 
 .ant-table-body {

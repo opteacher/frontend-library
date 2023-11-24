@@ -27,7 +27,7 @@ function onSubmit(formSbt: any, next: () => void) {
 <template>
   <a-layout class="h-full">
     <a-layout-content class="p-3">
-      <a-button class="w-full" @click="emitter.emit('update:show', true)">打开对话框</a-button>
+      <a-button class="w-full" @click="emitter.emit('update:visible', true)">打开对话框</a-button>
       <FormDialog :copy="testCopy" :mapper="mapper" :emitter="emitter" @submit="onSubmit" />
     </a-layout-content>
     <a-layout-sider class="h-full p-3 overflow-y-auto" theme="light" width="30vw">

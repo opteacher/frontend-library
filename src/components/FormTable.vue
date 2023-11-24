@@ -44,11 +44,11 @@ const props = defineProps({
 const emit = defineEmits(['update:value', 'edit', 'delete'])
 
 function onAddClick() {
-  props.mapper.emitter.emit('update:show', { show: true, viewOnly: false })
+  props.mapper.emitter.emit('update:visible', { show: true, viewOnly: false })
   emit('edit')
 }
 function onRowClick(record: any) {
-  props.mapper.emitter.emit('update:show', {
+  props.mapper.emitter.emit('update:visible', {
     show: true,
     object: record,
     viewOnly: !props.mapper.editable
