@@ -221,7 +221,7 @@ function updateState() {
   return props.object ? cloneDeep(props.object) : props.newFun()
 }
 async function onFormSubmit(key: string | number, value: any, form: any, next: Function) {
-  await value.onSaved(form, getProp(formState, key as string))
+  await value.onSaved(form, getProp(formState.value, key as string))
   next()
 }
 </script>
