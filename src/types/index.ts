@@ -3,15 +3,33 @@
 import { getProperty } from '../utils'
 import dayjs from 'dayjs'
 
+export const compares = {
+  '=': '等于',
+  '!=': '不等于',
+  in: '包含',
+  starts: '开头是',
+  ends: '结尾是'
+}
+
+export const cmpOpns = Object.entries(compares).map(([value, label]) => ({ label, value }))
+
+export type CmpType = keyof typeof compares
+
 export class Cond {
   key: string
-  cmp: '=' | '!=' | 'in'
+  cmp: CmpType
   val: any
 
-  constructor(params: { key: string, cmp: '=' | '!=' | 'in', val: any }) {
-    this.key = params.key
-    this.cmp = params.cmp
-    this.val = params.val
+  constructor(params?: { key: string; cmp: CmpType; val: any }) {
+    if (!params) {
+      this.key = ''
+      this.cmp = '='
+      this.val = undefined
+    } else {
+      this.key = params.key
+      this.cmp = params.cmp
+      this.val = params.val
+    }
   }
 
   isValid(object: Record<string, any>) {
