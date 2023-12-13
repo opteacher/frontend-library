@@ -156,23 +156,23 @@ function startListen() {
       }
     }
   })
+  ctrler.ess.addEventListener('end', stopListen)
   ctrler.ess.addEventListener('error', e => {
     console.error(e)
-    ctrler.ess?.close()
-    ctrler.outputing = false
+    stopListen()
   })
 }
 function stopListen() {
-  if (ctrler.ess) {
-    ctrler.ess.close()
-  }
   addMessage('停止任务……')
+  ctrler.ess?.close()
   ctrler.outputing = false
 }
 function addMessage(content: string) {
   message.value.push({ content, time: dayjs() })
 }
 function fmtMessage() {
-  return message.value.map(msg => (ctrler.tmVsb ? msg.time.format('HH:mm:ss') + ' - ' : '') + msg.content).join('\n')
+  return message.value
+    .map(msg => (ctrler.tmVsb ? msg.time.format('HH:mm:ss') + ' - ' : '') + msg.content)
+    .join('\n')
 }
 </script>
