@@ -5,7 +5,6 @@
         :value="item as any"
         :prop="mapper.lblProp"
         :mapper="mapper.lblMapper"
-        :tooltip="mapper.subProp"
       />
     </a-tag>
   </template>

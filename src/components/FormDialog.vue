@@ -132,6 +132,11 @@ if (props.emitter) {
       formState.value = props.newFun()
     }
   })
+  props.emitter.on('update:dprop', (data: Record<string, any>) => {
+    for (const [prop, value] of Object.entries(data)) {
+      setProp(formState.value, prop, value)
+    }
+  })
   props.emitter.on('update:mapper', (mapper: any) => {
     formMapper.value = cloneDeep(mapper)
   })

@@ -24,7 +24,12 @@
           <template #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
-          <LabelItem :value="item" :mapper="mapper.lblMapper" :prop="mapper.lblProp" />
+          <LabelItem
+            :value="item"
+            :mapper="mapper.lblMapper"
+            :prop="mapper.lblProp"
+            :sub-prp="mapper.subProp"
+          />
         </a-list-item>
       </template>
     </a-list>
