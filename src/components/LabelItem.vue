@@ -8,9 +8,9 @@ const props = defineProps({
   mapper: { type: Object, default: () => ({}) }
 })
 const title = computed(() => pickText(props.prop))
-const desc = computed(() => pickText(props.subPrp))
+const desc = computed(() => props.subPrp ? pickText(props.subPrp) : '')
 
-function pickText(prop: string) {
+function pickText(prop: string): string {
   let val: string
   if (typeof props.value === 'object') {
     if (prop && prop in props.value) {
@@ -26,7 +26,8 @@ function pickText(prop: string) {
 </script>
 
 <template>
-  <a-list-item-meta :description="desc">
-    <template #title>{{ title }}</template>
-  </a-list-item-meta>
+  <a-space>
+    <a-typography-text strong>{{ title }}</a-typography-text>
+    <a-typography-text type="secondary">{{ desc }}</a-typography-text>
+  </a-space>
 </template>

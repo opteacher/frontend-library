@@ -94,13 +94,12 @@
       </template>
       <template #bodyCell="{ text, column, record }">
         <template v-if="column.key === 'opera'">
-          <div v-if="operaStyle === 'button'" class="flex space-x-1.5">
-            <slot name="opera" v-bind="{ record }" />
+          <div class="flex">
+            <slot name="operaBefore" v-bind="{ record }" />
             <a-button
               v-if="editable && !disable(record)"
               size="small"
-              type="primary"
-              ghost
+              :type="operaStyle === 'link' ? 'link' : 'default'"
               @click.stop="onEditClicked(record)"
             >
               编辑
@@ -112,29 +111,16 @@
               cancel-text="取消"
               @confirm="onRecordDel(record)"
             >
-              <a-button size="small" danger @click.stop="(e: any) => e.preventDefault()">
+              <a-button
+                size="small"
+                danger
+                :type="operaStyle === 'link' ? 'link' : 'default'"
+                @click.stop="(e: any) => e.preventDefault()"
+              >
                 删除
               </a-button>
             </a-popconfirm>
-          </div>
-          <div v-else-if="operaStyle === 'link'" class="flex space-x-1.5">
-            <slot name="opera" v-bind="{ record }" />
-            <a
-              v-if="editable && !disable(record)"
-              class="text-primary"
-              @click.stop="onEditClicked(record)"
-            >
-              编辑
-            </a>
-            <a-popconfirm
-              v-if="delable && !disable(record)"
-              title="确定删除该记录吗？"
-              ok-text="确定"
-              cancel-text="取消"
-              @confirm="onRecordDel(record)"
-            >
-              <a class="text-error" @click.stop="">删除</a>
-            </a-popconfirm>
+            <slot name="operaAfter" v-bind="{ record }" />
           </div>
         </template>
         <slot v-else-if="$slots[column.key]" :name="column.key" v-bind="{ record }" />
@@ -194,6 +180,12 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
+import { cloneDeep } from 'lodash'
+import { TinyEmitter as Emitter } from 'tiny-emitter'
+import { v4 as uuid } from 'uuid'
+import { computed, onMounted, reactive, ref, useSlots } from 'vue'
+
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
 import BchImport from '../types/bchImport'
@@ -207,11 +199,6 @@ import CellCard from './CellCard.vue'
 import FormDialog from './FormDialog.vue'
 import RefreshBox from './RefreshBox.vue'
 import SelColBox from './SelColBox.vue'
-import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
-import { cloneDeep } from 'lodash'
-import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { v4 as uuid } from 'uuid'
-import { computed, onMounted, reactive, ref, useSlots } from 'vue'
 
 const emit = defineEmits([
   'add',
@@ -230,7 +217,7 @@ const props = defineProps({
   cells: { type: Array, default: () => [] },
   mapper: { type: Mapper, default: new Mapper() },
   newFun: { type: Function, default: () => ({}) },
-  emitter: { type: Emitter, default: null },
+  emitter: { type: Emitter, default: new Emitter() },
   title: { type: String, default: '' },
   description: { type: String, default: '' },
   size: { type: String, default: 'default' },
