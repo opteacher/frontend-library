@@ -166,7 +166,7 @@ watch(
   (newVsb: boolean) => {
     emit('update:visible', vsbState.value)
     if (newVsb && props.emitter) {
-      props.emitter.emit('show')
+      props.emitter.emit('show', formState.value)
     }
   }
 )
