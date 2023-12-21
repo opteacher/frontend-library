@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    v-model:visible="visible"
+    v-model:visible="vsbState"
     :width="width"
     :confirmLoading="!editable || okLoading"
     :footer="viewOnly ? null : undefined"
@@ -70,7 +70,7 @@ import { onMounted, ref, watch } from 'vue'
 
 const emit = defineEmits(['initialize', 'update:visible', 'update:vwOnly', 'submit'])
 const props = defineProps({
-  show: { type: Boolean, default: false },
+  visible: { type: Boolean, default: false },
   vwOnly: { type: Boolean, default: false },
   width: { type: String, default: '50vw' },
   lblWid: { type: Number, default: 4 },
@@ -82,7 +82,7 @@ const props = defineProps({
   emitter: { type: Emitter, default: null },
   operable: { type: Boolean, default: false }
 })
-const visible = ref<boolean>(props.show)
+const vsbState = ref<boolean>(props.visible)
 const editable = ref(true)
 const viewOnly = ref(false)
 const okLoading = ref(false)
@@ -103,7 +103,7 @@ if (props.emitter) {
     'update:visible',
     (args: { show: boolean; object?: Object; viewOnly?: boolean } | boolean) => {
       if (typeof args === 'boolean') {
-        visible.value = args
+        vsbState.value = args
         if (!args) {
           formRef.value?.refer.resetFields()
           resetState()
@@ -111,7 +111,7 @@ if (props.emitter) {
         return
       }
       if (!args.show) {
-        visible.value = false
+        vsbState.value = false
         formRef.value?.refer.resetFields()
         resetState()
         return
@@ -120,7 +120,7 @@ if (props.emitter) {
       if (args.object) {
         formState.value = cloneDeep(args.object)
       }
-      visible.value = args.show
+      vsbState.value = args.show
     }
   )
   props.emitter.on('update:data', (data?: any) => {
@@ -153,18 +153,18 @@ onMounted(() => {
   emit('initialize')
 })
 watch(
-  () => props.show,
+  () => props.visible,
   (show: boolean) => {
-    visible.value = show
+    vsbState.value = show
     if (show && !props.emitter) {
       formState.value = updateState()
     }
   }
 )
 watch(
-  () => visible.value,
+  () => vsbState.value,
   (newVsb: boolean) => {
-    emit('update:visible', visible.value)
+    emit('update:visible', vsbState.value)
     if (newVsb && props.emitter) {
       props.emitter.emit('show')
     }
@@ -214,7 +214,7 @@ function resetState() {
   }
 }
 function onDlgClose() {
-  visible.value = false
+  vsbState.value = false
   emit('update:visible', false)
   for (const value of Object.values(formMapper.value)) {
     if (typeof value.fold !== 'undefined') {
