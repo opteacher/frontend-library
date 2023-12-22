@@ -222,6 +222,7 @@ const props = defineProps({
   description: { type: String, default: '' },
   size: { type: String, default: 'default' },
   pagable: { type: Boolean, default: false },
+  pageSize: { type: Number, default: 10 },
   filter: { type: Function, default: () => true },
   editable: { type: Boolean, default: true },
   addable: { type: Boolean, default: true },
@@ -241,7 +242,7 @@ const records = reactive({
   data: [] as unknown[],
   total: 0,
   offset: 0,
-  limit: 10, // 跟antd一致
+  limit: props.pageSize,
   filters: undefined as any
 })
 const expRowKeys = reactive([] as string[])
@@ -304,7 +305,7 @@ async function refresh(data?: any[], params?: any) {
     }
   }
   records.offset = 0
-  records.limit = 10
+  records.limit = props.pageSize
   records.filters = undefined
   let ignPams = new Set(['data', 'total', 'filters', 'offset', 'limit'])
   if (params) {

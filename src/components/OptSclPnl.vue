@@ -55,7 +55,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" name="OptSclPnl">
 import { h, reactive, ref, VNode } from 'vue'
 import {
   ClearOutlined,

@@ -92,6 +92,12 @@
         @change="(e: any) => onFieldChanged(e.target.value)"
         @blur="(e: any) => mapper.onBlur && mapper.onBlur(form, e.target.value)"
       />
+      <IpAddrInput
+        v-else-if="mapper.type === 'IpAddress'"
+        :disabled="disabled"
+        :ip="getProp(form, skey)"
+        @update:ip="onFieldChanged"
+      />
       <a-select
         v-else-if="mapper.type === 'Select'"
         class="w-full"
@@ -326,6 +332,7 @@ import ListSelect from './ListSelect.vue'
 import SelOrIpt from './SelOrIpt.vue'
 import TagList from './TagList.vue'
 import UploadFile from './UploadFile.vue'
+import IpAddrInput from './IpAddrInput.vue'
 
 const props = defineProps({
   form: { type: Object, required: true },

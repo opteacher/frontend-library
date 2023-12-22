@@ -845,3 +845,7 @@ export function code2Func(code: string, args?: Record<string, any>): Function {
 export function callFunc(code: string, args?: Record<string, any>) {
   return code2Func(code, args)(...Object.values(args || {}))
 }
+
+export function newOne<T>(t: { new (): T }): T {
+  return new t()
+}

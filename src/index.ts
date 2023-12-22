@@ -12,6 +12,8 @@ import EditableTable from './components/EditableTable.vue'
 import BchExpBox from './components/BchExpBox.vue'
 import BchImpBox from './components/BchImpBox.vue'
 import CButton from './components/CButton.vue'
+import OptSclPnl from './components/OptSclPnl.vue'
+import IpAddrInput from './components/IpAddrInput.vue'
 
 export const components = {
     ColorSelect,
@@ -26,7 +28,9 @@ export const components = {
     EditableTable,
     BchExpBox,
     BchImpBox,
-    CButton
+    CButton,
+    OptSclPnl,
+    IpAddrInput
 }
 
 export default function (app: App) {

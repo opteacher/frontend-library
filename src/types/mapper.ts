@@ -366,6 +366,7 @@ const mapTypeTemps = {
   Unknown: () => new BaseMapper(),
   Input: () => new InputMapper(),
   Number: () => new InputMapper(),
+  IpAddress: () => new BaseMapper(),
   Password: () => new InputMapper(),
   Textarea: () => new TextareaMapper(),
   Select: () => new SelectMapper(),

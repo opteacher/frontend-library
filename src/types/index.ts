@@ -59,6 +59,7 @@ export const cmpLblMap = {
   FormItem: '表单项',
   Input: '输入框',
   Password: '密码框',
+  IpAddress: 'IP地址框',
   IconField: '图标框',
   Number: '数字框',
   Button: '按钮',
@@ -118,6 +119,8 @@ export function compoDftVal(ctype: CompoType) {
     case 'Radio':
     default:
       return ''
+    case 'IpAddress':
+      return '0.0.0.0'
     case 'JsonEditor':
       return '{}'
   }
