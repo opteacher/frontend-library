@@ -277,6 +277,9 @@ if (props.emitter) {
     }
     fmtColumns(colsState)
   })
+  if (!props.editable && !props.addable) {
+    props.emitter.off('update:visible')
+  }
 }
 fmtColumns()
 
