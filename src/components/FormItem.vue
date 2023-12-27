@@ -22,6 +22,24 @@
       >
         {{ getProp(form, skey) }}
       </template>
+      <template v-else-if="mapper.type === 'Password'">
+        <div v-if="viewPwd">
+          {{ getProp(form, skey) }}
+          <span>
+            <a-button type="text" @click="onVwPwdClick">
+              <template #icon><eye-invisible-outlined /></template>
+            </a-button>
+          </span>
+        </div>
+        <div v-else>
+          ●●●●●●●●
+          <span>
+            <a-button type="text" @click="onVwPwdClick">
+              <template #icon><eye-outlined /></template>
+            </a-button>
+          </span>
+        </div>
+      </template>
       <template
         v-else-if="
           mapper.type === 'Textarea' || mapper.type === 'CodeEditor' || mapper.type === 'JsonEditor'
@@ -319,8 +337,13 @@
 </template>
 
 <script lang="ts" setup name="FormItem">
-import { CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
-import { computed, useSlots } from 'vue'
+import {
+  CloseCircleOutlined,
+  InfoCircleOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined
+} from '@ant-design/icons-vue'
+import { computed, ref, useSlots } from 'vue'
 
 import type { OpnType } from '../types'
 import { getProp, setProp, validConds } from '../utils'
@@ -346,6 +369,7 @@ const display = computed(() => validConds(props.form, props.mapper.display, true
 const disabled = computed(() => validConds(props.form, props.mapper.disabled) || !props.editable)
 const onFpropChanged = (formState: any, values: any) =>
   Object.entries(values).map(([k, v]) => setProp(formState, k, v))
+const viewPwd = ref(false)
 
 function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   if (value instanceof Array) {
@@ -382,5 +406,8 @@ function chkInSlot(suffix?: string) {
   const key = props.skey + (suffix || '')
   const slotKey = !!useSlots()[key]
   return slotKey && key !== 'default'
+}
+function onVwPwdClick() {
+  viewPwd.value = !viewPwd.value
 }
 </script>
