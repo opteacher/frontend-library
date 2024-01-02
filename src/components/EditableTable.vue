@@ -137,16 +137,12 @@
         <slot name="expandedRowRender" v-bind="{ record }" />
       </template>
       <template #expandIcon="{ record }">
-        <AntdIcons.MinusSquareOutlined
-          v-if="expRowKeys.includes(record.key)"
-          class="cursor-pointer hover:text-primary"
-          @click.stop="onRowExpand(record)"
-        />
-        <AntdIcons.PlusSquareOutlined
-          v-else
-          class="cursor-pointer hover:text-primary"
-          @click.stop="onRowExpand(record)"
-        />
+        <a-button size="small" type="text" @click.stop="onRowExpand(record)" v-if="expRowKeys.includes(record.key)">
+          <template #icon><AntdIcons.MinusOutlined class="text-sm" /></template>
+        </a-button>
+        <a-button size="small" type="text" @click.stop="onRowExpand(record)" v-else>
+          <template #icon><AntdIcons.PlusOutlined class="text-sm" /></template>
+        </a-button>
       </template>
       <template v-if="pagable" #footer>总共&nbsp;{{ records.data.length }}&nbsp;条记录</template>
     </a-table>
