@@ -49,7 +49,6 @@
         })
       "
       @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
-      @expand="(_expanded: unknown, record: any) => onRowExpand(record)"
     >
       <template #customFilterIcon="{ column, filtered }">
         <AntdIcons.SearchOutlined
@@ -136,14 +135,6 @@
       <template v-if="$slots['expandedRowRender']" #expandedRowRender="{ record }">
         <slot name="expandedRowRender" v-bind="{ record }" />
       </template>
-      <template #expandIcon="{ record }">
-        <a-button size="small" type="text" @click.stop="onRowExpand(record)" v-if="expRowKeys.includes(record.key)">
-          <template #icon><AntdIcons.MinusOutlined class="text-sm" /></template>
-        </a-button>
-        <a-button size="small" type="text" @click.stop="onRowExpand(record)" v-else>
-          <template #icon><AntdIcons.PlusOutlined class="text-sm" /></template>
-        </a-button>
-      </template>
       <template v-if="pagable" #footer>总共&nbsp;{{ records.data.length }}&nbsp;条记录</template>
     </a-table>
     <FormDialog
@@ -203,8 +194,7 @@ const emit = defineEmits([
   'save',
   'after-save',
   'delete',
-  'refresh',
-  'expand'
+  'refresh'
 ])
 const props = defineProps({
   icon: { type: String, default: '' },
@@ -241,7 +231,7 @@ const records = reactive({
   limit: props.pageSize,
   filters: undefined as any
 })
-const expRowKeys = reactive([] as string[])
+const expRowKeys = ref([] as string[])
 const editKey = ref<string>('')
 const loading = ref(false)
 const searchState = reactive<Record<string, { content: string; reset: Function }>>({})
@@ -429,15 +419,6 @@ async function onRecordDel(record: any) {
     fmDlg.visible = false
   }
   await refresh()
-}
-function onRowExpand(record: { key: string }) {
-  const expand = !expRowKeys.includes(record.key)
-  if (expand) {
-    expRowKeys.push(record.key)
-  } else {
-    expRowKeys.splice(expRowKeys.indexOf(record.key), 1)
-  }
-  emit('expand', { expand, record })
 }
 function onRowClick(record: any) {
   if (props.emitter) {
