@@ -41,6 +41,7 @@
       <template #FormDialog="{ value, key }">
         <FormDialog
           :title="value.label"
+          :width="value.width"
           :mapper="value.mapper"
           :emitter="value.emitter"
           :newFun="value.newFun"

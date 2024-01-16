@@ -149,6 +149,7 @@ export class ButtonMapper extends BaseMapper {
 }
 
 export class TableMapper extends BaseMapper {
+  width: string | number
   mapper: Mapper
   columns: Column[]
   emitter: Emitter
@@ -162,6 +163,7 @@ export class TableMapper extends BaseMapper {
 
   constructor() {
     super()
+    this.width = '40vw'
     this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
@@ -185,6 +187,7 @@ export class TableMapper extends BaseMapper {
 
   reset() {
     super.reset()
+    this.width = '40vw'
     this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
