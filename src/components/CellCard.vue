@@ -15,6 +15,9 @@
         : text
     }}
   </template>
+  <template v-else-if="mapper.type === 'Checkbox' || mapper.type === 'Switch'">
+    {{ text ? mapper.chkLabels[1] : mapper.chkLabels[0] }}
+  </template>
   <span v-else :class="{ 'text-primary': selected }">
     {{ fmtTxt }}
   </span>
