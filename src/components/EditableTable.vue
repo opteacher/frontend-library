@@ -140,6 +140,7 @@
     <FormDialog
       v-model:show="fmDlg.visible"
       v-model:vw-only="fmDlg.vwOnly"
+      :width="dlgWidth"
       :new-fun="newFun"
       :object="fmDlg.object"
       :title="title || (editKey ? '编辑项' : '增加项')"
@@ -220,6 +221,7 @@ const props = defineProps({
   refOptions: { type: Array, default: () => [] },
   operaStyle: { type: String, default: 'link' },
   dspCols: { type: Boolean, default: false },
+  dlgWidth: { type: String, default: '50vw' },
   sclHeight: { type: String, default: '' },
   minHeight: { type: String, default: '' }
 })
