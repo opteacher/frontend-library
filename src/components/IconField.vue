@@ -7,7 +7,7 @@
     </template>
     {{ icon || '请选择图标' }}
   </a-button>
-  <a-modal v-model:visible="visible" title="选择图标" width="60vw" @ok="onIconSelect">
+  <a-modal v-model:open="visible" title="选择图标" width="60vw" @ok="onIconSelect">
     <a-input v-model:value="search" placeholder="筛选图标" />
     <a-tabs v-model:activeKey="selTab">
       <a-tab-pane key="ant-design" tab="ant图表库">

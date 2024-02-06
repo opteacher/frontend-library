@@ -16,7 +16,7 @@
     "test:com:all": "npx cypress run --component --record --key 9cdffdd4-b9e2-4817-bb89-a671ed8b988e"
   },
   "dependencies": {
-    "ant-design-vue": "^3.2.15",
+    "ant-design-vue": "^4.1.2",
     "dayjs": "^1.11.7",
     "happy-dom": "^8.9.0",
     "qs": "^6.11.0",

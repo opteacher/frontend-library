@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    v-model:visible="vsbState"
+    v-model:open="vsbState"
     :width="width"
     :confirmLoading="!editable || okLoading"
     :footer="viewOnly ? null : undefined"
