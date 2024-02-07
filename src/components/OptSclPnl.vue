@@ -76,6 +76,7 @@ import dayjs, { Dayjs } from 'dayjs'
 const props = defineProps({
   url: { type: String, required: true }
 })
+const emit = defineEmits(['before-start', 'after-end'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
 const panel = ref<HTMLElement>()
 const ctrler = reactive<{
@@ -139,6 +140,7 @@ function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
   ctrler.muVsb = false
 }
 function startListen() {
+  emit('before-start')
   ctrler.ess = new EventSource(props.url)
   ctrler.outputing = true
   addMessage('等待任务开启……')
@@ -158,14 +160,14 @@ function startListen() {
   })
   ctrler.ess.addEventListener('end', stopListen)
   ctrler.ess.addEventListener('error', e => {
-    console.error(e)
-    stopListen()
+    addMessage(JSON.stringify(e))
   })
 }
 function stopListen() {
   addMessage('停止任务……')
   ctrler.ess?.close()
   ctrler.outputing = false
+  emit('after-end')
 }
 function addMessage(content: string) {
   message.value.push({ content, time: dayjs() })
