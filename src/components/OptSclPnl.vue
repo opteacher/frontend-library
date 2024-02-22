@@ -72,9 +72,11 @@ import {
 import { setProp } from '../utils'
 import { message as msgBox } from 'ant-design-vue'
 import dayjs, { Dayjs } from 'dayjs'
+import { TinyEmitter } from 'tiny-emitter'
 
 const props = defineProps({
-  url: { type: String, required: true }
+  url: { type: String, required: true },
+  emitter: { type: TinyEmitter, default: null }
 })
 const emit = defineEmits(['before-start', 'after-end'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
@@ -119,6 +121,11 @@ const ctrler = reactive<{
     }
   ]
 })
+
+if (props.emitter) {
+  props.emitter.on('start', startListen)
+  props.emitter.on('stop', stopListen)
+}
 
 function onClrScnCick() {
   message.value = []
