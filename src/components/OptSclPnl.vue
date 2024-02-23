@@ -155,11 +155,11 @@ function startListen() {
     addMessage('开始任务……')
   })
   ctrler.ess.addEventListener('message', e => {
-    let msg = ''
+    let msg = e.data
     emit('recv-msg', {
       message: e.data,
       next: (res: string) => {
-        msg = res
+        msg = res || e.data
       }
     })
     addMessage(msg)
