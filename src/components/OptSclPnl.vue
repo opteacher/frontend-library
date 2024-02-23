@@ -78,7 +78,7 @@ const props = defineProps({
   url: { type: String, required: true },
   emitter: { type: TinyEmitter, default: null }
 })
-const emit = defineEmits(['before-start', 'after-end'])
+const emit = defineEmits(['before-start', 'after-end', 'recv-msg'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
 const panel = ref<HTMLElement>()
 const ctrler = reactive<{
@@ -155,7 +155,14 @@ function startListen() {
     addMessage('开始任务……')
   })
   ctrler.ess.addEventListener('message', e => {
-    addMessage(e.data)
+    let msg = ''
+    emit('recv-msg', {
+      message: e.data,
+      next: (res: string) => {
+        msg = res
+      }
+    })
+    addMessage(msg)
     if (ctrler.lockBtm && panel.value) {
       const pnlRef = panel.value as HTMLElement
       if (pnlRef.scrollHeight > pnlRef.clientHeight) {
@@ -167,7 +174,7 @@ function startListen() {
   })
   ctrler.ess.addEventListener('end', stopListen)
   ctrler.ess.addEventListener('error', e => {
-    addMessage(JSON.stringify(e))
+    addMessage('ERROR: ' + JSON.stringify(e))
   })
 }
 function stopListen() {
@@ -177,7 +184,7 @@ function stopListen() {
   emit('after-end')
 }
 function addMessage(content: string) {
-  message.value.push({ content, time: dayjs() })
+  message.value.push({ content, time: dayjs().add(8, 'hour') })
 }
 function fmtMessage() {
   return message.value
