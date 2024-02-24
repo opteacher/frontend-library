@@ -1,9 +1,14 @@
 <template>
-  <div class="relative h-full border border-solid border-slate-300 rounded">
-    <pre class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto p-2 mb-10" ref="panel">{{
-      fmtMessage()
-    }}</pre>
-    <div class="absolute bottom-2 left-2 right-2 flex justify-between">
+  <div class="h-full flex flex-col">
+    <codemirror
+      class="flex-1"
+      :value="fmtMessage()"
+      :options="{ mode: 'log', theme: 'default', lineNumbers: false }"
+      border
+      height="100%"
+      :keep-cursor-in-end="ctrler.lockBtm"
+    />
+    <div class="mt-2.5 flex justify-between">
       <a-space v-if="ctrler.outputing">
         <PlayCircleTwoTone two-tone-color="#52c41a" />
         <span>输出中</span>
@@ -69,10 +74,11 @@ import {
   CopyOutlined,
   LoadingOutlined
 } from '@ant-design/icons-vue'
-import { setProp } from '../utils'
+import { rmvStartsOf, setProp } from '../utils'
 import { message as msgBox } from 'ant-design-vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { TinyEmitter } from 'tiny-emitter'
+import Codemirror, { createLogMark, createTitle } from 'codemirror-editor-vue3'
 
 const props = defineProps({
   url: { type: String, required: true },
@@ -80,7 +86,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['before-start', 'after-end', 'recv-msg'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
-const panel = ref<HTMLElement>()
 const ctrler = reactive<{
   outputing: boolean
   lockBtm: boolean
@@ -125,6 +130,9 @@ const ctrler = reactive<{
 if (props.emitter) {
   props.emitter.on('start', startListen)
   props.emitter.on('stop', stopListen)
+  props.emitter.on('clean', () => {
+    message.value = []
+  })
 }
 
 function onClrScnCick() {
@@ -163,18 +171,11 @@ function startListen() {
       }
     })
     addMessage(msg)
-    if (ctrler.lockBtm && panel.value) {
-      const pnlRef = panel.value as HTMLElement
-      if (pnlRef.scrollHeight > pnlRef.clientHeight) {
-        setTimeout(() => {
-          pnlRef.scrollTop = pnlRef.scrollHeight
-        }, 100)
-      }
-    }
   })
-  ctrler.ess.addEventListener('end', stopListen)
+  // 服务器端完成任务后可激活stop事件停止输出
+  ctrler.ess.addEventListener('stop', stopListen)
   ctrler.ess.addEventListener('error', e => {
-    addMessage('ERROR: ' + JSON.stringify(e))
+    addMessage('[ERROR]' + JSON.stringify(e))
   })
 }
 function stopListen() {
@@ -186,9 +187,23 @@ function stopListen() {
 function addMessage(content: string) {
   message.value.push({ content, time: dayjs().add(8, 'hour') })
 }
+// 在行消息前放置：[INFO]、[ERROR]、[WARN]、[TITLE]来改变消息样式（改变的同时会去掉这个前缀），默认不做修饰
 function fmtMessage() {
   return message.value
-    .map(msg => (ctrler.tmVsb ? msg.time.format('HH:mm:ss') + ' - ' : '') + msg.content)
+    .map(msg => (ctrler.tmVsb ? msg.time.format('HH:mm:ss') + ' - ' : '') + fixMessage(msg.content))
     .join('\n')
+}
+function fixMessage(msg: string) {
+  if (msg.startsWith('[INFO]')) {
+    return createLogMark(rmvStartsOf(msg, '[INFO]'), 'info')
+  } else if (msg.startsWith('[ERROR]')) {
+    return createLogMark(rmvStartsOf(msg, '[ERROR]'), 'error')
+  } else if (msg.startsWith('[WARN]')) {
+    return createLogMark(rmvStartsOf(msg, '[WARN]'), 'warning')
+  } else if (msg.startsWith('[TITLE]')) {
+    return createTitle(rmvStartsOf(msg, '[TITLE]'))
+  } else {
+    return msg
+  }
 }
 </script>
