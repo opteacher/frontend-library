@@ -1,14 +1,21 @@
 <template>
-  <div class="h-full flex flex-col">
-    <codemirror
-      class="flex-1"
-      :value="fmtMessage()"
-      :options="{ mode: 'log', theme: 'default', lineNumbers: false }"
-      border
-      height="100%"
-      :keep-cursor-in-end="ctrler.lockBtm"
-    />
-    <div class="mt-2.5 flex justify-between">
+  <div class="h-full flex flex-col space-y-3">
+    <div class="flex-1 relative">
+      <codemirror
+        class="absolute"
+        :value="fmtMessage()"
+        :options="{
+          mode: 'log',
+          theme: 'default',
+          lineNumbers: false,
+          readOnly: true,
+          scrollbarStyle: 'native'
+        }"
+        border
+        :keep-cursor-in-end="ctrler.lockBtm"
+      />
+    </div>
+    <div class="flex justify-between">
       <a-space v-if="ctrler.outputing">
         <PlayCircleTwoTone two-tone-color="#52c41a" />
         <span>输出中</span>
