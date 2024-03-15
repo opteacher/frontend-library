@@ -1,5 +1,5 @@
 <template>
-  <a-button v-if="!addMod" class="w-full" type="primary" ghost @click="onEdtLstShow">
+  <a-button v-if="!addMod" class="w-full" type="primary" :disabled="mapper.disabled" ghost @click="onEdtLstShow">
     添加{{ label }}
   </a-button>
   <a-form

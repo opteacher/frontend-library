@@ -1,6 +1,8 @@
 <template>
   <a-space>
-    <a-button v-if="addable" type="primary" @click="onAddClick">新增</a-button>
+    <a-button v-if="addable" type="primary" @click="onAddClick" :disabled="mapper.disabled">
+      新增
+    </a-button>
     <slot name="FormDialog" />
     <a-typography-text type="secondary">
       <InfoCircleOutlined />
@@ -23,7 +25,9 @@
     <template v-if="delable" #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'opera'">
         <a-popconfirm title="确定删除该字段" @confirm.stop="() => onDelClick(record)">
-          <a-button danger size="small" @click.stop="() => {}">删除</a-button>
+          <a-button danger size="small" :disabled="mapper.disabled" @click.stop="() => {}">
+            删除
+          </a-button>
         </a-popconfirm>
       </template>
     </template>
@@ -51,7 +55,7 @@ function onRowClick(record: any) {
   props.mapper.emitter.emit('update:visible', {
     show: true,
     object: record,
-    viewOnly: !props.mapper.editable
+    viewOnly: !props.mapper.editable || !props.mapper.disabled
   })
   emit('edit')
 }

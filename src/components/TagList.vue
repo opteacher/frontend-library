@@ -1,14 +1,15 @@
 <template>
   <template v-for="item in value" :key="item">
     <a-tag closable @close="onRmvTagClick(item)">
-      <LabelItem
-        :value="item as any"
-        :prop="mapper.lblProp"
-        :mapper="mapper.lblMapper"
-      />
+      <LabelItem :value="item as any" :prop="mapper.lblProp" :mapper="mapper.lblMapper" />
     </a-tag>
   </template>
-  <a-button :type="addFlag ? 'primary' : 'dashed'" size="small" @click="onNewTagClick">
+  <a-button
+    :type="addFlag ? 'primary' : 'dashed'"
+    size="small"
+    :disabled="mapper.disabled"
+    @click="onNewTagClick"
+  >
     <template #icon><plus-outlined /></template>
     添加
   </a-button>

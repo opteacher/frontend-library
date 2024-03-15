@@ -164,6 +164,7 @@
       <a-tooltip v-else-if="mapper.type === 'Switch'">
         <a-switch
           :checked="getProp(form, skey)"
+          :disabled="disabled"
           :checked-children="mapper.chkLabels ? mapper.chkLabels[1] : ''"
           :un-checked-children="mapper.chkLabels ? mapper.chkLabels[0] : ''"
           @change="onFieldChanged"
@@ -281,6 +282,7 @@
       />
       <ListSelect
         v-else-if="mapper.type === 'ListSelect'"
+        :disabled="disabled"
         :options="mapper.options"
         :height="mapper.height"
         :value="getProp(form, skey)"
@@ -311,6 +313,7 @@
       />
       <JsonEditor
         v-else-if="mapper.type === 'JsonEditor'"
+        :disabled="disabled"
         :value="getProp(form, skey)"
         @update:value="onFieldChanged"
       />
