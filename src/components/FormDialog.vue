@@ -46,6 +46,7 @@
           :emitter="value.emitter"
           :newFun="value.newFun"
           :object="value.editing"
+          :operable="value.editable"
           @submit="(form: any, next: Function) => onFormSubmit(key, value, form, next)"
         />
       </template>
