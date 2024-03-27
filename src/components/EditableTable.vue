@@ -168,7 +168,7 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as AntdIcons from '@ant-design/icons-vue/lib/icons'
+import AntdIcons from '@ant-design/icons-vue/lib/icons'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { v4 as uuid } from 'uuid'
