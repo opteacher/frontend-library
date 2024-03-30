@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts" name="OptSclPnl">
-import { h, reactive, ref, VNode } from 'vue'
+import { h, PropType, reactive, ref, VNode } from 'vue'
 import {
   ClearOutlined,
   PlayCircleTwoTone,
@@ -86,10 +86,12 @@ import { message as msgBox } from 'ant-design-vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { TinyEmitter } from 'tiny-emitter'
 import Codemirror, { createLogMark, createTitle } from 'codemirror-editor-vue3'
+import { createClient, RedisClientType, RedisDefaultModules } from 'redis'
 
 const props = defineProps({
   url: { type: String, required: true },
-  emitter: { type: TinyEmitter, default: null }
+  emitter: { type: TinyEmitter, default: null },
+  lsnrType: { type: String as PropType<'sse' | 'rds'>, default: 'sse' }
 })
 const emit = defineEmits(['before-start', 'after-end', 'recv-msg'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
@@ -106,7 +108,7 @@ const ctrler = reactive<{
   }[]
   tmVsb: boolean
   ess?: EventSource
-}>({
+} & Record<string, any>>({
   outputing: false,
   lockBtm: true,
   muVsb: false,
@@ -132,6 +134,13 @@ const ctrler = reactive<{
       title: '复制'
     }
   ]
+})
+const rdsCli = createClient({
+  password: redis.password,
+  socket: {
+    host: redis.host,
+    port: redis.port
+  }
 })
 
 if (props.emitter) {
@@ -163,27 +172,33 @@ function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
 }
 function startListen() {
   emit('before-start')
-  ctrler.ess = new EventSource(props.url)
-  ctrler.outputing = true
-  addMessage('等待任务开启……')
-  ctrler.ess.addEventListener('open', () => {
-    addMessage('开始任务……')
-  })
-  ctrler.ess.addEventListener('message', e => {
-    let msg = e.data
-    emit('recv-msg', {
-      message: e.data,
-      next: (res: string) => {
-        msg = res || e.data
-      }
-    })
-    addMessage(msg)
-  })
-  // 服务器端完成任务后可激活stop事件停止输出
-  ctrler.ess.addEventListener('stop', stopListen)
-  ctrler.ess.addEventListener('error', e => {
-    addMessage('[ERROR]' + JSON.stringify(e))
-  })
+  switch (props.lsnrType) {
+    case 'sse':
+      ctrler.ess = new EventSource(props.url)
+      ctrler.outputing = true
+      addMessage('等待任务开启……')
+      ctrler.ess.addEventListener('open', () => {
+        addMessage('开始任务……')
+      })
+      ctrler.ess.addEventListener('message', e => {
+        let msg = e.data
+        emit('recv-msg', {
+          message: e.data,
+          next: (res: string) => {
+            msg = res || e.data
+          }
+        })
+        addMessage(msg)
+      })
+      // 服务器端完成任务后可激活stop事件停止输出
+      ctrler.ess.addEventListener('stop', stopListen)
+      ctrler.ess.addEventListener('error', e => {
+        addMessage('[ERROR]' + JSON.stringify(e))
+      })
+      break
+    case 'rds':
+      rdsCli
+  }
 }
 function stopListen() {
   addMessage('停止任务……')
