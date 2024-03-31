@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts" name="OptSclPnl">
-import { h, PropType, reactive, ref, VNode } from 'vue'
+import { h, reactive, ref, VNode } from 'vue'
 import {
   ClearOutlined,
   PlayCircleTwoTone,
@@ -82,33 +82,34 @@ import {
   LoadingOutlined
 } from '@ant-design/icons-vue'
 import { rmvStartsOf, setProp } from '../utils'
-import { message as msgBox } from 'ant-design-vue'
+import { message as msgBox, notification } from 'ant-design-vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { TinyEmitter } from 'tiny-emitter'
 import Codemirror, { createLogMark, createTitle } from 'codemirror-editor-vue3'
-import { createClient, RedisClientType, RedisDefaultModules } from 'redis'
+import Redis from 'ioredis'
 
 const props = defineProps({
   url: { type: String, required: true },
-  emitter: { type: TinyEmitter, default: null },
-  lsnrType: { type: String as PropType<'sse' | 'rds'>, default: 'sse' }
+  emitter: { type: TinyEmitter, default: null }
 })
 const emit = defineEmits(['before-start', 'after-end', 'recv-msg'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
-const ctrler = reactive<{
-  outputing: boolean
-  lockBtm: boolean
-  muVsb: boolean
-  clrVsb: boolean
-  muItms: {
-    key: string
-    icon: () => VNode
-    label: string
-    title: string
-  }[]
-  tmVsb: boolean
-  ess?: EventSource
-} & Record<string, any>>({
+const ctrler = reactive<
+  {
+    outputing: boolean
+    lockBtm: boolean
+    muVsb: boolean
+    clrVsb: boolean
+    muItms: {
+      key: string
+      icon: () => VNode
+      label: string
+      title: string
+    }[]
+    tmVsb: boolean
+    ess?: EventSource
+  } & Record<string, any>
+>({
   outputing: false,
   lockBtm: true,
   muVsb: false,
@@ -135,13 +136,7 @@ const ctrler = reactive<{
     }
   ]
 })
-const rdsCli = createClient({
-  password: redis.password,
-  socket: {
-    host: redis.host,
-    port: redis.port
-  }
-})
+const rdsCli = props.url.startsWith('redis://') ? new Redis(props.url) : null
 
 if (props.emitter) {
   props.emitter.on('start', startListen)
@@ -155,13 +150,13 @@ function onClrScnCick() {
   message.value = []
   ctrler.clrVsb = false
 }
-function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
+async function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
   switch (key) {
     case 'start':
-      startListen()
+      await startListen()
       break
     case 'stop':
-      stopListen()
+      await stopListen()
       break
     case 'copy':
       navigator.clipboard.writeText(fmtMessage())
@@ -170,44 +165,43 @@ function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
   }
   ctrler.muVsb = false
 }
-function startListen() {
+async function startListen() {
   emit('before-start')
-  switch (props.lsnrType) {
-    case 'sse':
-      ctrler.ess = new EventSource(props.url)
-      ctrler.outputing = true
-      addMessage('等待任务开启……')
-      ctrler.ess.addEventListener('open', () => {
-        addMessage('开始任务……')
-      })
-      ctrler.ess.addEventListener('message', e => {
-        let msg = e.data
-        emit('recv-msg', {
-          message: e.data,
-          next: (res: string) => {
-            msg = res || e.data
-          }
-        })
-        addMessage(msg)
-      })
-      // 服务器端完成任务后可激活stop事件停止输出
-      ctrler.ess.addEventListener('stop', stopListen)
-      ctrler.ess.addEventListener('error', e => {
-        addMessage('[ERROR]' + JSON.stringify(e))
-      })
-      break
-    case 'rds':
-      rdsCli
+  if (rdsCli) {
+    rdsCli.subscribe('server-package', err => {
+      notification.error({ message: JSON.stringify(err) })
+    })
+    rdsCli.on('message', (_channel, msg) => addMessage(msg))
+  } else {
+    ctrler.ess = new EventSource(props.url)
+    ctrler.outputing = true
+    await addMessage('等待任务开启……')
+    ctrler.ess.addEventListener('open', () => addMessage('开始任务……'))
+    ctrler.ess.addEventListener('message', e => addMessage(e.data))
+    // 服务器端完成任务后可激活stop事件停止输出
+    ctrler.ess.addEventListener('stop', stopListen)
+    ctrler.ess.addEventListener('error', e => addMessage('[ERROR]' + JSON.stringify(e)))
   }
 }
-function stopListen() {
+async function stopListen() {
   addMessage('停止任务……')
+  await rdsCli?.disconnect()
   ctrler.ess?.close()
   ctrler.outputing = false
   emit('after-end')
 }
-function addMessage(content: string) {
-  message.value.push({ content, time: dayjs().add(8, 'hour') })
+async function addMessage(content: string) {
+  message.value.push({
+    content: await new Promise(resolve => {
+      emit('recv-msg', {
+        message: content,
+        next: (res: string) => {
+          resolve(res || content)
+        }
+      })
+    }),
+    time: dayjs().add(8, 'hour')
+  })
 }
 // 在行消息前放置：[INFO]、[ERROR]、[WARN]、[TITLE]来改变消息样式（改变的同时会去掉这个前缀），默认不做修饰
 function fmtMessage() {
