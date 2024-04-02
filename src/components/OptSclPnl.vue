@@ -82,11 +82,11 @@ import {
   LoadingOutlined
 } from '@ant-design/icons-vue'
 import { rmvStartsOf, setProp } from '../utils'
-import { message as msgBox, notification } from 'ant-design-vue'
+import { message as msgBox } from 'ant-design-vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { TinyEmitter } from 'tiny-emitter'
 import Codemirror, { createLogMark, createTitle } from 'codemirror-editor-vue3'
-import Redis from 'ioredis'
+import mqtt from 'mqtt'
 
 const props = defineProps({
   url: { type: String, required: true },
@@ -136,7 +136,14 @@ const ctrler = reactive<
     }
   ]
 })
-const rdsCli = props.url.startsWith('redis://') ? new Redis(props.url) : null
+
+const mqttCli = props.url.endsWith('/mqtt')
+  ? mqtt.connect(props.url, {
+      clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
+      username: 'admin',
+      password: '59524148chenOP'
+    })
+  : null
 
 if (props.emitter) {
   props.emitter.on('start', startListen)
@@ -167,11 +174,14 @@ async function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
 }
 async function startListen() {
   emit('before-start')
-  if (rdsCli) {
-    rdsCli.subscribe('server-package', err => {
-      notification.error({ message: JSON.stringify(err) })
+  if (mqttCli && mqttCli.connected) {
+    await mqttCli.subscribeAsync('server-package', { qos: 0 })
+    mqttCli.on('message', async (topic: string, msg) => {
+      console.log(topic, msg)
+      if (topic === 'server-package') {
+        await addMessage(msg.toString())
+      }
     })
-    rdsCli.on('message', (_channel, msg) => addMessage(msg))
   } else {
     ctrler.ess = new EventSource(props.url)
     ctrler.outputing = true
@@ -185,7 +195,7 @@ async function startListen() {
 }
 async function stopListen() {
   addMessage('停止任务……')
-  await rdsCli?.disconnect()
+  await mqttCli?.unsubscribeAsync('server-package', { qos: 0 })
   ctrler.ess?.close()
   ctrler.outputing = false
   emit('after-end')
