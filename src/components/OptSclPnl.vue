@@ -89,7 +89,8 @@ import Codemirror, { createLogMark, createTitle } from 'codemirror-editor-vue3'
 import mqtt from 'mqtt'
 
 const props = defineProps({
-  url: { type: String, required: true },
+  url: { type: String, default: '' }, // 使用SSE推送
+  topic: { type: String, default: '' }, // 使用MQTT推送
   emitter: { type: TinyEmitter, default: null }
 })
 const emit = defineEmits(['before-start', 'after-end', 'recv-msg'])
@@ -108,6 +109,7 @@ const ctrler = reactive<
     }[]
     tmVsb: boolean
     ess?: EventSource
+    mqttCli?: mqtt.MqttClient
   } & Record<string, any>
 >({
   outputing: false,
@@ -136,14 +138,6 @@ const ctrler = reactive<
     }
   ]
 })
-
-const mqttCli = props.url.endsWith('/mqtt')
-  ? mqtt.connect(props.url, {
-      clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
-      username: 'admin',
-      password: '59524148chenOP'
-    })
-  : null
 
 if (props.emitter) {
   props.emitter.on('start', startListen)
@@ -174,11 +168,18 @@ async function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
 }
 async function startListen() {
   emit('before-start')
-  if (mqttCli && mqttCli.connected) {
-    await mqttCli.subscribeAsync('server-package', { qos: 0 })
-    mqttCli.on('message', async (topic: string, msg) => {
-      console.log(topic, msg)
-      if (topic === 'server-package') {
+  if (props.topic) {
+    ctrler.mqttCli = mqtt.connect('ws://192.168.1.11:8083/mqtt', {
+      clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
+      username: 'admin',
+      password: '59524148chenOP',
+      clean: true
+    })
+    ctrler.mqttCli?.subscribe(props.topic, { qos: 0 })
+    ctrler.outputing = true
+    ctrler.mqttCli?.on('message', async (topic: string, msg) => {
+      console.log(topic, msg.toString())
+      if (topic === props.topic) {
         await addMessage(msg.toString())
       }
     })
@@ -195,8 +196,13 @@ async function startListen() {
 }
 async function stopListen() {
   addMessage('停止任务……')
-  await mqttCli?.unsubscribeAsync('server-package', { qos: 0 })
-  ctrler.ess?.close()
+  if (ctrler.mqttCli?.connected) {
+    await ctrler.mqttCli?.unsubscribeAsync(props.topic, { qos: 0 })
+    await ctrler.mqttCli?.endAsync()
+  }
+  if (ctrler.ess?.readyState) {
+    ctrler.ess?.close()
+  }
   ctrler.outputing = false
   emit('after-end')
 }
