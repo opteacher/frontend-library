@@ -138,7 +138,7 @@
       <template v-if="pagable" #footer>总共&nbsp;{{ records.data.length }}&nbsp;条记录</template>
     </a-table>
     <FormDialog
-      v-model:show="fmDlg.visible"
+      v-model:visible="fmDlg.visible"
       v-model:vw-only="fmDlg.vwOnly"
       :width="dlgWidth"
       :new-fun="newFun"

@@ -5,7 +5,7 @@
   </a-button>
   <FormDialog
     title="导出登记在案的资产"
-    v-model:show="visible"
+    v-model:visible="visible"
     :copy="copyFun"
     :emitter="emitter"
     :mapper="mapper"
