@@ -81,7 +81,7 @@ import {
   CopyOutlined,
   LoadingOutlined
 } from '@ant-design/icons-vue'
-import { rmvStartsOf, setProp } from '../utils'
+import { rmvStartsOf, setProp, until } from '../utils'
 import { message as msgBox } from 'ant-design-vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { TinyEmitter } from 'tiny-emitter'
@@ -91,9 +91,10 @@ import mqtt from 'mqtt'
 const props = defineProps({
   url: { type: String, default: '' }, // 使用SSE推送
   topic: { type: String, default: '' }, // 使用MQTT推送
-  emitter: { type: TinyEmitter, default: null }
+  emitter: { type: TinyEmitter, default: null },
+  recvMsg: { type: Function, default: (msg: string) => msg }
 })
-const emit = defineEmits(['before-start', 'after-end', 'recv-msg'])
+const emit = defineEmits(['before-start', 'after-end'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
 const ctrler = reactive<
   {
@@ -169,24 +170,33 @@ async function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
 async function startListen() {
   emit('before-start')
   if (props.topic) {
-    ctrler.mqttCli = mqtt.connect('ws://192.168.1.11:8083/mqtt', {
-      clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
-      username: 'admin',
-      password: '59524148chenOP',
-      clean: true
+    await until(() => {
+      try {
+        ctrler.mqttCli = mqtt.connect('ws://192.168.1.11:8083/mqtt', {
+          clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
+          username: 'admin',
+          password: '59524148chenOP',
+          clean: true
+        })
+      } catch(e) {
+        return Promise.resolve(false)
+      }
+      return Promise.resolve(true)
     })
     ctrler.mqttCli?.subscribe(props.topic, { qos: 0 })
     ctrler.outputing = true
+    addMessage('等待任务开启……')
+    ctrler.mqttCli?.on('connect', () => addMessage('开始任务……'))
+    ctrler.mqttCli?.on('error', e => addMessage('[ERROR]' + JSON.stringify(e)))
     ctrler.mqttCli?.on('message', async (topic: string, msg) => {
-      console.log(topic, msg.toString())
       if (topic === props.topic) {
-        await addMessage(msg.toString())
+        addMessage(msg.toString())
       }
     })
   } else {
     ctrler.ess = new EventSource(props.url)
     ctrler.outputing = true
-    await addMessage('等待任务开启……')
+    addMessage('等待任务开启……')
     ctrler.ess.addEventListener('open', () => addMessage('开始任务……'))
     ctrler.ess.addEventListener('message', e => addMessage(e.data))
     // 服务器端完成任务后可激活stop事件停止输出
@@ -206,16 +216,9 @@ async function stopListen() {
   ctrler.outputing = false
   emit('after-end')
 }
-async function addMessage(content: string) {
+function addMessage(content: string) {
   message.value.push({
-    content: await new Promise(resolve => {
-      emit('recv-msg', {
-        message: content,
-        next: (res: string) => {
-          resolve(res || content)
-        }
-      })
-    }),
+    content: props.recvMsg(content),
     time: dayjs().add(8, 'hour')
   })
 }
