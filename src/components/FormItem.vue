@@ -57,8 +57,8 @@
               ? mapper.chkLabels[1]
               : '是'
             : mapper.chkLabels
-            ? mapper.chkLabels[0]
-            : '否'
+              ? mapper.chkLabels[0]
+              : '否'
         }}
       </template>
       <template v-else-if="mapper.type === 'EditList' || mapper.type === 'UploadFile'">
@@ -153,8 +153,8 @@
                 ? mapper.chkLabels[1]
                 : '是'
               : mapper.chkLabels
-              ? mapper.chkLabels[0]
-              : '否'
+                ? mapper.chkLabels[0]
+                : '否'
           }}&nbsp;
           <a-typography-text type="secondary">
             {{ mapper.placeholder || '请确认' }}
@@ -179,15 +179,18 @@
         @change="(e: any) => onFieldChanged(e.target.value)"
       >
         <template v-if="mapper.style === 'button'">
-          <a-radio-button
-            v-for="opn in mapper.options"
-            :key="opn.value"
-            class="text-center"
-            :value="opn.value"
-            :style="{ width: 100 / mapper.options.length + '%' }"
-          >
-            {{ opn.label }}
-          </a-radio-button>
+          <a-tooltip v-for="opn in mapper.options" :key="opn.value" color="#108ee9">
+            <template #title>
+              {{ opn.subLabel }}
+            </template>
+            <a-radio-button
+              class="text-center"
+              :value="opn.value"
+              :style="{ width: 100 / mapper.options.length + '%' }"
+            >
+              {{ opn.label }}
+            </a-radio-button>
+          </a-tooltip>
         </template>
         <template v-else>
           <a-radio v-for="opn in mapper.options" :key="opn.value" :value="opn.value">
