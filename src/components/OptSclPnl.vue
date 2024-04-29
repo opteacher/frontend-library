@@ -172,7 +172,7 @@ async function startListen() {
   if (props.topic) {
     await until(() => {
       try {
-        ctrler.mqttCli = mqtt.connect('ws://192.168.1.11:8083/mqtt', {
+        ctrler.mqttCli = mqtt.connect(props.url, {
           clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
           username: 'admin',
           password: '59524148chenOP',
