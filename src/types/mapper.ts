@@ -90,12 +90,14 @@ export class TextareaMapper extends BaseMapper {
 export class SelectMapper extends BaseMapper {
   allowClear: boolean
   options: string[] | OpnType[]
+  searchable: boolean
   onDropdown: (open: boolean) => void
 
   constructor() {
     super()
     this.allowClear = false
     this.options = []
+    this.searchable = false
     this.onDropdown = () => undefined
   }
 
@@ -103,6 +105,7 @@ export class SelectMapper extends BaseMapper {
     super.reset()
     this.allowClear = false
     this.options = []
+    this.searchable = false
     this.onDropdown = () => undefined
   }
 }

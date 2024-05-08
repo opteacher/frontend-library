@@ -57,8 +57,8 @@
               ? mapper.chkLabels[1]
               : '是'
             : mapper.chkLabels
-              ? mapper.chkLabels[0]
-              : '否'
+            ? mapper.chkLabels[0]
+            : '否'
         }}
       </template>
       <template v-else-if="mapper.type === 'EditList' || mapper.type === 'UploadFile'">
@@ -124,6 +124,8 @@
         :placeholder="mapper.placeholder || '请选择'"
         :disabled="disabled"
         :allowClear="mapper.allowClear"
+        :show-search="mapper.searchable"
+        :filter-option="filterOption"
         @dropdownVisibleChange="mapper.onDropdown"
         @change="onFieldChanged"
       >
@@ -153,8 +155,8 @@
                 ? mapper.chkLabels[1]
                 : '是'
               : mapper.chkLabels
-                ? mapper.chkLabels[0]
-                : '否'
+              ? mapper.chkLabels[0]
+              : '否'
           }}&nbsp;
           <a-typography-text type="secondary">
             {{ mapper.placeholder || '请确认' }}
@@ -415,5 +417,10 @@ function chkInSlot(suffix?: string) {
 }
 function onVwPwdClick() {
   viewPwd.value = !viewPwd.value
+}
+function filterOption(input: string, option: any) {
+  return props.mapper.searchable
+    ? option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    : true
 }
 </script>
