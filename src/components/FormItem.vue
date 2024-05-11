@@ -246,6 +246,7 @@
         :value="getProp(form, skey)"
         :mapper="mapper"
         :addable="validConds(form, mapper.addable, true)"
+        :edtable="validConds(form, mapper.edtable, true)"
         :delable="validConds(form, mapper.delable, true)"
         @edit="() => mapper.onEdit && mapper.onEdit(form)"
         @delete="

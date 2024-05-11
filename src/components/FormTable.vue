@@ -1,14 +1,14 @@
 <template>
-  <a-space>
-    <a-button v-if="addable" type="primary" @click="onAddClick" :disabled="mapper.disabled">
+  <a-space v-if="addable">
+    <a-button type="primary" @click="onAddClick" :disabled="mapper.disabled">
       新增
     </a-button>
-    <slot name="FormDialog" />
     <a-typography-text type="secondary">
       <InfoCircleOutlined />
       {{ mapper.placeholder || '点击添加' }}
     </a-typography-text>
   </a-space>
+  <slot name="FormDialog" />
   <a-table
     class="mt-1.5"
     v-if="value && value.length"
@@ -43,6 +43,7 @@ const props = defineProps({
   value: { type: Array, required: true },
   mapper: { type: Object, required: true },
   addable: { type: Boolean, default: true },
+  edtable: { type: Boolean, default: true },
   delable: { type: Boolean, default: true }
 })
 const emit = defineEmits(['update:value', 'edit', 'delete'])
@@ -55,7 +56,7 @@ function onRowClick(record: any) {
   props.mapper.emitter.emit('update:visible', {
     show: true,
     object: record,
-    viewOnly: !props.mapper.editable || !props.mapper.disabled
+    viewOnly: !props.edtable
   })
   emit('edit')
 }
@@ -63,6 +64,6 @@ function onDelClick(record: any) {
   emit('delete', record.key, props.value)
 }
 function fmtCols() {
-  return props.mapper.columns.concat([new Column('操作', 'opera', { width: 80 })])
+  return props.mapper.columns.concat(props.delable ? [new Column('操作', 'opera', { width: 80 })] : [])
 }
 </script>

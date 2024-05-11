@@ -161,7 +161,7 @@ export class TableMapper extends BaseMapper {
   onSaved: (record: any, extra?: any) => void
   onDeleted: (key: any, extra?: any) => void
   addable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
-  editable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  edtable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   delable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
 
   constructor() {
@@ -184,7 +184,7 @@ export class TableMapper extends BaseMapper {
       this.emitter.emit('update:visible', false)
     }
     this.addable = true
-    this.editable = true
+    this.edtable = true
     this.delable = true
   }
 
@@ -208,7 +208,7 @@ export class TableMapper extends BaseMapper {
       this.emitter.emit('update:visible', false)
     }
     this.addable = true
-    this.editable = true
+    this.edtable = true
     this.delable = true
   }
 }
