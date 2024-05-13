@@ -368,6 +368,32 @@ export class RadioMapper extends SelectMapper {
   }
 }
 
+export class DateTimeMapper extends BaseMapper {
+  format: string
+  hourStep: number
+  minuteStep: number
+  secondStep: number
+  dsbHours: number[]
+
+  constructor() {
+    super()
+    this.format = 'YYYY/MM/DD HH:mm:ss'
+    this.hourStep = 1
+    this.minuteStep = 1
+    this.secondStep = 1
+    this.dsbHours = []
+  }
+
+  reset() {
+    super.reset()
+    this.format = 'YYYY/MM/DD HH:mm:ss'
+    this.hourStep = 1
+    this.minuteStep = 1
+    this.secondStep = 1
+    this.dsbHours = []
+  }
+}
+
 const mapTypeTemps = {
   Unknown: () => new BaseMapper(),
   Input: () => new InputMapper(),
@@ -386,7 +412,7 @@ const mapTypeTemps = {
   Delable: () => new TableMapper(),
   SelOrIpt: () => new SelOrIptMapper(),
   UploadFile: () => new UploadMapper(),
-  DateTime: () => new BaseMapper(),
+  DateTime: () => new DateTimeMapper(),
   TagList: () => new EdtLstMapper(),
   ListSelect: () => new LstSelMapper(),
   CodeEditor: () => new CdEdtMapper(),

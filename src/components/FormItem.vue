@@ -236,6 +236,15 @@
         v-else-if="mapper.type === 'DateTime'"
         class="w-full"
         show-time
+        :format="mapper.format"
+        :hourStep="mapper.hourStep"
+        :minuteStep="mapper.minuteStep"
+        :secondStep="mapper.secondStep"
+        :disabledTime="
+          () => ({
+            disabledHours: () => mapper.dsbHours
+          })
+        "
         :placeholder="mapper.placeholder || '请选择'"
         :disabled="disabled"
         :value="getProp(form, skey)"
