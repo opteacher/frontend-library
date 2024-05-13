@@ -234,7 +234,7 @@ const records = reactive({
   filters: undefined as any
 })
 const expRowKeys = ref([] as string[])
-const editKey = ref<string>('')
+const editKey = ref<any>('')
 const loading = ref(false)
 const searchState = reactive<Record<string, { content: string; reset: Function }>>({})
 const fmtIeIgnCols = computed(() =>
@@ -385,7 +385,7 @@ function onEditClicked(record?: any) {
   emit('add', record)
   editKey.value = ''
   if (record) {
-    editKey.value = record.key || ''
+    editKey.value = record.key || record.id || record._id || ''
   }
   if (props.emitter) {
     props.emitter.emit('update:visible', {
