@@ -49,6 +49,7 @@
         })
       "
       @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
+      @expand="(expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)"
     >
       <template #customFilterIcon="{ column, filtered }">
         <AntdIcons.SearchOutlined
@@ -195,7 +196,8 @@ const emit = defineEmits([
   'save',
   'after-save',
   'delete',
-  'refresh'
+  'refresh',
+  'expand'
 ])
 const props = defineProps({
   icon: { type: String, default: '' },
