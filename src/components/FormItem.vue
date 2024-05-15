@@ -235,12 +235,12 @@
       <a-date-picker
         v-else-if="mapper.type === 'DateTime'"
         class="w-full"
-        show-time
         :format="mapper.format"
-        :hourStep="mapper.hourStep"
-        :minuteStep="mapper.minuteStep"
-        :secondStep="mapper.secondStep"
-        :disabledTime="
+        :show-time="mapper.showTime"
+        :hour-step="mapper.hourStep"
+        :minute-step="mapper.minuteStep"
+        :second-step="mapper.secondStep"
+        :disabled-time="
           () => ({
             disabledHours: () => mapper.dsbHours
           })

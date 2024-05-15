@@ -370,6 +370,7 @@ export class RadioMapper extends SelectMapper {
 
 export class DateTimeMapper extends BaseMapper {
   format: string
+  showTime: boolean
   hourStep: number
   minuteStep: number
   secondStep: number
@@ -378,6 +379,7 @@ export class DateTimeMapper extends BaseMapper {
   constructor() {
     super()
     this.format = 'YYYY/MM/DD HH:mm:ss'
+    this.showTime = true
     this.hourStep = 1
     this.minuteStep = 1
     this.secondStep = 1
@@ -387,6 +389,7 @@ export class DateTimeMapper extends BaseMapper {
   reset() {
     super.reset()
     this.format = 'YYYY/MM/DD HH:mm:ss'
+    this.showTime = true
     this.hourStep = 1
     this.minuteStep = 1
     this.secondStep = 1
