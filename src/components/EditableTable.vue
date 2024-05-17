@@ -271,8 +271,12 @@ if (props.emitter) {
     fmtColumns(colsState)
   })
   props.emitter.on('search', (keywords: object) => {
-    Object.entries(keywords).map(([key, value]) => {
-      searchState[key] = { content: value, reset: () => console.log() }
+    Object.entries(keywords).map(([key, value]: any) => {
+      if (key in searchState) {
+        searchState[key].content = value
+      } else {
+        searchState[key] = { content: value, reset: () => console.log() }
+      }
     })
   })
   if (!props.editable && !props.addable) {

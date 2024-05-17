@@ -97,7 +97,8 @@ export function compoDftVal(ctype: CompoType) {
     case 'Number':
       return 0
     case 'DateTime':
-      return dayjs()
+    case 'Select':
+      return null
     case 'Checkbox':
     case 'Switch':
       return false
@@ -110,7 +111,6 @@ export function compoDftVal(ctype: CompoType) {
       return []
     case 'Input':
     case 'Password':
-    case 'Select':
     case 'Textarea':
     case 'Delable':
     case 'SelOrIpt':
@@ -170,7 +170,7 @@ export function bsTpDefault(bsTp: BaseTypes) {
     case 'Boolean':
       return false
     case 'DateTime':
-      return dayjs()
+      return null
     case 'Array':
       return []
     case 'Object':

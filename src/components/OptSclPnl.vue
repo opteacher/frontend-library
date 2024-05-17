@@ -7,15 +7,16 @@
         :options="{
           mode: 'log',
           theme: 'default',
-          lineNumbers: false,
+          lineNumbers,
           readOnly: true,
-          scrollbarStyle: 'native'
+          scrollbarStyle: 'native',
+          lineWrapping
         }"
         border
         :keep-cursor-in-end="ctrler.lockBtm"
       />
     </div>
-    <div class="flex justify-between">
+    <div v-if="toolbox" class="flex justify-between">
       <a-space v-if="ctrler.outputing">
         <PlayCircleTwoTone two-tone-color="#52c41a" />
         <span>输出中</span>
@@ -92,7 +93,11 @@ const props = defineProps({
   url: { type: String, default: '' }, // 使用SSE推送
   topic: { type: String, default: '' }, // 使用MQTT推送
   emitter: { type: TinyEmitter, default: null },
-  recvMsg: { type: Function, default: (msg: string) => msg }
+  toolbox: { type: [Boolean, Array], default: true },
+  recvMsg: { type: Function, default: (msg: string) => msg },
+  lineWrapping: { type: Boolean, default: false },
+  lineNumbers: { type: Boolean, default: false },
+  showTime: { type: Boolean, default: false }
 })
 const emit = defineEmits(['before-start', 'after-end'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
@@ -117,7 +122,7 @@ const ctrler = reactive<
   lockBtm: true,
   muVsb: false,
   clrVsb: false,
-  tmVsb: false,
+  tmVsb: props.showTime,
   muItms: [
     {
       key: 'start',
@@ -146,6 +151,7 @@ if (props.emitter) {
   props.emitter.on('clean', () => {
     message.value = []
   })
+  props.emitter.on('message', addMessage)
 }
 
 function onClrScnCick() {

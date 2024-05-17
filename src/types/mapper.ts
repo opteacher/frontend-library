@@ -7,6 +7,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { CompoType, Cond, OpnType } from '.'
 import Column from './column'
 import Field from './field'
+import { Dayjs } from 'dayjs'
 
 export class BaseMapper {
   label: string
@@ -375,6 +376,7 @@ export class DateTimeMapper extends BaseMapper {
   minuteStep: number
   secondStep: number
   dsbHours: number[]
+  dsbDates: (date: Dayjs) => Boolean
 
   constructor() {
     super()
@@ -384,6 +386,7 @@ export class DateTimeMapper extends BaseMapper {
     this.minuteStep = 1
     this.secondStep = 1
     this.dsbHours = []
+    this.dsbDates = () => false
   }
 
   reset() {
@@ -394,6 +397,7 @@ export class DateTimeMapper extends BaseMapper {
     this.minuteStep = 1
     this.secondStep = 1
     this.dsbHours = []
+    this.dsbDates = () => false
   }
 }
 
