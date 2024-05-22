@@ -15,6 +15,36 @@
   >
     <template #itfcTable="{ formState }">
       <a-form-item-rest>
+        <a-form class="mb-2.5" layout="inline">
+          <a-form-item>
+            <template #label>
+              表头行&nbsp;
+              <a-tooltip>
+                <template #title>其下一行即为数据开始行</template>
+                <InfoCircleOutlined />
+              </a-tooltip>
+            </template>
+            <a-input-number :min="-1" :max="formState.totalNum" v-model:value="formState.hdRowNo" />
+          </a-form-item>
+          <a-form-item label="数据行">
+            <a-input-number :min="-1" :max="formState.totalNum" v-model:value="formState.dtRowNo" />
+          </a-form-item>
+          <a-form-item label="绑定参照列">
+            <div class="space-x-2">
+              <a-tooltip v-for="col in dbInf.cols" :key="col.key">
+                <template #title>拖拽到下表列头中绑定</template>
+                <c-button
+                  size="small"
+                  :type="col.key in binds.colors ? binds.colors[col.key] : 'default'"
+                  :draggable="true"
+                  @dragstart="(e: any) => onColDragStart(e, col)"
+                >
+                  {{ col.title }}
+                </c-button>
+              </a-tooltip>
+            </div>
+          </a-form-item>
+        </a-form>
         <a-table
           v-if="formState.worksheet"
           :columns="genDspColumns(formState as Batch)"
@@ -26,18 +56,26 @@
           bordered
         >
           <template #headerCell="{ column }">
-            <a-space>
+            <div
+              class="p-2"
+              :class="{
+                'bg-slate-600': dbInf.dragon === column.key,
+                'text-white': dbInf.dragon === column.key || column.key in binds.colors
+              }"
+              :style="
+                column.key in binds.colors
+                  ? {
+                      'background-color': clrMap[binds.colors[column.key]]
+                    }
+                  : undefined
+              "
+              @drop="e => onColBindDrop(e, column)"
+              @dragenter="() => onSetDragonCol(column)"
+              @dragleave="() => onSetDragonCol()"
+              @dragover="e => e.preventDefault()"
+            >
               {{ column.title }}
-              <enter-outlined :rotate="-90" />
-            </a-space>
-            <a-select
-              class="mb-2"
-              size="small"
-              placeholder="等于……"
-              allowClear
-              :options="cols.map((col: Column) => ({ label: col.title, value: col.dataIndex }))"
-              @select="(selected: string) => onAsIdenSelect(formState, selected, column.dataIndex)"
-            />
+            </div>
           </template>
           <template #footer>.....</template>
         </a-table>
@@ -55,7 +93,7 @@
       </a-form-item-rest>
       <a-checkbox-group
         v-model:value="formState.filterCols"
-        :options="cols.map((col: any) => ({ label: col.title, value: col.dataIndex }))"
+        :options="dbInf.cols.map((col: any) => ({ label: col.title, value: col.dataIndex }))"
       />
     </template>
   </FormDialog>
@@ -66,65 +104,78 @@ import Mapper from '../types/mapper'
 import { onMounted, reactive, watch } from 'vue'
 import FormDialog from './FormDialog.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { ExportOutlined, EnterOutlined } from '@ant-design/icons-vue'
+import { ExportOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
-import { read } from 'xlsx'
-import { Cond } from '../types'
-import { getDftPjt, upperFirst } from '../utils'
+import { read, utils } from 'xlsx'
+import { Color, Cond, clrMap, colors } from '../types'
+import { getDftPjt } from '../utils'
 import { genDspColumns, genDspRecords } from '../utils'
 import Batch from '../types/batch'
 
 const emit = defineEmits(['submit'])
 const props = defineProps({
-  columns: { type: Array, required: true },
+  columns: { type: Array as () => Column[], required: true },
   copyFun: { type: Function, required: true }
 })
 const emitter = new Emitter()
-const cols = reactive(props.columns.map(col => Column.copy(col)))
+const dbInf = reactive<{
+  cols: Column[]
+  dragon: string
+}>({
+  cols: props.columns,
+  dragon: ''
+})
 const allChk = reactive({
   indeterminate: true,
   checkAll: true
+})
+const binds = reactive<{
+  // Record<string(excel表的列索引), string(数据库表的列索引)>
+  mapper: Record<string, string>
+  // Record<string(excel表的列索引/数据库表的列索引), Color(颜色)>
+  colors: Record<string, Color>
+}>({
+  mapper: {},
+  colors: {}
 })
 
 onMounted(resetAllChk)
 watch(
   () => props.columns.length,
   () => {
-    cols.splice(0, cols.length, ...props.columns.map(col => Column.copy(col)))
+    dbInf.cols.splice(0, dbInf.cols.length, ...props.columns)
     resetAllChk()
   }
 )
 
 function resetAllChk() {
-  emitter.emit('update:dprop', { filterCols: cols.map((col: Column) => col.dataIndex) })
+  emitter.emit('update:dprop', { filterCols: dbInf.cols.map(col => col.dataIndex) })
   allChk.checkAll = true
   allChk.indeterminate = false
 }
-function onAsIdenSelect(formState: any, selected: string, prop: string) {
-  for (const [key, val] of Object.entries(formState)) {
-    if (key.startsWith('col') && val === prop) {
-      formState[key] = ''
-      break
-    }
-  }
-  formState[`col${upperFirst(selected)}`] = prop
-  cols.splice(
-    0,
-    cols.length,
-    ...(props.columns as Column[]).filter(
-      (col: Column) => !formState[`col${upperFirst(col.dataIndex)}`]
-    )
-  )
-}
 function onAllChkChange(e: any) {
-  emitter.emit('update:data', {
-    filterCols: e.target.checked ? cols.map((col: Column) => col.dataIndex) : []
+  emitter.emit('update:dprop', {
+    filterCols: e.target.checked ? dbInf.cols.map(col => col.dataIndex) : []
   })
 }
 async function onSubmit(info: any, next: () => void) {
-  info.ttlMap = Object.fromEntries(props.columns.map((col: any) => [col.dataIndex, col.title]))
+  info.ttlMap = Object.fromEntries(props.columns.map(col => [col.dataIndex, col.title]))
   emit('submit', info)
   next()
+}
+function onColDragStart(e: DragEvent, col: Column) {
+  e.dataTransfer?.setData('text/plain', col.key)
+}
+function onColBindDrop(e: DragEvent, col: Column) {
+  dbInf.dragon = ''
+  const exCol = col.key
+  const dbCol = e.dataTransfer?.getData('text/plain') as string
+  binds.mapper[exCol] = dbCol
+  binds.colors[exCol] = colors[Math.floor(Math.random() * colors.length)]
+  binds.colors[dbCol] = binds.colors[exCol]
+}
+function onSetDragonCol(column?: Column) {
+  dbInf.dragon = column ? column.key : ''
 }
 
 const mapper = new Mapper({
@@ -142,28 +193,12 @@ const mapper = new Mapper({
         reader.onload = () => {
           const workbook = read(reader.result)
           form.worksheet = workbook.Sheets[workbook.SheetNames[0]]
+          const allData = utils.sheet_to_json<any[]>(form.worksheet, { header: form.hdRowNo })
+          form.totalNum = allData.length
           form.loading = false
         }
       }
     }
-  },
-  hdRowNo: {
-    label: '标题行号',
-    type: 'Number',
-    iptType: 'number',
-    display: [
-      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
-      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
-    ]
-  },
-  dtRowNo: {
-    label: '数据开始行号',
-    type: 'Number',
-    iptType: 'number',
-    display: [
-      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
-      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
-    ]
   },
   itfcTable: {
     label: '指定对照列',

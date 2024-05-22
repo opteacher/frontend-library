@@ -13,13 +13,13 @@
         <template v-if="addable">
           <a-space v-if="imExport">
             <BchExpBox
-              :columns="colsState"
+              :columns="colsState.filter(col => col.dataIndex !== 'opera')"
               :copyFun="genCpyFun(BchExport, () => ({ column: '', compare: '=' }))"
               @submit="(info: any) => onBatchSubmit(info, 'export')"
             />
             <BchImpBox
               :upload-url="(imExport as any).uploadUrl"
-              :columns="colsState"
+              :columns="colsState.filter(col => col.dataIndex !== 'opera')"
               :ignCols="fmtIeIgnCols"
               :copyFun="genCpyFun(BchImport, () => '')"
               @submit="(info: any) => onBatchSubmit(info, 'import')"

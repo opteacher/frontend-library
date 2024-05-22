@@ -6,6 +6,7 @@ export default class Batch {
   uploading: boolean
   worksheet: WorkSheet | null
   hdRowNo: number
+  totalNum: number
   dtRowNo: number
 
   constructor() {
@@ -13,6 +14,7 @@ export default class Batch {
     this.uploading = false
     this.worksheet = null
     this.hdRowNo = 1
+    this.totalNum = 0
     this.dtRowNo = 2
   }
 
@@ -21,6 +23,7 @@ export default class Batch {
     this.uploading = false
     this.worksheet = null
     this.hdRowNo = 1
+    this.totalNum = 0
     this.dtRowNo = 2
   }
 

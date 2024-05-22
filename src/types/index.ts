@@ -182,3 +182,34 @@ export function bsTpDefault(bsTp: BaseTypes) {
       return undefined
   }
 }
+
+export const colors: Color[] = [
+  'warning',
+  'error',
+  'success',
+  'primary',
+  'cyan',
+  'black',
+  'purple',
+  'pink',
+  'red',
+  'orange',
+  'green',
+  'blue'
+]
+
+export const clrMap = {
+  warning: '#ff9900',
+  error: '#ff3300',
+  success: '#00cc66',
+  primary: '#2db7f5',
+  cyan: '#04c1e1',
+  black: '#131313',
+  purple: '#b500fe',
+  pink: '#c41d7f',
+  red: '#cf1322',
+  orange: '#d46b08',
+  green: '#389e0d',
+  blue: '#0958d9'
+}
+export type Color = keyof typeof clrMap

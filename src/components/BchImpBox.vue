@@ -29,7 +29,7 @@
               @change="reloadExcel"
             />
           </a-form-item>
-          <a-form-item label="绑定列">
+          <a-form-item label="绑定参照列">
             <div class="space-x-2">
               <a-tooltip v-for="col in dbInf.cols" :key="col.key">
                 <template #title>拖拽到下表列头中绑定</template>
@@ -112,7 +112,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { reactive, watch } from 'vue'
 import { WorkBook, read, utils } from 'xlsx'
 
-import { Cond } from '../types'
+import { Color, Cond, colors, clrMap } from '../types'
 import Column from '../types/column'
 import Mapper from '../types/mapper'
 import { getDftPjt } from '../utils'
@@ -120,7 +120,7 @@ import FormDialog from './FormDialog.vue'
 
 const props = defineProps({
   uploadUrl: { type: String, default: `/${getDftPjt()}/api/v1/excel/upload` },
-  columns: { type: Array, required: true },
+  columns: { type: Array as () => Column[], required: true },
   ignCols: { type: Array, default: () => [] },
   copyFun: { type: Function, required: true }
 })
@@ -131,7 +131,7 @@ const dbInf = reactive<{
   cols: Column[]
   dragon: string
 }>({
-  cols: props.columns.map(col => Column.copy(col)),
+  cols: props.columns,
   dragon: ''
 })
 const excInf = reactive<{
@@ -164,7 +164,7 @@ const binds = reactive<{
 watch(
   () => [...props.columns],
   () => {
-    dbInf.cols = props.columns as Column[]
+    dbInf.cols = props.columns
   }
 )
 
@@ -213,35 +213,6 @@ function onSetDragonCol(column?: Column) {
   dbInf.dragon = column ? column.key : ''
 }
 
-const colors: Color[] = [
-  'warning',
-  'error',
-  'success',
-  'primary',
-  'cyan',
-  'black',
-  'purple',
-  'pink',
-  'red',
-  'orange',
-  'green',
-  'blue'
-]
-const clrMap = {
-  warning: '#ff9900',
-  error: '#ff3300',
-  success: '#00cc66',
-  primary: '#2db7f5',
-  cyan: '#04c1e1',
-  black: '#131313',
-  purple: '#b500fe',
-  pink: '#c41d7f',
-  red: '#cf1322',
-  orange: '#d46b08',
-  green: '#389e0d',
-  blue: '#0958d9'
-}
-type Color = keyof typeof clrMap
 const mapper = new Mapper({
   file: {
     label: '上传在案资产',
