@@ -460,21 +460,13 @@ async function onBatchSubmit(info: any, opera: 'import' | 'export') {
   await refresh()
 }
 function genCpyFun<B extends Batch>(b: { new (): B; copy: Function }, genDft: () => any) {
-  return (src: any, tgt?: any, force = false) => {
-    const devKeys = Object.keys(props.newFun())
-    tgt =
-      tgt ||
-      Object.assign(
-        new b(),
-        Object.fromEntries(devKeys.map((key: string) => [`col${upperFirst(key)}`, genDft()]))
+  return () =>
+    Object.assign(
+      new b(),
+      Object.fromEntries(
+        Object.keys(props.newFun()).map((key: string) => [`col${upperFirst(key)}`, genDft()])
       )
-    b.copy(src, tgt)
-    for (const key of devKeys) {
-      const colKey = `col${upperFirst(key)}`
-      tgt[colKey] = force ? src[colKey] : src[colKey] || tgt[colKey]
-    }
-    return tgt
-  }
+    )
 }
 function onDoSearch(
   selectedKeys: string[],

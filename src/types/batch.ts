@@ -1,3 +1,4 @@
+import { gnlCpy } from '@/utils'
 import { WorkSheet } from 'xlsx'
 
 export default class Batch {
@@ -24,10 +25,12 @@ export default class Batch {
   }
 
   static copy(src: any, tgt?: Batch, force = false): Batch {
-    tgt = tgt || new Batch()
-    tgt.file = force ? src.file : src.file || tgt.file
-    tgt.hdRowNo = force ? src.hdRowNo : src.hdRowNo || tgt.hdRowNo
-    tgt.dtRowNo = force ? src.dtRowNo : src.dtRowNo || tgt.dtRowNo
+    tgt = gnlCpy(Batch, src, tgt, { force, ignProps: ['worksheet'] })
+    if (src.worksheet) {
+      tgt.worksheet = src.worksheet
+    } else if (force) {
+      tgt.worksheet = null
+    }
     return tgt
   }
 }

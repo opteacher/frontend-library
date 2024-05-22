@@ -1,3 +1,4 @@
+import { gnlCpy } from '@/utils'
 import Batch from './batch'
 
 export type CmpTyp = '=' | '!=' | '>' | '<' | '>=' | '<='
@@ -19,10 +20,6 @@ export default class BchEpt extends Batch {
   }
 
   static copy(src: any, tgt?: BchEpt, force = false): BchEpt {
-    tgt = tgt || new BchEpt()
-    Batch.copy(src, tgt)
-    tgt.filterCols = force ? src.filterCols : src.filterCols || tgt.filterCols
-    tgt.ttlMap = force ? src.ttlMap : src.ttlMap || tgt.ttlMap
-    return tgt
+    return gnlCpy(BchEpt, src, tgt, { force, baseCpy: Batch.copy })
   }
 }

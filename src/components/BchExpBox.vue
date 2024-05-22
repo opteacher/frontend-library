@@ -1,17 +1,17 @@
 <template>
-  <a-button @click="visible = true">
+  <a-button @click="() => emitter.emit('update:visible', true)">
     <template #icon><export-outlined /></template>
     批量导出
   </a-button>
   <FormDialog
     title="导出登记在案的资产"
-    v-model:visible="visible"
-    :copy="copyFun"
-    :emitter="emitter"
-    :mapper="mapper"
     width="80vw"
     :lblWid="3"
+    :newFun="copyFun"
+    :emitter="emitter"
+    :mapper="mapper"
     @submit="onSubmit"
+    @update:visible="resetAllChk"
   >
     <template #itfcTable="{ formState }">
       <a-form-item-rest>
@@ -61,103 +61,78 @@
   </FormDialog>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup name="BchExpBox">
 import Mapper from '../types/mapper'
-import { defineComponent, onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, watch } from 'vue'
 import FormDialog from './FormDialog.vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { ExportOutlined, EnterOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
 import { read } from 'xlsx'
 import { Cond } from '../types'
-import { upperFirst } from '../utils'
+import { getDftPjt, upperFirst } from '../utils'
 import { genDspColumns, genDspRecords } from '../utils'
 import Batch from '../types/batch'
 
-export default defineComponent({
-  name: 'BchExpBox',
-  components: {
-    FormDialog,
-    ExportOutlined,
-    EnterOutlined
-  },
-  emits: ['submit'],
-  props: {
-    columns: { type: Array, required: true },
-    copyFun: { type: Function, required: true }
-  },
-  setup(props, { emit }) {
-    const visible = ref(false)
-    const emitter = new Emitter()
-    const cols = reactive(props.columns.map(col => Column.copy(col)))
-    const allChk = reactive({
-      indeterminate: true,
-      checkAll: true
-    })
+const emit = defineEmits(['submit'])
+const props = defineProps({
+  columns: { type: Array, required: true },
+  copyFun: { type: Function, required: true }
+})
+const emitter = new Emitter()
+const cols = reactive(props.columns.map(col => Column.copy(col)))
+const allChk = reactive({
+  indeterminate: true,
+  checkAll: true
+})
 
-    onMounted(resetAllChk)
-    watch(
-      () => props.columns.length,
-      () => {
-        cols.splice(0, cols.length, ...props.columns.map(col => Column.copy(col)))
-        resetAllChk()
-      }
-    )
-    watch(() => visible.value, resetAllChk)
+onMounted(resetAllChk)
+watch(
+  () => props.columns.length,
+  () => {
+    cols.splice(0, cols.length, ...props.columns.map(col => Column.copy(col)))
+    resetAllChk()
+  }
+)
 
-    function resetAllChk() {
-      emitter.emit('update:data', { filterCols: cols.map((col: Column) => col.dataIndex) })
-      allChk.checkAll = true
-      allChk.indeterminate = false
-    }
-    function onAsIdenSelect(formState: any, selected: string, prop: string) {
-      for (const [key, val] of Object.entries(formState)) {
-        if (key.startsWith('col') && val === prop) {
-          formState[key] = ''
-          break
-        }
-      }
-      formState[`col${upperFirst(selected)}`] = prop
-      cols.splice(
-        0,
-        cols.length,
-        ...(props.columns as Column[]).filter(
-          (col: Column) => !formState[`col${upperFirst(col.dataIndex)}`]
-        )
-      )
-    }
-    function onAllChkChange(e: any) {
-      emitter.emit('update:data', {
-        filterCols: e.target.checked ? cols.map((col: Column) => col.dataIndex) : []
-      })
-    }
-    async function onSubmit(info: any, next: () => void) {
-      info.ttlMap = Object.fromEntries(props.columns.map((col: any) => [col.dataIndex, col.title]))
-      emit('submit', info)
-      next()
-    }
-    return {
-      visible,
-      emitter,
-      mapper,
-      cols,
-      allChk,
-
-      genDspColumns,
-      genDspRecords,
-      onAsIdenSelect,
-      onAllChkChange,
-      onSubmit
+function resetAllChk() {
+  emitter.emit('update:dprop', { filterCols: cols.map((col: Column) => col.dataIndex) })
+  allChk.checkAll = true
+  allChk.indeterminate = false
+}
+function onAsIdenSelect(formState: any, selected: string, prop: string) {
+  for (const [key, val] of Object.entries(formState)) {
+    if (key.startsWith('col') && val === prop) {
+      formState[key] = ''
+      break
     }
   }
-})
+  formState[`col${upperFirst(selected)}`] = prop
+  cols.splice(
+    0,
+    cols.length,
+    ...(props.columns as Column[]).filter(
+      (col: Column) => !formState[`col${upperFirst(col.dataIndex)}`]
+    )
+  )
+}
+function onAllChkChange(e: any) {
+  emitter.emit('update:data', {
+    filterCols: e.target.checked ? cols.map((col: Column) => col.dataIndex) : []
+  })
+}
+async function onSubmit(info: any, next: () => void) {
+  info.ttlMap = Object.fromEntries(props.columns.map((col: any) => [col.dataIndex, col.title]))
+  emit('submit', info)
+  next()
+}
 
 const mapper = new Mapper({
   file: {
     label: '上传参照文档',
     type: 'UploadFile',
     desc: '没有参照文档，则导出所有设备',
-    path: '/police-assets/api/v1/excel/upload',
+    path: `/${getDftPjt()}/api/v1/excel/upload`,
     headers: { authorization: `Bearer ${localStorage.getItem('token')}` },
     onChange: (form: any, info: any) => {
       form.loading = true
