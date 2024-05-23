@@ -1,4 +1,4 @@
-import { gnlCpy } from '@/utils'
+import { gnlCpy } from '../utils'
 import { WorkSheet } from 'xlsx'
 
 export default class Batch {

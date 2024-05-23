@@ -1,4 +1,4 @@
-import { gnlCpy } from '@/utils'
+import { gnlCpy } from '../utils'
 import Batch from './batch'
 
 export default class BchIpt extends Batch {
