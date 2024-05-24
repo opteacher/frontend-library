@@ -54,7 +54,7 @@ const iconsMapper = {
   'ant-design': antdIcons
 }
 const emit = defineEmits(['update:icon'])
-const props = defineProps({
+defineProps({
   icon: { type: String, default: '' }
 })
 const visible = ref(false)

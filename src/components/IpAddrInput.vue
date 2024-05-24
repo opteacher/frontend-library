@@ -5,6 +5,7 @@
       ref="ipSecA"
       v-model:value="ipAddr[0]"
       placeholder="输入A段"
+      :size="size"
       :maxlength="3"
       :disabled="disabled"
       @focus="onFocus"
@@ -15,6 +16,7 @@
       <a-input
         class="w-6 p-0 text-center border-l-0 border-r-0 pointer-events-none bg-white font-bold"
         placeholder="."
+        :size="size"
         disabled
       />
       <a-input
@@ -22,6 +24,7 @@
         ref="ipSecB"
         v-model:value="ipAddr[1]"
         placeholder="输入B段"
+        :size="size"
         :maxlength="3"
         :disabled="disabled"
         @focus="onFocus"
@@ -30,6 +33,7 @@
       <a-input
         class="w-6 p-0 text-center border-l-0 border-r-0 pointer-events-none bg-white font-bold"
         placeholder="."
+        :size="size"
         disabled
       />
       <a-input
@@ -37,6 +41,7 @@
         ref="ipSecC"
         v-model:value="ipAddr[2]"
         placeholder="输入C段"
+        :size="size"
         :maxlength="3"
         :disabled="disabled"
         @focus="onFocus"
@@ -45,6 +50,7 @@
       <a-input
         class="w-6 p-0 text-center border-l-0 border-r-0 pointer-events-none bg-white font-bold"
         placeholder="."
+        :size="size"
         disabled
       />
       <a-input
@@ -52,6 +58,7 @@
         ref="ipSecD"
         v-model:value="ipAddr[3]"
         placeholder="输入D段"
+        :size="size"
         :maxlength="3"
         :disabled="disabled"
         @focus="onFocus"
@@ -63,11 +70,12 @@
 </template>
 
 <script lang="ts" setup name="IpAddrInput">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { PropType, onMounted, reactive, ref, watch } from 'vue'
 
 const emit = defineEmits(['update:ip', 'press:enter'])
 const props = defineProps({
   ip: { type: String, required: true },
+  size: { type: String as PropType<'small' | 'middle' | 'large'>, default: 'middle' },
   disabled: { type: Boolean, default: false }
 })
 type IpType = [number, number, number, number]

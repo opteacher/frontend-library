@@ -193,8 +193,8 @@ async function startListen() {
     ctrler.outputing = true
     addMessage('等待任务开启……')
     ctrler.mqttCli?.on('connect', () => addMessage('开始任务……'))
-    ctrler.mqttCli?.on('error', e => addMessage('[ERROR]' + JSON.stringify(e)))
-    ctrler.mqttCli?.on('message', async (topic: string, msg) => {
+    ctrler.mqttCli?.on('error', (e: any) => addMessage('[ERROR]' + JSON.stringify(e)))
+    ctrler.mqttCli?.on('message', async (topic: string, msg: any) => {
       if (topic === props.topic) {
         addMessage(msg.toString())
       }
