@@ -1,6 +1,6 @@
 import { message } from 'ant-design-vue'
 import axios, { AxiosRequestConfig } from 'axios'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import qs from 'qs'
 
 import { Cond } from './types'
