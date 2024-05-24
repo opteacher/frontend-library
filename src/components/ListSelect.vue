@@ -27,6 +27,7 @@
           </a-list-item-meta>
           <template #actions>
             <a-checkbox
+              :disabled="disabled"
               :checked="value.includes(option.key)"
               @change="(e: any) => onItemChecked(e.target.checked, option.key)"
             />
@@ -44,7 +45,8 @@ import { ref, watch } from 'vue'
 const props = defineProps({
   value: { type: Array, default: () => [] },
   options: { type: Array, default: () => [] },
-  height: { type: Number, default: 200 }
+  height: { type: Number, default: 200 },
+  disabled: { type: Boolean, default: false }
 })
 const emit = defineEmits(['update:value'])
 const valState = ref(props.value)

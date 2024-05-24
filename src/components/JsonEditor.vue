@@ -9,6 +9,7 @@ import { onMounted, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   value: { type: Object, required: true },
+  disabled: { type: Boolean, default: false },
   mode: {
     type: String,
     default: 'text',

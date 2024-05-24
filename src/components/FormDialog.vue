@@ -7,13 +7,18 @@
     @cancel="onCclClick"
   >
     <template #title>
-      {{ title }}
-      <a-button v-if="operable" type="text" @click="viewOnly = !viewOnly">
-        <template #icon>
-          <FormOutlined v-if="viewOnly" />
-          <EyeOutlined v-else />
-        </template>
-      </a-button>
+      <a-space align="baseline">
+        <keep-alive v-if="icon">
+          <component :is="iconState" v-bind="{ class: 'text-xl' }" />
+        </keep-alive>
+        {{ title }}
+        <a-button v-if="operable" type="text" @click="viewOnly = !viewOnly">
+          <template #icon>
+            <antdIcons.FormOutlined v-if="viewOnly" />
+            <antdIcons.EyeOutlined v-else />
+          </template>
+        </a-button>
+      </a-space>
     </template>
     <template #footer>
       <template v-if="$slots['footer']">
@@ -46,6 +51,7 @@
           :emitter="value.emitter"
           :newFun="value.newFun"
           :object="value.editing"
+          :operable="value.editable"
           @submit="(form: any, next: Function) => onFormSubmit(key, value, form, next)"
         />
       </template>
@@ -61,13 +67,15 @@
 
 <script lang="ts" setup name="FormDialog">
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import * as antdIcons from '@ant-design/icons-vue/lib/icons'
 import Mapper from '../types/mapper'
 import { getProp, setProp } from '../utils'
 import FormGroup from './FormGroup.vue'
-import { EyeOutlined, FormOutlined } from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, markRaw, Raw } from 'vue'
+
+type AntdIcons = keyof typeof antdIcons | ''
 
 const emit = defineEmits(['initialize', 'update:visible', 'update:vwOnly', 'submit'])
 const props = defineProps({
@@ -77,6 +85,7 @@ const props = defineProps({
   lblWid: { type: Number, default: 4 },
   lblAlgn: { type: String, default: 'right' },
   title: { type: String, default: 'Form Dialog' },
+  icon: { type: String, default: '' },
   newFun: { type: Function, default: () => ({}) },
   object: { type: Object, default: null },
   mapper: { type: Mapper, required: true },
@@ -84,6 +93,7 @@ const props = defineProps({
   operable: { type: Boolean, default: false }
 })
 const vsbState = ref<boolean>(props.visible)
+const iconState = ref<Raw<AntdIcons>>('')
 const editable = ref(true)
 const viewOnly = ref(false)
 const okLoading = ref(false)
@@ -152,6 +162,9 @@ if (props.emitter) {
 }
 onMounted(() => {
   emit('initialize')
+  if (props.icon) {
+    iconState.value = markRaw(antdIcons[props.icon as keyof typeof antdIcons]) as any
+  }
 })
 watch(
   () => props.visible,

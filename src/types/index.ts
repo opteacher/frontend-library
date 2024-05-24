@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getProperty } from '../utils'
-import dayjs from 'dayjs'
 
 export const compares = {
   '=': '等于',
@@ -97,7 +96,8 @@ export function compoDftVal(ctype: CompoType) {
     case 'Number':
       return 0
     case 'DateTime':
-      return dayjs()
+    case 'Select':
+      return null
     case 'Checkbox':
     case 'Switch':
       return false
@@ -110,7 +110,6 @@ export function compoDftVal(ctype: CompoType) {
       return []
     case 'Input':
     case 'Password':
-    case 'Select':
     case 'Textarea':
     case 'Delable':
     case 'SelOrIpt':
@@ -170,7 +169,7 @@ export function bsTpDefault(bsTp: BaseTypes) {
     case 'Boolean':
       return false
     case 'DateTime':
-      return dayjs()
+      return null
     case 'Array':
       return []
     case 'Object':
@@ -182,3 +181,34 @@ export function bsTpDefault(bsTp: BaseTypes) {
       return undefined
   }
 }
+
+export const colors: Color[] = [
+  'warning',
+  'error',
+  'success',
+  'primary',
+  'cyan',
+  'black',
+  'purple',
+  'pink',
+  'red',
+  'orange',
+  'green',
+  'blue'
+]
+
+export const clrMap = {
+  warning: '#ff9900',
+  error: '#ff3300',
+  success: '#00cc66',
+  primary: '#2db7f5',
+  cyan: '#04c1e1',
+  black: '#131313',
+  purple: '#b500fe',
+  pink: '#c41d7f',
+  red: '#cf1322',
+  orange: '#d46b08',
+  green: '#389e0d',
+  blue: '#0958d9'
+}
+export type Color = keyof typeof clrMap

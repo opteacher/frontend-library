@@ -1,4 +1,5 @@
-import Batch from "./batch";
+import { gnlCpy } from '../utils'
+import Batch from './batch'
 
 export default class BchIpt extends Batch {
   boolMapper: { TRUE: string; FALSE: string }
@@ -17,10 +18,6 @@ export default class BchIpt extends Batch {
   }
 
   static copy(src: any, tgt?: BchIpt, force = false): BchIpt {
-    tgt = tgt || new BchIpt()
-    Batch.copy(src, tgt)
-    tgt.boolMapper = force ? src.boolMapper : src.boolMapper || tgt.boolMapper
-    tgt.dtTmFormat = force ? src.dtTmFormat : src.dtTmFormat || tgt.dtTmFormat
-    return tgt
+    return gnlCpy(BchIpt, src, tgt, { force, baseCpy: Batch.copy })
   }
 }

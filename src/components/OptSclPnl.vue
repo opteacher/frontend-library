@@ -7,15 +7,16 @@
         :options="{
           mode: 'log',
           theme: 'default',
-          lineNumbers: false,
+          lineNumbers,
           readOnly: true,
-          scrollbarStyle: 'native'
+          scrollbarStyle: 'native',
+          lineWrapping
         }"
         border
         :keep-cursor-in-end="ctrler.lockBtm"
       />
     </div>
-    <div class="flex justify-between">
+    <div v-if="toolbox" class="flex justify-between">
       <a-space v-if="ctrler.outputing">
         <PlayCircleTwoTone two-tone-color="#52c41a" />
         <span>输出中</span>
@@ -81,37 +82,47 @@ import {
   CopyOutlined,
   LoadingOutlined
 } from '@ant-design/icons-vue'
-import { rmvStartsOf, setProp } from '../utils'
+import { rmvStartsOf, setProp, until } from '../utils'
 import { message as msgBox } from 'ant-design-vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { TinyEmitter } from 'tiny-emitter'
 import Codemirror, { createLogMark, createTitle } from 'codemirror-editor-vue3'
+import mqtt from 'mqtt'
 
 const props = defineProps({
-  url: { type: String, required: true },
-  emitter: { type: TinyEmitter, default: null }
+  url: { type: String, default: '' }, // 使用SSE推送
+  topic: { type: String, default: '' }, // 使用MQTT推送
+  emitter: { type: TinyEmitter, default: null },
+  toolbox: { type: [Boolean, Array], default: true },
+  recvMsg: { type: Function, default: (msg: string) => msg },
+  lineWrapping: { type: Boolean, default: false },
+  lineNumbers: { type: Boolean, default: false },
+  showTime: { type: Boolean, default: false }
 })
-const emit = defineEmits(['before-start', 'after-end', 'recv-msg'])
+const emit = defineEmits(['before-start', 'after-end'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
-const ctrler = reactive<{
-  outputing: boolean
-  lockBtm: boolean
-  muVsb: boolean
-  clrVsb: boolean
-  muItms: {
-    key: string
-    icon: () => VNode
-    label: string
-    title: string
-  }[]
-  tmVsb: boolean
-  ess?: EventSource
-}>({
+const ctrler = reactive<
+  {
+    outputing: boolean
+    lockBtm: boolean
+    muVsb: boolean
+    clrVsb: boolean
+    muItms: {
+      key: string
+      icon: () => VNode
+      label: string
+      title: string
+    }[]
+    tmVsb: boolean
+    ess?: EventSource
+    mqttCli?: mqtt.MqttClient
+  } & Record<string, any>
+>({
   outputing: false,
   lockBtm: true,
   muVsb: false,
   clrVsb: false,
-  tmVsb: false,
+  tmVsb: props.showTime,
   muItms: [
     {
       key: 'start',
@@ -140,19 +151,20 @@ if (props.emitter) {
   props.emitter.on('clean', () => {
     message.value = []
   })
+  props.emitter.on('message', addMessage)
 }
 
 function onClrScnCick() {
   message.value = []
   ctrler.clrVsb = false
 }
-function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
+async function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
   switch (key) {
     case 'start':
-      startListen()
+      await startListen()
       break
     case 'stop':
-      stopListen()
+      await stopListen()
       break
     case 'copy':
       navigator.clipboard.writeText(fmtMessage())
@@ -161,38 +173,60 @@ function onCtrlClick({ key }: { key: 'start' | 'stop' | 'copy' }) {
   }
   ctrler.muVsb = false
 }
-function startListen() {
+async function startListen() {
   emit('before-start')
-  ctrler.ess = new EventSource(props.url)
-  ctrler.outputing = true
-  addMessage('等待任务开启……')
-  ctrler.ess.addEventListener('open', () => {
-    addMessage('开始任务……')
-  })
-  ctrler.ess.addEventListener('message', e => {
-    let msg = e.data
-    emit('recv-msg', {
-      message: e.data,
-      next: (res: string) => {
-        msg = res || e.data
+  if (props.topic) {
+    await until(() => {
+      try {
+        ctrler.mqttCli = mqtt.connect(props.url, {
+          clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
+          username: 'admin',
+          password: '59524148chenOP',
+          clean: true
+        })
+      } catch(e) {
+        return Promise.resolve(false)
+      }
+      return Promise.resolve(true)
+    })
+    ctrler.mqttCli?.subscribe(props.topic, { qos: 0 })
+    ctrler.outputing = true
+    addMessage('等待任务开启……')
+    ctrler.mqttCli?.on('connect', () => addMessage('开始任务……'))
+    ctrler.mqttCli?.on('error', e => addMessage('[ERROR]' + JSON.stringify(e)))
+    ctrler.mqttCli?.on('message', async (topic: string, msg) => {
+      if (topic === props.topic) {
+        addMessage(msg.toString())
       }
     })
-    addMessage(msg)
-  })
-  // 服务器端完成任务后可激活stop事件停止输出
-  ctrler.ess.addEventListener('stop', stopListen)
-  ctrler.ess.addEventListener('error', e => {
-    addMessage('[ERROR]' + JSON.stringify(e))
-  })
+  } else {
+    ctrler.ess = new EventSource(props.url)
+    ctrler.outputing = true
+    addMessage('等待任务开启……')
+    ctrler.ess.addEventListener('open', () => addMessage('开始任务……'))
+    ctrler.ess.addEventListener('message', e => addMessage(e.data))
+    // 服务器端完成任务后可激活stop事件停止输出
+    ctrler.ess.addEventListener('stop', stopListen)
+    ctrler.ess.addEventListener('error', e => addMessage('[ERROR]' + JSON.stringify(e)))
+  }
 }
-function stopListen() {
+async function stopListen() {
   addMessage('停止任务……')
-  ctrler.ess?.close()
+  if (ctrler.mqttCli?.connected) {
+    await ctrler.mqttCli?.unsubscribeAsync(props.topic, { qos: 0 })
+    await ctrler.mqttCli?.endAsync()
+  }
+  if (ctrler.ess?.readyState) {
+    ctrler.ess?.close()
+  }
   ctrler.outputing = false
   emit('after-end')
 }
 function addMessage(content: string) {
-  message.value.push({ content, time: dayjs().add(8, 'hour') })
+  message.value.push({
+    content: props.recvMsg(content),
+    time: dayjs().add(8, 'hour')
+  })
 }
 // 在行消息前放置：[INFO]、[ERROR]、[WARN]、[TITLE]来改变消息样式（改变的同时会去掉这个前缀），默认不做修饰
 function fmtMessage() {

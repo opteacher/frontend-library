@@ -7,6 +7,7 @@
   <!-- text type -->
   <template v-else-if="typeof text === 'undefined' || text === null">-</template>
   <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
+  <template v-else-if="text instanceof Array">{{ text.join(', ') }}</template>
   <!-- mapper type -->
   <template v-else-if="mapper.type === 'Select'">
     {{
@@ -32,7 +33,7 @@ import Cell, { Cells } from '../types/cell'
 
 const props = defineProps({
   cell: { type: Cells, required: true },
-  text: { type: String, required: true },
+  text: { type: [String, Boolean, Array], required: true },
   selected: { type: Boolean, default: false },
   mapper: { type: Object, default: () => ({}) },
   record: { type: Object, default: null },

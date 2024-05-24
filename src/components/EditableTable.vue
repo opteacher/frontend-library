@@ -13,13 +13,13 @@
         <template v-if="addable">
           <a-space v-if="imExport">
             <BchExpBox
-              :columns="colsState"
+              :columns="colsState.filter(col => col.dataIndex !== 'opera')"
               :copyFun="genCpyFun(BchExport, () => ({ column: '', compare: '=' }))"
               @submit="(info: any) => onBatchSubmit(info, 'export')"
             />
             <BchImpBox
               :upload-url="(imExport as any).uploadUrl"
-              :columns="colsState"
+              :columns="colsState.filter(col => col.dataIndex !== 'opera')"
               :ignCols="fmtIeIgnCols"
               :copyFun="genCpyFun(BchImport, () => '')"
               @submit="(info: any) => onBatchSubmit(info, 'import')"
@@ -30,7 +30,7 @@
         <slot name="extra" />
       </a-space>
     </div>
-    <RefreshBox v-if="refOptions.length" :tblRfsh="refOptions" @click="refresh" />
+    <RefreshBox v-if="refshOpns.length" :tblRfsh="refshOpns" @click="refresh" />
     <a-table
       class="flex-1 overflow-hidden"
       :class="{ 'edtble-table': minHeight }"
@@ -49,6 +49,7 @@
         })
       "
       @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
+      @expand="(expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)"
     >
       <template #customFilterIcon="{ column, filtered }">
         <AntdIcons.SearchOutlined
@@ -138,7 +139,7 @@
       <template v-if="pagable" #footer>总共&nbsp;{{ records.data.length }}&nbsp;条记录</template>
     </a-table>
     <FormDialog
-      v-model:show="fmDlg.visible"
+      v-model:visible="fmDlg.visible"
       v-model:vw-only="fmDlg.vwOnly"
       :width="dlgWidth"
       :new-fun="newFun"
@@ -195,7 +196,8 @@ const emit = defineEmits([
   'save',
   'after-save',
   'delete',
-  'refresh'
+  'refresh',
+  'expand'
 ])
 const props = defineProps({
   icon: { type: String, default: '' },
@@ -218,7 +220,8 @@ const props = defineProps({
   ieIgnCols: { type: Array, default: () => [] },
   disable: { type: Function, default: () => false },
   clkable: { type: Boolean, default: true },
-  refOptions: { type: Array, default: () => [] },
+  refshOpns: { type: Array, default: () => [] },
+  mountRefsh: { type: Boolean, default: true },
   operaStyle: { type: String, default: 'link' },
   dspCols: { type: Boolean, default: false },
   dlgWidth: { type: String, default: '50vw' },
@@ -234,7 +237,7 @@ const records = reactive({
   filters: undefined as any
 })
 const expRowKeys = ref([] as string[])
-const editKey = ref<string>('')
+const editKey = ref<any>('')
 const loading = ref(false)
 const searchState = reactive<Record<string, { content: string; reset: Function }>>({})
 const fmtIeIgnCols = computed(() =>
@@ -247,7 +250,9 @@ const fmDlg = reactive({
 })
 const slots = useSlots()
 
-onMounted(refresh)
+if (props.mountRefsh) {
+  onMounted(refresh)
+}
 if (props.emitter) {
   props.emitter.on('refresh', refresh)
   props.emitter.on('load', (load: boolean) => {
@@ -264,6 +269,15 @@ if (props.emitter) {
       setProp(col, prop.substring(fstPoi !== -1 ? fstPoi + 1 : 0), value)
     }
     fmtColumns(colsState)
+  })
+  props.emitter.on('search', (keywords: object) => {
+    Object.entries(keywords).map(([key, value]: any) => {
+      if (key in searchState) {
+        searchState[key].content = value
+      } else {
+        searchState[key] = { content: value, reset: () => console.log() }
+      }
+    })
   })
   if (!props.editable && !props.addable) {
     props.emitter.off('update:visible')
@@ -324,13 +338,15 @@ async function refresh(data?: any[], params?: any) {
       ignPams.delete('limit')
     }
   } else {
+    const keywords = {} as Record<string, string>
     for (const key of Object.keys(searchState)) {
+      keywords[key] = searchState[key].content
       onSchReset(searchState[key].reset, key)
       delete searchState[key]
     }
-    for (const column of props.columns) {
-      searchState[(column as Column).dataIndex] = {
-        content: '',
+    for (const column of props.columns as Column[]) {
+      searchState[column.dataIndex] = {
+        content: keywords[column.dataIndex] || '',
         reset: () => console.log()
       }
     }
@@ -344,7 +360,7 @@ async function refresh(data?: any[], params?: any) {
   } else {
     orgData = await props.api.all({
       axiosConfig: {
-        params: pickOrIgnore(records, Array.from(ignPams))
+        params: Object.assign(pickOrIgnore(records, Array.from(ignPams)), records.filters)
       }
     })
     orgData = orgData.filter((record: any) => {
@@ -355,7 +371,10 @@ async function refresh(data?: any[], params?: any) {
         if (!content) {
           continue
         }
-        return record[prop].includes(content)
+        /**
+         * @todo 这里应该做类型判断后再做相等或包含判断
+         */
+        return record[prop] == content
       }
       return true
     })
@@ -385,7 +404,7 @@ function onEditClicked(record?: any) {
   emit('add', record)
   editKey.value = ''
   if (record) {
-    editKey.value = record.key || ''
+    editKey.value = record.key || record.id || record._id || ''
   }
   if (props.emitter) {
     props.emitter.emit('update:visible', {
@@ -441,21 +460,13 @@ async function onBatchSubmit(info: any, opera: 'import' | 'export') {
   await refresh()
 }
 function genCpyFun<B extends Batch>(b: { new (): B; copy: Function }, genDft: () => any) {
-  return (src: any, tgt?: any, force = false) => {
-    const devKeys = Object.keys(props.newFun())
-    tgt =
-      tgt ||
-      Object.assign(
-        new b(),
-        Object.fromEntries(devKeys.map((key: string) => [`col${upperFirst(key)}`, genDft()]))
+  return () =>
+    Object.assign(
+      new b(),
+      Object.fromEntries(
+        Object.keys(props.newFun()).map((key: string) => [`col${upperFirst(key)}`, genDft()])
       )
-    b.copy(src, tgt)
-    for (const key of devKeys) {
-      const colKey = `col${upperFirst(key)}`
-      tgt[colKey] = force ? src[colKey] : src[colKey] || tgt[colKey]
-    }
-    return tgt
-  }
+    )
 }
 function onDoSearch(
   selectedKeys: string[],

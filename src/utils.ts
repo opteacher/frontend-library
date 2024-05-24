@@ -724,6 +724,10 @@ export function revsKeyVal(obj: any) {
   return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
 }
 
+function notUndefAndNull(value: any) {
+  return typeof value !== 'undefined' && value != null
+}
+
 export function gnlCpy<T extends Record<string, any>>(
   t: { new (): T } | (() => T),
   src: any,
@@ -783,12 +787,12 @@ export function gnlCpy<T extends Record<string, any>>(
       typeof tgt[key] === 'boolean' ||
       typeof tgt[key] === 'function'
     ) {
-      if (options.force || typeof src[key] !== 'undefined') {
+      if (options.force || notUndefAndNull(src[key])) {
         setProp(tgt, key, src[key])
       }
     } else if (typeof tgt[key] === 'object' && tgt[key] instanceof dayjs) {
-      if (options.force || typeof src[key] !== 'undefined') {
-        setProp(tgt, key, dayjs(src[key]))
+      if (options.force || notUndefAndNull(src[key])) {
+        setProp(tgt, key, src[key] ? dayjs(src[key]) : null)
       }
     } else if (Array.isArray(tgt[key])) {
       if (src[key]) {

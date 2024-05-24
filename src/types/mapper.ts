@@ -7,6 +7,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { CompoType, Cond, OpnType } from '.'
 import Column from './column'
 import Field from './field'
+import { Dayjs } from 'dayjs'
 
 export class BaseMapper {
   label: string
@@ -90,12 +91,14 @@ export class TextareaMapper extends BaseMapper {
 export class SelectMapper extends BaseMapper {
   allowClear: boolean
   options: string[] | OpnType[]
+  searchable: boolean
   onDropdown: (open: boolean) => void
 
   constructor() {
     super()
     this.allowClear = false
     this.options = []
+    this.searchable = false
     this.onDropdown = () => undefined
   }
 
@@ -103,6 +106,7 @@ export class SelectMapper extends BaseMapper {
     super.reset()
     this.allowClear = false
     this.options = []
+    this.searchable = false
     this.onDropdown = () => undefined
   }
 }
@@ -158,7 +162,7 @@ export class TableMapper extends BaseMapper {
   onSaved: (record: any, extra?: any) => void
   onDeleted: (key: any, extra?: any) => void
   addable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
-  editable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  edtable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   delable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
 
   constructor() {
@@ -181,7 +185,7 @@ export class TableMapper extends BaseMapper {
       this.emitter.emit('update:visible', false)
     }
     this.addable = true
-    this.editable = true
+    this.edtable = true
     this.delable = true
   }
 
@@ -205,7 +209,7 @@ export class TableMapper extends BaseMapper {
       this.emitter.emit('update:visible', false)
     }
     this.addable = true
-    this.editable = true
+    this.edtable = true
     this.delable = true
   }
 }
@@ -365,6 +369,38 @@ export class RadioMapper extends SelectMapper {
   }
 }
 
+export class DateTimeMapper extends BaseMapper {
+  format: string
+  showTime: boolean
+  hourStep: number
+  minuteStep: number
+  secondStep: number
+  dsbHours: number[]
+  dsbDates: (date: Dayjs) => Boolean
+
+  constructor() {
+    super()
+    this.format = 'YYYY/MM/DD HH:mm:ss'
+    this.showTime = true
+    this.hourStep = 1
+    this.minuteStep = 1
+    this.secondStep = 1
+    this.dsbHours = []
+    this.dsbDates = () => false
+  }
+
+  reset() {
+    super.reset()
+    this.format = 'YYYY/MM/DD HH:mm:ss'
+    this.showTime = true
+    this.hourStep = 1
+    this.minuteStep = 1
+    this.secondStep = 1
+    this.dsbHours = []
+    this.dsbDates = () => false
+  }
+}
+
 const mapTypeTemps = {
   Unknown: () => new BaseMapper(),
   Input: () => new InputMapper(),
@@ -383,7 +419,7 @@ const mapTypeTemps = {
   Delable: () => new TableMapper(),
   SelOrIpt: () => new SelOrIptMapper(),
   UploadFile: () => new UploadMapper(),
-  DateTime: () => new BaseMapper(),
+  DateTime: () => new DateTimeMapper(),
   TagList: () => new EdtLstMapper(),
   ListSelect: () => new LstSelMapper(),
   CodeEditor: () => new CdEdtMapper(),

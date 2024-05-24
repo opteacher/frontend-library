@@ -81,7 +81,7 @@
     <template v-else>
       <a-input
         v-if="mapper.type === 'Input'"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         :type="mapper.iptType || 'text'"
         :disabled="disabled"
         :addon-before="mapper.prefix"
@@ -94,7 +94,7 @@
         v-else-if="mapper.type === 'Number'"
         class="w-full"
         type="number"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         :placeholder="mapper.placeholder || '请输入'"
         :disabled="disabled"
         :addon-before="mapper.prefix"
@@ -104,7 +104,7 @@
       />
       <a-input-password
         v-else-if="mapper.type === 'Password'"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         :placeholder="mapper.placeholder || '请输入'"
         :disabled="disabled"
         @change="(e: any) => onFieldChanged(e.target.value)"
@@ -113,17 +113,19 @@
       <IpAddrInput
         v-else-if="mapper.type === 'IpAddress'"
         :disabled="disabled"
-        :ip="getProp(form, skey)"
+        :ip="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         @update:ip="onFieldChanged"
       />
       <a-select
         v-else-if="mapper.type === 'Select'"
         class="w-full"
         :options="mapper.options"
-        :value="getProp(form, skey) || undefined"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         :placeholder="mapper.placeholder || '请选择'"
         :disabled="disabled"
         :allowClear="mapper.allowClear"
+        :show-search="mapper.searchable"
+        :filter-option="filterOption"
         @dropdownVisibleChange="mapper.onDropdown"
         @change="onFieldChanged"
       >
@@ -135,7 +137,7 @@
         <a-checkbox-group
           v-if="mapper.options && mapper.options.length"
           :name="skey"
-          :value="getProp(form, skey, false)"
+          :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
           :options="mapper.options"
           :disabled="disabled"
           @change="(checkeds: any) => onFieldChanged(checkeds)"
@@ -143,7 +145,7 @@
         <a-checkbox
           v-else
           :name="skey"
-          :checked="getProp(form, skey, false)"
+          :checked="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
           :disabled="disabled"
           @change="(e: any) => onFieldChanged(e.target.checked)"
         >
@@ -163,7 +165,8 @@
       </template>
       <a-tooltip v-else-if="mapper.type === 'Switch'">
         <a-switch
-          :checked="getProp(form, skey)"
+          :checked="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
+          :disabled="disabled"
           :checked-children="mapper.chkLabels ? mapper.chkLabels[1] : ''"
           :un-checked-children="mapper.chkLabels ? mapper.chkLabels[0] : ''"
           @change="onFieldChanged"
@@ -174,19 +177,22 @@
         class="w-full"
         button-style="solid"
         :disabled="disabled"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         @change="(e: any) => onFieldChanged(e.target.value)"
       >
         <template v-if="mapper.style === 'button'">
-          <a-radio-button
-            v-for="opn in mapper.options"
-            :key="opn.value"
-            class="text-center"
-            :value="opn.value"
-            :style="{ width: 100 / mapper.options.length + '%' }"
-          >
-            {{ opn.label }}
-          </a-radio-button>
+          <a-tooltip v-for="opn in mapper.options" :key="opn.value" color="#108ee9">
+            <template #title>
+              {{ opn.subLabel }}
+            </template>
+            <a-radio-button
+              class="text-center"
+              :value="opn.value"
+              :style="{ width: 100 / mapper.options.length + '%' }"
+            >
+              {{ opn.label }}
+            </a-radio-button>
+          </a-tooltip>
         </template>
         <template v-else>
           <a-radio v-for="opn in mapper.options" :key="opn.value" :value="opn.value">
@@ -196,7 +202,7 @@
       </a-radio-group>
       <a-textarea
         v-else-if="mapper.type === 'Textarea'"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         :rows="mapper.maxRows"
         :placeholder="mapper.placeholder || '请输入'"
         :disabled="disabled"
@@ -207,7 +213,7 @@
         v-else-if="mapper.type === 'Cascader'"
         :options="mapper.options"
         :placeholder="mapper.placeholder || '请选择'"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         change-on-select
         :disabled="disabled"
         @change="onFieldChanged"
@@ -229,18 +235,29 @@
       <a-date-picker
         v-else-if="mapper.type === 'DateTime'"
         class="w-full"
-        show-time
+        :format="mapper.format"
+        :show-time="mapper.showTime"
+        :hour-step="mapper.hourStep"
+        :minute-step="mapper.minuteStep"
+        :second-step="mapper.secondStep"
+        :disabled-time="
+          () => ({
+            disabledHours: () => mapper.dsbHours
+          })
+        "
+        :disabledDate="mapper.dsbDates"
         :placeholder="mapper.placeholder || '请选择'"
         :disabled="disabled"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         @change="onFieldChanged"
       />
       <FormTable
         v-else-if="mapper.type === 'Table'"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         :mapper="mapper"
         :addable="validConds(form, mapper.addable, true)"
-        :delable="validConds(form, mapper.delable)"
+        :edtable="validConds(form, mapper.edtable, true)"
+        :delable="validConds(form, mapper.delable, true)"
         @edit="() => mapper.onEdit && mapper.onEdit(form)"
         @delete="
           (delKey: any, val: any) => {
@@ -260,7 +277,7 @@
         :params="mapper.params"
         :headers="mapper.headers"
         :directory="mapper.directory"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         :onBeforeUpload="mapper.onBeforeUpload"
         :onChange="mapper.onChange"
         :disabled="disabled"
@@ -272,7 +289,7 @@
       </a-space>
       <SelOrIpt
         v-else-if="mapper.type === 'SelOrIpt'"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         :options="mapper.options"
         :placeholder="mapper.placeholder"
         :mode="mapper.mode"
@@ -281,15 +298,16 @@
       />
       <ListSelect
         v-else-if="mapper.type === 'ListSelect'"
+        :disabled="disabled"
         :options="mapper.options"
         :height="mapper.height"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         @update:value="onFieldChanged"
       />
       <EditList
         v-else-if="mapper.type === 'EditList'"
         :mapper="mapper"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         @update:value="onFieldChanged"
       >
         <template #formItem="{ form, elKey, value }">
@@ -306,18 +324,19 @@
         class="h-80"
         :disabled="disabled"
         :lang="mapper.lang"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         @update:value="onFieldChanged"
       />
       <JsonEditor
         v-else-if="mapper.type === 'JsonEditor'"
-        :value="getProp(form, skey)"
+        :disabled="disabled"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         @update:value="onFieldChanged"
       />
       <TagList
         v-else-if="mapper.type === 'TagList'"
         :mapper="mapper"
-        :value="getProp(form, skey)"
+        :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
         @update:value="onFieldChanged"
       >
         <template #formItem="{ form, elKey, value }">
@@ -343,9 +362,10 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined
 } from '@ant-design/icons-vue'
-import { computed, ref, useSlots } from 'vue'
+import { PropType, computed, ref, useSlots } from 'vue'
 
 import type { OpnType } from '../types'
+import { compoDftVal } from '../types'
 import { getProp, setProp, validConds } from '../utils'
 import CodeEditor from './CodeEditor.vue'
 import EditList from './EditList.vue'
@@ -356,11 +376,12 @@ import SelOrIpt from './SelOrIpt.vue'
 import TagList from './TagList.vue'
 import UploadFile from './UploadFile.vue'
 import IpAddrInput from './IpAddrInput.vue'
+import { MapperType } from '../types/mapper'
 
 const props = defineProps({
   form: { type: Object, required: true },
   skey: { type: String, required: true },
-  mapper: { type: Object, required: true },
+  mapper: { type: Object as PropType<MapperType>, required: true },
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
@@ -409,5 +430,10 @@ function chkInSlot(suffix?: string) {
 }
 function onVwPwdClick() {
   viewPwd.value = !viewPwd.value
+}
+function filterOption(input: string, option: any) {
+  return props.mapper.searchable
+    ? option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    : true
 }
 </script>
