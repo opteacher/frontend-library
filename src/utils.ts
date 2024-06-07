@@ -178,6 +178,7 @@ export function reqPost(path: string, body?: any, options?: RequestOptions): Pro
     options.ignores.push('key')
   }
   const action = options.action ? fixStartsWith(options.action, '/') : ''
+  // @_@: 对于FormData作为body的请求，pickOrIgnore方法会破坏参数结构，从而引发参数为空的问题
   return makeRequest(
     axios.post(
       `/${options.project}/${reqType(options)}/v1/${path}${action}`,
