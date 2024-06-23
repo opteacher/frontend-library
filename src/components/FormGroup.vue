@@ -1,7 +1,7 @@
 <script lang="ts" setup name="FormGroup">
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { FormInstance } from 'ant-design-vue'
-import { ref } from 'vue'
+import { PropType, ref } from 'vue'
 
 import Mapper from '../types/mapper'
 import { validConds } from '../utils'
@@ -10,6 +10,7 @@ import FormItem from './FormItem.vue'
 defineProps({
   lblWid: { type: Number, default: 4 },
   lblAlgn: { type: String, default: 'right' },
+  layout: { type: String as PropType<'horizontal' | 'vertical' | 'inline'>, default: 'horizontal' },
   mapper: { type: Mapper, required: true },
   form: { type: Object, required: true },
   rules: { type: Object, required: true },
@@ -27,8 +28,9 @@ defineExpose({ refer })
     ref="refer"
     :model="form"
     :rules="rules"
-    :label-col="{ span: lblWid }"
-    :wrapper-col="{ span: 24 - lblWid }"
+    :layout="layout"
+    :label-col="layout === 'horizontal' ? { span: lblWid } : undefined"
+    :wrapper-col="layout === 'horizontal' ? { span: 24 - lblWid } : undefined"
     :label-align="lblAlgn"
   >
     <template v-for="(value, key) in mapper" :key="key">
