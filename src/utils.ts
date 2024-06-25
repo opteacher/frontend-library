@@ -215,7 +215,10 @@ export function reqDelete(path: string, iden: any, options?: RequestOptions): Pr
   }
   const action = options.action ? fixStartsWith(options.action, '/') : ''
   return makeRequest(
-    axios.delete(`/${options.project}/${reqType(options)}/v1/${path}/${iden}${action}`, options.axiosConfig),
+    axios.delete(
+      `/${options.project}/${reqType(options)}/v1/${path}/${iden}${action}`,
+      options.axiosConfig
+    ),
     options
   )
 }
@@ -287,13 +290,14 @@ export function reqLink(
     options.messages.succeed = '提交成功！'
   }
   const action = options.action ? fixStartsWith(options.action, '/') : ''
-  const url = [
-    `/${options.project}/${reqType(options)}/v1`,
-    body.parent[0],
-    body.parent[1],
-    body.child[0],
-    body.child[1]
-  ].join('/') + action
+  const url =
+    [
+      `/${options.project}/${reqType(options)}/v1`,
+      body.parent[0],
+      body.parent[1],
+      body.child[0],
+      body.child[1]
+    ].join('/') + action
   if (link) {
     return makeRequest(axios.put(url, options.axiosConfig), options)
   } else {
@@ -767,6 +771,7 @@ export function gnlCpy<T extends Record<string, any>>(
   tgt = tgt || create()
   if (options.force && tgt.reset) {
     tgt.reset()
+    options.force = false
   }
   for (const key of options.keys) {
     if (src[key]) {
