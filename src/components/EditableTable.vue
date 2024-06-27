@@ -401,7 +401,7 @@ async function refresh(data?: any[], params?: any) {
   loading.value = false
 }
 function onEditClicked(record?: any) {
-  emit('add', record)
+  emit(record ? 'edit' : 'add', record)
   editKey.value = ''
   if (record) {
     editKey.value = record.key || record.id || record._id || ''
