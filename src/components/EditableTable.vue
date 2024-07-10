@@ -52,11 +52,11 @@
       @expand="(expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)"
     >
       <template #customFilterIcon="{ column, filtered }">
-        <SearchOutlined
+        <AntdIcons.SearchOutlined
           v-if="column.searchable"
           :style="{ color: filtered ? '@primary-color' : undefined }"
         />
-        <FilterFilled
+        <AntdIcons.FilterFilled
           v-else
           :style="{ color: filtered ? '@primary-color' : undefined }"
         />
@@ -79,7 +79,7 @@
             size="small"
             @click="onDoSearch(selectedKeys, confirm, clearFilters, column.dataIndex)"
           >
-            <template #icon><SearchOutlined /></template>
+            <template #icon><AntdIcons.SearchOutlined /></template>
             搜索
           </a-button>
           <a-button class="w-23" size="small" @click="onSchReset(clearFilters, column.dataIndex)">
@@ -169,8 +169,7 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import AntdIcons from '@ant-design/icons-vue/lib/icons'
-import { SearchOutlined, FilterFilled } from '@ant-design/icons-vue'
+import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { v4 as uuid } from 'uuid'
