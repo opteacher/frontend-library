@@ -404,7 +404,17 @@ function onEditClicked(record?: any) {
   emit(record ? 'edit' : 'add', record)
   editKey.value = ''
   if (record) {
-    editKey.value = record.key || record.id || record._id || ''
+    switch (true) {
+      case typeof record.key !== 'undefined':
+        editKey.value = record.key
+        break
+      case typeof record.id !== 'undefined':
+        editKey.value = record.id
+        break
+      case typeof record._id !== 'undefined':
+        editKey.value = record._id
+        break
+    }
   }
   if (props.emitter) {
     props.emitter.emit('update:visible', {
@@ -422,7 +432,7 @@ async function onRecordSave(record: any, reset: Function) {
   loading.value = true
   emit('before-save', record)
   const result =
-    editKey.value === ''
+    editKey.value === '' || editKey.value === -1
       ? await props.api.add(record)
       : await props.api.update({ ...record, key: editKey.value })
   emit('save', record, refresh)

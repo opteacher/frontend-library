@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col space-y-3">
+  <div class="flex flex-col space-y-3" :style="{ height }">
     <div class="flex-1 relative">
       <codemirror
         class="absolute"
@@ -97,7 +97,8 @@ const props = defineProps({
   recvMsg: { type: Function, default: (msg: string) => msg },
   lineWrapping: { type: Boolean, default: false },
   lineNumbers: { type: Boolean, default: false },
-  showTime: { type: Boolean, default: false }
+  showTime: { type: Boolean, default: false },
+  height: { type: String, default: '100%' }
 })
 const emit = defineEmits(['before-start', 'after-end'])
 const message = ref<{ content: string; time: Dayjs }[]>([])
@@ -223,6 +224,7 @@ async function stopListen() {
   emit('after-end')
 }
 function addMessage(content: string) {
+  console.log(content)
   message.value.push({
     content: props.recvMsg(content),
     time: dayjs().add(8, 'hour')

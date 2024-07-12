@@ -774,7 +774,7 @@ export function gnlCpy<T extends Record<string, any>>(
     options.force = false
   }
   for (const key of options.keys) {
-    if (src[key]) {
+    if (typeof src[key] !== 'undefined') {
       setProp(tgt, 'key', src[key])
       options.ignProps.push('key')
       break
