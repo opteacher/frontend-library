@@ -1,11 +1,18 @@
 <template>
-  <a-button :type="customType" :class="customClass" :size="customSize" :disabled="disabled">
+  <a-button
+    :type="customType"
+    :class="customClass"
+    :size="customSize"
+    :disabled="disabled"
+    :ghost="ghost"
+  >
     <template v-if="iconType" #icon>
       <component :is="iconType" />
     </template>
     <slot />
   </a-button>
 </template>
+
 <script lang="ts" setup name="CButton">
 import { ref, watch } from 'vue'
 
@@ -13,6 +20,7 @@ const props = defineProps({
   type: { type: String, default: '' },
   size: { type: String, default: '' },
   icon: { type: String, default: '' },
+  ghost: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   permission: { type: [String, Boolean], default: true }
 })
@@ -47,6 +55,10 @@ watch(
         break
       case 'black':
         customClass.value = 'c-button-black'
+        customType.value = 'default'
+        break
+      case 'grey':
+        customClass.value = 'c-button-grey'
         customType.value = 'default'
         break
       case 'purple':
@@ -113,13 +125,13 @@ watch(
 <style scoped>
 .c-button-primary {
   color: #fff;
-  background-color: #2db7f5;
-  border-color: #2db7f5;
+  background-color: #1677ff;
+  border-color: #1677ff;
 }
 .c-button-primary:hover {
   color: #fff;
-  background-color: #3dc1fc;
-  border-color: #2db7f5;
+  background-color: #2db7f5;
+  border-color: #1677ff;
 }
 .c-button-primary[disabled],
 .c-button-primary[disabled]:hover,
@@ -230,6 +242,27 @@ watch(
 .c-button-black[disabled]:hover,
 .c-button-black[disabled]:focus,
 .c-button-black[disabled]:active {
+  color: rgba(0, 0, 0, 0.25);
+  background: #f5f5f5;
+  border-color: #d9d9d9;
+  text-shadow: none;
+  box-shadow: none;
+}
+
+.c-button-grey {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.45);
+  border-color: rgba(0, 0, 0, 0.45);
+}
+.c-button-grey:hover {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.32);
+  border-color: rgba(0, 0, 0, 0.45);
+}
+.c-button-grey[disabled],
+.c-button-grey[disabled]:hover,
+.c-button-grey[disabled]:focus,
+.c-button-grey[disabled]:active {
   color: rgba(0, 0, 0, 0.25);
   background: #f5f5f5;
   border-color: #d9d9d9;
