@@ -859,3 +859,22 @@ export function callFunc(code: string, args?: Record<string, any>) {
 export function newOne<T>(t: { new (): T }): T {
   return new t()
 }
+
+export function json2Object(json: object, params?: Record<string, any>) {
+  for (let [key, value] of Object.entries(json)) {
+    switch (true) {
+      case typeof value === 'string':
+        if (value.startsWith('() => ')) {
+          value = value.replace('() => ', 'return ')
+        }
+        if (value.startsWith('return ')) {
+          setProp(json, key, callFunc(value, params))
+        }
+        break
+      case typeof value === 'object':
+        setProp(json, key, json2Object(value, params))
+        break
+    }
+  }
+  return json
+}
