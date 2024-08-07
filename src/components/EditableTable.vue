@@ -538,7 +538,7 @@ function fmtColumns(columns?: Column[]) {
         ...pickOrIgnore(column, ['width', 'custHdCell', 'custCell', 'dict', 'notDisplay'])
       }
     })
-  if (props.editable || props.delable || slots['opera']) {
+  if (props.editable || props.delable || slots['opera'] || slots['operaBefore'] || slots['operaBefore']) {
     cols.push(new Column('操作', 'opera', { width: 80, fixed: 'right' }))
   }
   const col4Ist = [] as Column[]
