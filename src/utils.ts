@@ -729,7 +729,7 @@ export function revsKeyVal(obj: any) {
   return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
 }
 
-function notUndefAndNull(value: any) {
+export function notUndefAndNull(value: any) {
   return typeof value !== 'undefined' && value != null
 }
 
