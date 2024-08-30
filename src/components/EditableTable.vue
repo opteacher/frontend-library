@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col space-y-2.5" :class="{ [sclHeight]: sclHeight.startsWith('h-') }">
     <div class="flex justify-between">
-      <h3 class="mb-0 ml-2 flex-1">
+      <h3 v-if="title" class="mb-0 ml-2 flex-1">
         <keep-alive v-if="icon">
           <component :is="`AntdIcons.${icon}`" v-bind="{ class: 'text-3xl' }" />
         </keep-alive>
-        {{ title }}&nbsp;
+        <b>{{ title }}</b>&nbsp;
         <span class="text-gray-400 text-sm">{{ description }}</span>
       </h3>
       <a-space>
