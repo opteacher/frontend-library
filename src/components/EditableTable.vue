@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col space-y-2.5" :class="{ [sclHeight]: sclHeight.startsWith('h-') }">
-    <div class="flex justify-between">
+  <div class="flex flex-col" :class="{ [sclHeight]: sclHeight.startsWith('h-') }">
+    <div class="flex justify-between mb-2.5">
       <h3 v-if="title" class="mb-0 ml-2 flex-1">
         <keep-alive v-if="icon">
           <component :is="`AntdIcons.${icon}`" v-bind="{ class: 'text-3xl' }" />
@@ -30,7 +30,7 @@
         <slot name="extra" />
       </a-space>
     </div>
-    <RefreshBox v-if="refshOpns.length" :tblRfsh="refshOpns" @click="refresh" />
+    <RefreshBox v-if="refshOpns.length" class="mb-2.5" :tblRfsh="refshOpns" @click="refresh" />
     <a-table
       class="flex-1 overflow-hidden"
       :class="{ 'edtble-table': minHeight }"
@@ -87,12 +87,12 @@
           </a-button>
         </div>
       </template>
-      <template #headerCell="{ column }">
+      <template #headerCell="{ column }: any">
         <template v-if="$slots[column.key + 'HD']">
           <slot :name="column.key + 'HD'" v-bind="{ column }" />
         </template>
       </template>
-      <template #bodyCell="{ text, column, record }">
+      <template #bodyCell="{ text, column, record }: any">
         <template v-if="column.key === 'opera'">
           <div class="flex">
             <slot name="operaBefore" v-bind="{ record }" />

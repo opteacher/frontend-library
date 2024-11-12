@@ -82,11 +82,11 @@ import {
   CopyOutlined,
   LoadingOutlined
 } from '@ant-design/icons-vue'
-import { rmvStartsOf, setProp, until } from '../utils'
+import { setProp, until } from '../utils'
 import { message as msgBox } from 'ant-design-vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { TinyEmitter } from 'tiny-emitter'
-import Codemirror, { createLogMark, createTitle } from 'codemirror-editor-vue3'
+import Codemirror from 'codemirror-editor-vue3'
 import mqtt from 'mqtt'
 
 const props = defineProps({
@@ -214,7 +214,7 @@ async function startListen() {
 async function stopListen() {
   addMessage('停止任务……')
   if (ctrler.mqttCli?.connected) {
-    await ctrler.mqttCli?.unsubscribeAsync(props.topic, { qos: 0 })
+    await ctrler.mqttCli?.unsubscribeAsync(props.topic)
     await ctrler.mqttCli?.endAsync()
   }
   if (ctrler.ess?.readyState) {
@@ -237,16 +237,17 @@ function fmtMessage() {
     .join('\n')
 }
 function fixMessage(msg: string) {
-  if (msg.startsWith('[INFO]')) {
-    return createLogMark(rmvStartsOf(msg, '[INFO]'), 'info')
-  } else if (msg.startsWith('[ERROR]')) {
-    return createLogMark(rmvStartsOf(msg, '[ERROR]'), 'error')
-  } else if (msg.startsWith('[WARN]')) {
-    return createLogMark(rmvStartsOf(msg, '[WARN]'), 'warning')
-  } else if (msg.startsWith('[TITLE]')) {
-    return createTitle(rmvStartsOf(msg, '[TITLE]'))
-  } else {
-    return msg
-  }
+  // if (msg.startsWith('[INFO]')) {
+  //   return createLogMark(rmvStartsOf(msg, '[INFO]'), 'info')
+  // } else if (msg.startsWith('[ERROR]')) {
+  //   return createLogMark(rmvStartsOf(msg, '[ERROR]'), 'error')
+  // } else if (msg.startsWith('[WARN]')) {
+  //   return createLogMark(rmvStartsOf(msg, '[WARN]'), 'warning')
+  // } else if (msg.startsWith('[TITLE]')) {
+  //   return createTitle(rmvStartsOf(msg, '[TITLE]'))
+  // } else {
+  //   return msg
+  // }
+  return msg
 }
 </script>
