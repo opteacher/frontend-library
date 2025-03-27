@@ -58,11 +58,13 @@ function refresh() {
 function onUploadChange(info: UploadChangeParam) {
   props.onChange(props.form, info)
   if (
-    info.fileList.reduce((prev: boolean, file: UploadFile) => prev && file.status === 'done', true)
+    info.fileList
+      .filter(file => typeof file.status !== 'undefined')
+      .reduce((prev: boolean, file: UploadFile) => prev && file.status === 'done', true)
   ) {
     emit(
       'update:value',
-      valState.value.map((item: any) => item.response.result)
+      valState.value.map((item: any) => (item.response ? item.response.result : item.name))
     )
   }
 }
