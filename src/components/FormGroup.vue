@@ -65,16 +65,14 @@ defineExpose({ refer })
             :mapper="v"
             :editable="editable"
             :viewOnly="viewOnly"
+            :lblWid="lblWid"
             @update:fprop="(fm: any) => emit('update:fprop', fm)"
           >
-            <template v-if="k in $slots" #[k]>
-              <slot :name="k" v-bind="{ formState: form }" />
-            </template>
-            <template v-if="`${k}VW` in $slots" #[`${k}VW`]>
-              <slot :name="`${k}VW`" v-bind="{ formState: form }" />
-            </template>
             <template #FormDialog>
               <slot name="FormDialog" v-bind="{ value: v, key: k }" />
+            </template>
+            <template v-for="(_, name) in $slots" :key="name" #[name]>
+              <slot :name="name" v-bind="{ formState: form }" />
             </template>
           </FormItem>
         </div>
@@ -104,16 +102,14 @@ defineExpose({ refer })
         :mapper="value"
         :editable="editable"
         :viewOnly="viewOnly"
+        :lblWid="lblWid"
         @update:fprop="(fm: any) => emit('update:fprop', fm)"
       >
-        <template v-if="key in $slots" #[key]>
-          <slot :name="key" v-bind="{ formState: form }" />
-        </template>
-        <template v-if="`${key}VW` in $slots" #[`${key}VW`]>
-          <slot :name="`${key}VW`" v-bind="{ formState: form }" />
-        </template>
         <template #FormDialog>
           <slot name="FormDialog" v-bind="{ value, key }" />
+        </template>
+        <template v-for="(_, name) in $slots" :key="name" #[name]>
+          <slot :name="name" v-bind="{ formState: form }" />
         </template>
       </FormItem>
     </template>

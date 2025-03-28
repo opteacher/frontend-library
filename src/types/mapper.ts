@@ -133,6 +133,8 @@ export class ButtonMapper extends BaseMapper {
   inner: string
   danger: boolean
   primary: boolean
+  ghost: boolean
+  htmlType: 'button' | 'submit' | 'reset'
   onClick: () => void
 
   constructor() {
@@ -140,6 +142,8 @@ export class ButtonMapper extends BaseMapper {
     this.inner = ''
     this.danger = false
     this.primary = true
+    this.ghost = true
+    this.htmlType = 'button'
     this.onClick = () => undefined
   }
 
@@ -148,6 +152,8 @@ export class ButtonMapper extends BaseMapper {
     this.inner = ''
     this.danger = false
     this.primary = true
+    this.ghost = true
+    this.htmlType = 'button'
     this.onClick = () => undefined
   }
 }
