@@ -1,5 +1,12 @@
 <template>
-  <a-form-item v-show="display" class="flex-auto" :ref="skey" :name="skey" :rules="mapper.rules" :wrapper-col="{ offset: mapper.label ? 0 : lblWid }">
+  <a-form-item
+    v-show="display"
+    class="flex-auto"
+    :ref="skey"
+    :name="skey"
+    :rules="mapper.rules"
+    :wrapper-col="{ offset: mapper.label ? 0 : lblWid }"
+  >
     <template v-if="mapper.label" #label>
       {{ mapper.label }}&nbsp;
       <a-tooltip v-if="mapper.desc">
@@ -45,7 +52,9 @@
           </template>
           <template
             v-else-if="
-              mapper.type === 'Textarea' || mapper.type === 'CodeEditor' || mapper.type === 'JsonEditor'
+              mapper.type === 'Textarea' ||
+              mapper.type === 'CodeEditor' ||
+              mapper.type === 'JsonEditor'
             "
           >
             <pre class="mb-0">{{ getProp(form, skey) }}</pre>
@@ -60,8 +69,8 @@
                   ? mapper.chkLabels[1]
                   : '是'
                 : mapper.chkLabels
-                ? mapper.chkLabels[0]
-                : '否'
+                  ? mapper.chkLabels[0]
+                  : '否'
             }}
           </template>
           <template v-else-if="mapper.type === 'EditList' || mapper.type === 'UploadFile'">
@@ -158,8 +167,8 @@
                     ? mapper.chkLabels[1]
                     : '是'
                   : mapper.chkLabels
-                  ? mapper.chkLabels[0]
-                  : '否'
+                    ? mapper.chkLabels[0]
+                    : '否'
               }}&nbsp;
               <a-typography-text type="secondary">
                 {{ mapper.placeholder || '请确认' }}

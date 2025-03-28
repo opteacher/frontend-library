@@ -1,7 +1,7 @@
 <script lang="ts" setup name="FormGroup">
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { FormInstance } from 'ant-design-vue'
-import { PropType, ref } from 'vue'
+import { PropType, ref, useSlots } from 'vue'
 
 import Mapper from '../types/mapper'
 import { validConds } from '../utils'
@@ -71,7 +71,11 @@ defineExpose({ refer })
             <template #FormDialog>
               <slot name="FormDialog" v-bind="{ value: v, key: k }" />
             </template>
-            <template v-for="(_, name) in $slots" :key="name" #[name]>
+            <template
+              v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')"
+              :key="name"
+              #[name]
+            >
               <slot :name="name" v-bind="{ formState: form }" />
             </template>
           </FormItem>
@@ -108,7 +112,11 @@ defineExpose({ refer })
         <template #FormDialog>
           <slot name="FormDialog" v-bind="{ value, key }" />
         </template>
-        <template v-for="(_, name) in $slots" :key="name" #[name]>
+        <template
+          v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')"
+          :key="name"
+          #[name]
+        >
           <slot :name="name" v-bind="{ formState: form }" />
         </template>
       </FormItem>
