@@ -219,7 +219,7 @@ const props = defineProps({
   imExport: { type: [Object, Boolean], default: () => false },
   ieIgnCols: { type: Array, default: () => [] },
   disable: { type: Function, default: () => false },
-  clkable: { type: Boolean, default: true },
+  clkable: { type: Boolean, default: false },
   refshOpns: { type: Array, default: () => [] },
   mountRefsh: { type: Boolean, default: true },
   operaStyle: { type: String, default: 'link' },
