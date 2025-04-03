@@ -30,7 +30,7 @@
 import { EditOutlined, SelectOutlined } from '@ant-design/icons-vue'
 import { ref } from 'vue'
 
-const emit = defineEmits(['update:value'])
+const emit = defineEmits(['update:value', 'update:mode'])
 const props = defineProps({
   value: { type: String, required: true },
   options: { type: Array, default: () => [] },
@@ -42,5 +42,6 @@ const mode = ref(props.mode)
 
 function onModeUpdate() {
   mode.value = mode.value === 'select' ? 'input' : 'select'
+  emit('update:mode', mode.value)
 }
 </script>

@@ -305,7 +305,7 @@
             :value="getProp(props.form, props.skey, compoDftVal(props.mapper.type))"
             :options="mapper.options"
             :placeholder="mapper.placeholder"
-            :mode="mapper.mode"
+            v-model:mode="mapper.mode"
             :disabled="disabled"
             @update:value="onFieldChanged"
           />
