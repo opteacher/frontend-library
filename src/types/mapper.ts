@@ -11,6 +11,7 @@ import { Dayjs } from 'dayjs'
 
 export class BaseMapper {
   label: string
+  offset: number
   desc: string
   type: CompoType
   rules: any[]
@@ -23,6 +24,7 @@ export class BaseMapper {
 
   constructor() {
     this.label = ''
+    this.offset = 0
     this.desc = ''
     this.type = 'Unknown'
     this.rules = []
@@ -36,6 +38,7 @@ export class BaseMapper {
 
   reset() {
     this.label = ''
+    this.offset = 0
     this.desc = ''
     this.type = 'Unknown'
     this.rules = []

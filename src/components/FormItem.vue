@@ -5,7 +5,7 @@
     :ref="skey"
     :name="skey"
     :rules="mapper.rules"
-    :wrapper-col="{ offset: mapper.label ? 0 : lblWid }"
+    :wrapper-col="{ offset: mapper.offset }"
   >
     <template v-if="mapper.label" #label>
       {{ mapper.label }}&nbsp;
