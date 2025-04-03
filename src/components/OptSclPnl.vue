@@ -81,7 +81,7 @@ function startListen() {
   addMessage('等待任务开启……')
   if (props.topic) {
     if (!mqttCli.value) {
-      mqttCli.value = mqtt.connect('ws://127.0.0.1:8083/mqtt', {
+      mqttCli.value = mqtt.connect(import.meta.env.VITE_MQTT_URL, {
         clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
         username: 'admin',
         password: '59524148chenOP',
