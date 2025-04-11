@@ -32,7 +32,7 @@ function onSdMuItmClick({ key }: { key: string }) {
   <a-layout class="h-full">
     <a-layout-header class="p-0 flex items-center justify-between">
       <RouterLink class="w-50 px-5 py-4 flex space-x-2" to="/">
-        <img class="w-10" src="@/assets/logo.svg" />
+        <a-image :width="40" src="@/assets/logo.svg" />
         <div class="text-xl inline-block align-middle">
           <p class="text-white mb-0 font-mono inline-block align-middle">前端组件库</p>
         </div>

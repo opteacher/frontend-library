@@ -1,4 +1,4 @@
-import { App } from 'vue'
+import { type App } from 'vue'
 import ColorSelect from './components/ColorSelect.vue'
 import UploadFile from './components/UploadFile.vue'
 import IconField from './components/IconField.vue'

@@ -115,17 +115,17 @@ export default defineComponent({
         }
         switch (unit) {
           case 'D':
-            interval *= 24
-          // falls through
+            interval *= 24 * 60 * 60 * 1000
+            break
           case 'h':
-            interval *= 60
-          // falls through
+            interval *= 60 * 60 * 1000
+            break
           case 'm':
-            interval *= 60
-          // falls through
+            interval *= 60 * 1000
+            break
           case 's':
             interval *= 1000
-          // falls through
+            break
           case 'ms':
           default:
         }

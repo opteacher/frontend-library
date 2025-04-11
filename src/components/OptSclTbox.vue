@@ -118,11 +118,11 @@ function getTimeLbl(showTime?: boolean) {
     return props.showTime ? '隐藏时间' : '显示时间'
   } 
 }
-function getTailfLbl(tailf?: boolean) {
-  if (typeof tailf !== 'undefined') {
-    return tailf ? '自由滚动' : '保持到底'
-  } else {
-    return props.tailf ? '自由滚动' : '保持到底'
-  }
-}
+// function getTailfLbl(tailf?: boolean) {
+//   if (typeof tailf !== 'undefined') {
+//     return tailf ? '自由滚动' : '保持到底'
+//   } else {
+//     return props.tailf ? '自由滚动' : '保持到底'
+//   }
+// }
 </script>

@@ -1,5 +1,5 @@
 /// <reference path="../../../cypress/support/component.ts" />
-import HighLight from '@/components/HighLight.vue'
+import HighLight from '../../components/HighLight.vue'
 
 const IdMark = 'div[data-v-app] mark'
 

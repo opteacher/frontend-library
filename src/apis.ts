@@ -1,5 +1,5 @@
 import Compo from './types/compo'
-import { reqAll, reqGet } from './utils'
+import { reqAll } from './utils'
 
 export default {
   component: {

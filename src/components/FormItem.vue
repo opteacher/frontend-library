@@ -378,7 +378,7 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined
 } from '@ant-design/icons-vue'
-import { PropType, computed, ref, useSlots } from 'vue'
+import { type PropType, computed, ref, useSlots } from 'vue'
 
 import type { OpnType } from '../types'
 import { compoDftVal } from '../types'
@@ -392,7 +392,7 @@ import SelOrIpt from './SelOrIpt.vue'
 import TagList from './TagList.vue'
 import UploadFile from './UploadFile.vue'
 import IpAddrInput from './IpAddrInput.vue'
-import { MapperType } from '../types/mapper'
+import { type MapperType } from '../types/mapper'
 
 const props = defineProps({
   form: { type: Object, required: true },

@@ -4,7 +4,7 @@
 
 <script setup lang="ts" name="JsonEditor">
 import { setProp } from '../utils'
-import { JSONEditor, Mode } from 'vanilla-jsoneditor'
+import { type JsonEditor, createJSONEditor, Mode } from 'vanilla-jsoneditor'
 import { onMounted, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -24,7 +24,7 @@ const content = reactive<{ json: any }>({
   json: props.value
 })
 const editor = ref()
-const jsonEditor = ref<JSONEditor | undefined>()
+const jsonEditor = ref<JsonEditor | undefined>()
 
 onMounted(refresh)
 watch(() => props.value, refresh)
@@ -32,7 +32,7 @@ watch(() => props.value, refresh)
 function refresh() {
   content.json = props.value
   if (!jsonEditor.value) {
-    jsonEditor.value = new JSONEditor({
+    jsonEditor.value = createJSONEditor({
       target: editor.value as Element,
       props: {
         content,

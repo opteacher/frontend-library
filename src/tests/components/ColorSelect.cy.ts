@@ -1,6 +1,6 @@
 /// <reference path="../../../cypress/support/component.ts" />
-import ColorSelect from '@/components/ColorSelect.vue'
-import { rgb, rgba } from '@/utils'
+import ColorSelect from '../../components/ColorSelect.vue'
+import { rgb, rgba } from '../../utils'
 
 const props: Record<string, any> = { color: '#FF00FF' }
 

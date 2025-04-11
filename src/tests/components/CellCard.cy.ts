@@ -1,8 +1,8 @@
 /// <reference path="../../../cypress/support/component.ts" />
-import CellCard from '@/components/CellCard.vue'
-import Cell, { Cells } from '@/types/cell'
-import { SelectMapper } from '@/types/mapper'
-import { rgb, rgba } from '@/utils'
+import CellCard from '../../components/CellCard.vue'
+import Cell, { Cells } from '../../types/cell'
+import { rgb, rgba } from '../../utils'
+import _ from 'lodash'
 
 console.log(rgb(0, 0, 0), rgba(0, 0, 0, 1))
 
@@ -78,7 +78,7 @@ describe('<CellCard />', () => {
       props: {
         cell: Cells.copy({}),
         text: 'bbbbbbbbbb',
-        mapper: SelectMapper.copy({
+        mapper: _.cloneDeep({
           type: 'Select',
           options: [
             { label: '111111', value: 'aaaaa' },

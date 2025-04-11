@@ -73,7 +73,7 @@ import { getProp, setProp } from '../utils'
 import FormGroup from './FormGroup.vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { onMounted, ref, watch, markRaw, Raw } from 'vue'
+import { onMounted, ref, watch, markRaw, type Raw } from 'vue'
 
 type AntdIcons = keyof typeof antdIcons | ''
 

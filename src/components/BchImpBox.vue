@@ -110,9 +110,9 @@
 import { CloseOutlined, ImportOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { reactive, watch } from 'vue'
-import { WorkBook, read, utils } from 'xlsx'
+import { type WorkBook, read, utils } from 'xlsx'
 
-import { Color, Cond, colors, clrMap } from '../types'
+import { type Color, Cond, colors, clrMap } from '../types'
 import Column from '../types/column'
 import Mapper from '../types/mapper'
 import { getDftPjt } from '../utils'

@@ -1,5 +1,5 @@
 import { gnlCpy } from '../utils'
-import { WorkSheet } from 'xlsx'
+import { type WorkSheet } from 'xlsx'
 
 export default class Batch {
   file: string[]

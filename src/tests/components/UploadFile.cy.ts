@@ -1,5 +1,5 @@
 /// <reference path="../../../cypress/support/component.ts" />
-import UploadFile from '@/components/UploadFile.vue'
+import UploadFile from '../../components/UploadFile.vue'
 
 const IdAddBtn = 'button.w-full'
 

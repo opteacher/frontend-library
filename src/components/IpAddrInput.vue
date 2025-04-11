@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts" setup name="IpAddrInput">
-import { PropType, onMounted, reactive, ref, watch } from 'vue'
+import { type PropType, onMounted, reactive, ref, watch } from 'vue'
 
 const emit = defineEmits(['update:ip', 'press:enter'])
 const props = defineProps({

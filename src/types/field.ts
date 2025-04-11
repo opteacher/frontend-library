@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { BaseTypes, CompoType } from '.'
+import { type BaseTypes, type CompoType } from '.'
 
 export default class Field {
   key: string

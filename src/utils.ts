@@ -1,5 +1,5 @@
 import { message } from 'ant-design-vue'
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { type AxiosRequestConfig } from 'axios'
 import dayjs from 'dayjs'
 import qs from 'qs'
 

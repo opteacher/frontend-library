@@ -40,12 +40,11 @@
 </template>
 
 <script setup lang="ts" name="OptSclPnl">
-import { PropType, ref } from 'vue'
-import { until } from '../utils'
+import { type PropType, ref } from 'vue'
 import dayjs, { Dayjs } from 'dayjs'
 import { TinyEmitter } from 'tiny-emitter'
 import Codemirror from 'codemirror-editor-vue3'
-import mqtt from 'mqtt'
+import Paho from 'paho-mqtt'
 import OptSclTbox from './OptSclTbox.vue'
 
 const props = defineProps({
@@ -64,7 +63,7 @@ const messages = ref<{ content: string; time: Dayjs }[]>([])
 const outputing = ref(false)
 const showTime = ref(false)
 const tailf = ref(true)
-const mqttCli = ref<mqtt.MqttClient | null>(null)
+const mqttCli = ref<Paho.Client | null>(null)
 const ess = ref<EventSource | null>(null)
 
 if (props.emitter) {
@@ -81,24 +80,25 @@ function startListen() {
   addMessage('等待任务开启……')
   if (props.topic) {
     if (!mqttCli.value) {
-      mqttCli.value = mqtt.connect(import.meta.env.VITE_MQTT_URL, {
-        clientId: 'emqx_' + Math.random().toString(16).substring(2, 8),
-        username: 'admin',
-        password: '59524148chenOP',
-        clean: true
-      })
-      mqttCli.value?.subscribe(props.topic, { qos: 0 })
+      const [host, strPort] = import.meta.env.VITE_MQTT_URL.split(':')
+      mqttCli.value = new Paho.Client(
+        host,
+        parseInt(strPort),
+        '/mqtt',
+        import.meta.env.VITE_MQTT_CLIENT + Math.random().toString(16).substring(2, 8)
+      )
     }
-    mqttCli.value?.on('connect', () => addMessage('开始任务……'))
-    mqttCli.value?.on('error', (e: any) => addMessage('[ERROR]' + JSON.stringify(e)))
-    mqttCli.value?.on('message', async (topic: string, msg: any) => {
-      if (topic === props.topic) {
-        addMessage(msg.toString())
-        if (msg.toString().startsWith('[STOP]')) {
-          await stopListen()
-        }
-      }
-    })
+    if (!mqttCli.value.isConnected()) {
+      mqttCli.value.connect({
+        onSuccess: () => {
+          mqttCli.value?.subscribe(props.topic)
+          addMessage('开始任务……')
+        },
+        onFailure: err => addMessage('[ERROR]' + err.errorMessage)
+      })
+    }
+    mqttCli.value.onConnectionLost = err => addMessage('[WARN]' + err.errorMessage)
+    mqttCli.value.onMessageArrived = msg => addMessage(msg.payloadString)
   } else {
     if (!ess.value) {
       ess.value = new EventSource(props.url)
@@ -113,9 +113,9 @@ function startListen() {
 }
 async function stopListen() {
   addMessage('停止任务……')
-  if (mqttCli.value?.connected) {
-    await mqttCli.value?.unsubscribeAsync(props.topic)
-    await mqttCli.value?.endAsync()
+  if (mqttCli.value?.isConnected()) {
+    mqttCli.value.unsubscribe(props.topic)
+    mqttCli.value.disconnect()
   }
   if (ess.value?.readyState) {
     ess.value?.close()

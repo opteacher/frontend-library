@@ -8,6 +8,8 @@ import { bsTpDefault } from '@/types'
 import FormItem from '../components/FormItem.vue'
 import { createByFields } from '@/types/mapper'
 import { setProp } from '@/utils'
+import type { MapperType } from '../types/mapper'
+import type Mapper from '../types/mapper'
 
 const route = useRoute()
 const compo = reactive(new Component())
@@ -64,7 +66,7 @@ async function refresh() {
         <h1 class="text-xl font-bold">状态栏</h1>
       </a-space>
       <a-form :model="attrs" :label-col="{ span: 6 }">
-        <template v-for="(value, key) in mapper" :key="key">
+        <template v-for="(value, key) in mapper as Mapper" :key="key">
           <div v-if="value.type === 'FormGroup'" class="border pt-5 px-2.5 my-5 relative rounded">
             <p
               class="absolute bg-white text-gray-300 text-base left-1.5 -top-2.5"
@@ -77,7 +79,7 @@ async function refresh() {
               class="mb-3"
               :form="attrs"
               :skey="k"
-              :mapper="(v as Object)"
+              :mapper="(v as MapperType)"
             />
           </div>
           <FormItem v-else class="mb-3" :form="attrs" :skey="(key as string)" :mapper="value" />

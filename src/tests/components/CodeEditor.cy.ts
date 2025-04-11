@@ -1,5 +1,5 @@
 /// <reference path="../../../cypress/support/component.ts" />
-import CodeEditor from '@/components/CodeEditor.vue'
+import CodeEditor from '../../components/CodeEditor.vue'
 
 describe('<CodeEditor />', () => {
   describe('正常显示', () => {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { CompoType } from '.'
+import { type CompoType } from '.'
 import Field from './field'
 export default class Compo {
   key: string

@@ -4,7 +4,7 @@
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 
-import { CompoType, Cond, OpnType } from '.'
+import { type CompoType, Cond, type OpnType } from '.'
 import Column from './column'
 import Field from './field'
 import { Dayjs } from 'dayjs'

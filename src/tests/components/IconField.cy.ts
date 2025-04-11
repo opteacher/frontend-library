@@ -1,5 +1,5 @@
 /// <reference path="../../../cypress/support/component.ts" />
-import IconField from '@/components/IconField.vue'
+import IconField from '../../components/IconField.vue'
 
 const IdAddBtn = 'button.w-full'
 const IdMdlMsk = '.ant-modal-root .ant-modal-mask'

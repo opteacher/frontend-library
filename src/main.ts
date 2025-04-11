@@ -4,7 +4,7 @@ import router from './router'
 import Antd from 'ant-design-vue'
 import MyLib from './index'
 
-import 'ant-design-vue/dist/antd.css'
+import 'ant-design-vue/dist/reset.css'
 import './assets/main.css'
 
 const app = createApp(App)
