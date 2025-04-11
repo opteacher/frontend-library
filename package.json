@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
-    "@types/paho-mqtt": "^1.0.10",
     "ant-design-vue": "^4.2.6",
     "codemirror": "^6.0.1",
     "codemirror-editor-vue3": "^2.8.0",
@@ -44,6 +43,7 @@
     "@types/jsdom": "^20.0.1",
     "@types/lodash": "^4.17.13",
     "@types/node": "^22.9.0",
+    "@types/paho-mqtt": "^1.0.10",
     "@types/qs": "^6.9.17",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-vue": "^5.2.1",
