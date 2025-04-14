@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { gnlCpy } from '@/utils'
 import { type CompoType } from '.'
 import Field from './field'
 export default class Compo {
@@ -32,22 +33,9 @@ export default class Compo {
   }
 
   static copy(src: any, tgt?: Compo, force = false): Compo {
-    tgt = tgt || new Compo()
-    tgt.key = force ? (src.key || src._id) : (src.key || src._id || tgt.key)
-    tgt.name = force ? src.name : src.name || tgt.name
-    tgt.ctype = force ? src.ctype : src.ctype || tgt.ctype
-    tgt.category = force ? src.category : src.category || tgt.category
-    if (src.props) {
-      tgt.props = src.props.map((field: any) => Field.copy(field))
-    } else if (force) {
-      tgt.props = []
-    }
-    tgt.inner = force ? src.inner : src.inner || tgt.inner
-    if (src.components) {
-      tgt.components = src.components.map((compo: any) => Compo.copy(compo))
-    } else if (force) {
-      tgt.components = []
-    }
-    return tgt
+    return gnlCpy(Compo, src, tgt, {
+      force,
+      cpyMapper: { props: Field.copy, components: Compo.copy }
+    })
   }
 }

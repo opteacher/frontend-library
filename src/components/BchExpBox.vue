@@ -65,7 +65,7 @@
               :style="
                 column.key in binds.colors
                   ? {
-                      'background-color': clrMap[binds.colors[column.key]]
+                      'background-color': colorDict[binds.colors[column.key]]
                     }
                   : undefined
               "
@@ -107,7 +107,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { ExportOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
 import { read, utils } from 'xlsx'
-import { type Color, Cond, clrMap, colors } from '../types'
+import { type Color, Cond, colorDict, colors } from '../types'
 import { getDftPjt } from '../utils'
 import { genDspColumns, genDspRecords } from '../utils'
 import Batch from '../types/batch'

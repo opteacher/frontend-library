@@ -4,7 +4,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import Component from '../types/compo'
 import apis from '../apis'
 import { useRoute } from 'vue-router'
-import { bsTpDefault } from '@/types'
+import { typeDftVal } from '@/types'
 import FormItem from '../components/FormItem.vue'
 import { createByFields } from '@/types/mapper'
 import { setProp } from '@/utils'
@@ -40,7 +40,7 @@ async function refresh() {
     if (prop.vModel) {
       vmAttr.value = prop.refer
     }
-    setProp(attrs, prop.refer, prop.default || bsTpDefault(prop.vtype))
+    setProp(attrs, prop.refer, prop.default || typeDftVal(prop.vtype))
   }
 }
 </script>

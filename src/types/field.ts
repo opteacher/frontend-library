@@ -1,19 +1,24 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { type BaseTypes, type CompoType } from '.'
+import { gnlCpy } from '@/utils'
+import { Cond, type BaseTypes, type CompoType } from '.'
 
 export default class Field {
   key: string
   label: string
   desc: string
+  ftype: CompoType // 表单组件类型
   vtype: BaseTypes // 绑定值的类型
   default: any // 默认值
-  ftype: CompoType // 表单组件类型
   rules: any[]
   refer: string
   placeholder: string
+  disabled: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  display: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  empty: boolean
   vModel: boolean
+  onChange: (newVal: any, oldVal: any) => any
   extra: any
 
   constructor() {
@@ -26,7 +31,11 @@ export default class Field {
     this.rules = []
     this.refer = ''
     this.placeholder = ''
+    this.disabled = false
+    this.display = true
+    this.empty = false
     this.vModel = false
+    this.onChange = () => undefined
     this.extra = {}
   }
 
@@ -40,28 +49,21 @@ export default class Field {
     this.rules = []
     this.refer = ''
     this.placeholder = ''
+    this.disabled = false
+    this.display = true
+    this.empty = false
     this.vModel = false
+    this.onChange = () => undefined
     this.extra = {}
   }
 
   static copy(src: any, tgt?: Field, force = false): Field {
-    tgt = tgt || new Field()
-    const srcKey = src.key || src._id || ''
-    tgt.key = force ? srcKey : srcKey || tgt.key
-    tgt.label = force ? src.label : src.label || tgt.label
-    tgt.desc = force ? src.desc : src.desc || tgt.desc
-    tgt.vtype = force ? src.vtype : src.vtype || tgt.vtype
+    tgt = gnlCpy(Field, src, tgt, { force, ignProps: ['default', 'disabled', 'display'] })
     tgt.default = force
-      ? cvtValByType(src.default, tgt.vtype)
+      ? cvtValByType(src.default, tgt.vtype) 
       : src.default
       ? cvtValByType(src.default, tgt.vtype)
       : tgt.default
-    tgt.ftype = force ? src.ftype : src.ftype || tgt.ftype
-    tgt.rules = force ? src.rules : src.rules || tgt.rules
-    tgt.refer = force ? src.refer : src.refer || tgt.refer
-    tgt.placeholder = force ? src.placeholder : src.placeholder || tgt.placeholder
-    tgt.vModel = force ? src.vModel : typeof src.vModel !== 'undefined' ? src.vModel : tgt.vModel
-    tgt.extra = force ? src.extra : src.extra || tgt.extra
     return tgt
   }
 }
@@ -74,5 +76,43 @@ function cvtValByType(value: any, type: BaseTypes) {
       return typeof value === 'string' ? new Function(value) : value
     default:
       return value
+  }
+}
+
+export function fieldsDftVals(fields: Field[]) {
+  return Object.fromEntries(fields.map(f => [f.refer, fieldDftVal(f.ftype)]))
+}
+
+export function fieldDftVal(ctype: CompoType) {
+  switch (ctype) {
+    case 'Number':
+      return 0
+    case 'DateTime':
+    case 'Select':
+      return null
+    case 'Checkbox':
+    case 'Switch':
+      return false
+    case 'Table':
+    case 'UploadFile':
+    case 'Cascader':
+    case 'ListSelect':
+    case 'EditList':
+    case 'TagList':
+      return []
+    case 'Input':
+    case 'Password':
+    case 'Textarea':
+    case 'Delable':
+    case 'SelOrIpt':
+    case 'CodeEditor':
+    case 'IconField':
+    case 'Radio':
+    default:
+      return ''
+    case 'IpAddress':
+      return '0.0.0.0'
+    case 'JsonEditor':
+      return '{}'
   }
 }

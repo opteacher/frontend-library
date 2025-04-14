@@ -1,5 +1,8 @@
 <template>
-  <div class="border border-solid border-gray-300 rounded">
+  <div
+    class="border border-solid border-gray-300 rounded"
+    :style="{ height: typeof dftHgt === 'number' ? `${dftHgt}px` : dftHgt }"
+  >
     <v-ace-editor
       v-model:value="editing"
       :lang="lang"
@@ -7,6 +10,7 @@
       class="h-full"
       :readonly="disabled"
       :options="{ tabSize: 2 }"
+      @blur="updToVal"
     />
   </div>
 </template>
@@ -18,6 +22,7 @@ import 'ace-builds/src-min-noconflict/theme-chrome'
 import 'ace-builds/src-min-noconflict/mode-javascript'
 import 'ace-builds/src-min-noconflict/mode-json'
 import 'ace-builds/src-min-noconflict/ext-language_tools'
+import { fixStartsWith } from '@/utils'
 
 export default defineComponent({
   name: 'CodeEditor',
@@ -27,6 +32,7 @@ export default defineComponent({
   emits: ['update:value'],
   props: {
     value: { type: [String, Object, Function], required: true },
+    dftHgt: { type: [String, Number], default: '12rem' },
     lang: { type: String, default: 'javascript' },
     disabled: { type: Boolean, default: false }
   },
@@ -34,7 +40,6 @@ export default defineComponent({
     const editing = ref<string>('')
 
     updFmVal()
-    watch(() => editing.value, updToVal)
     watch(() => props.value, updFmVal)
 
     function vtype() {
@@ -70,7 +75,7 @@ export default defineComponent({
             emit('update:value', JSON.parse(editing.value))
             break
           case Function:
-            emit('update:value', eval(`function () {${editing.value}}`))
+            emit('update:value', fixStartsWith(editing.value, 'return '))
             break
           case String:
           default:
@@ -81,7 +86,10 @@ export default defineComponent({
       }
     }
     return {
-      editing
+      editing,
+
+      updFmVal,
+      updToVal
     }
   }
 })

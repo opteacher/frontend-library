@@ -398,6 +398,13 @@ export function fixStartsWith(text: string, prefix: string) {
   return (text.substring(0, prefix.length) !== prefix ? prefix : '') + text
 }
 
+export function fixEndsWith(text: string, suffix: string) {
+  if (text.length < suffix.length) {
+    return suffix
+  }
+  return text + (text.slice(-suffix.length) !== suffix ? suffix : '')
+}
+
 export function rmvStartsOf(text: string, prefix: string) {
   return text.substring(0, prefix.length) === prefix ? text.substring(prefix.length) : text
 }

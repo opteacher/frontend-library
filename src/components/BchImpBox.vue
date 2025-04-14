@@ -75,7 +75,7 @@
               :style="
                 column.key in binds.colors
                   ? {
-                      'background-color': clrMap[binds.colors[column.key]]
+                      'background-color': colorDict[binds.colors[column.key]]
                     }
                   : undefined
               "
@@ -112,7 +112,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { reactive, watch } from 'vue'
 import { type WorkBook, read, utils } from 'xlsx'
 
-import { type Color, Cond, colors, clrMap } from '../types'
+import { type Color, Cond, colors, colorDict } from '../types'
 import Column from '../types/column'
 import Mapper from '../types/mapper'
 import { getDftPjt } from '../utils'

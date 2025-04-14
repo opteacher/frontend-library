@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getProperty } from '../utils'
+import dayjs from 'dayjs'
+import { fixEndsWith, fixStartsWith, getProperty } from '../utils'
 
 export const compares = {
   '=': '等于',
@@ -50,7 +51,7 @@ export class Cond {
   }
 }
 
-export const cmpLblMap = {
+export const cmpNickDict = {
   Text: '文本框',
   Block: '块',
   FormDialog: '表单对话框',
@@ -87,43 +88,9 @@ export const cmpLblMap = {
   Unknown: '未知'
 }
 
-export type CompoType = keyof typeof cmpLblMap
+export type CompoType = keyof typeof cmpNickDict
 
-export const compoOpns = Object.entries(cmpLblMap).map(([value, label]) => ({ label, value }))
-
-export function compoDftVal(ctype: CompoType) {
-  switch (ctype) {
-    case 'Number':
-      return 0
-    case 'DateTime':
-    case 'Select':
-      return null
-    case 'Checkbox':
-    case 'Switch':
-      return false
-    case 'Table':
-    case 'UploadFile':
-    case 'Cascader':
-    case 'ListSelect':
-    case 'EditList':
-    case 'TagList':
-      return []
-    case 'Input':
-    case 'Password':
-    case 'Textarea':
-    case 'Delable':
-    case 'SelOrIpt':
-    case 'CodeEditor':
-    case 'IconField':
-    case 'Radio':
-    default:
-      return ''
-    case 'IpAddress':
-      return '0.0.0.0'
-    case 'JsonEditor':
-      return '{}'
-  }
-}
+export const compoOpns = Object.entries(cmpNickDict).map(([value, label]) => ({ label, value }))
 
 export type OpnType = {
   label: string
@@ -134,7 +101,7 @@ export type OpnType = {
 
 export type CmpRel = 'AND' | 'OR'
 
-export const bsTpMap = {
+export const typeDict = {
   Id: '标识',
   String: '字符串',
   LongStr: '长字符串',
@@ -148,15 +115,15 @@ export const bsTpMap = {
   Unknown: '未知'
 }
 
-export const bsTpOpns = Object.entries(bsTpMap).map(([value, label]) => ({ label, value }))
+export const typeOpns = Object.entries(typeDict).map(([value, label]) => ({ label, value }))
 
-export const baseTypes = Object.keys(bsTpMap)
+export const baseTypes = Object.keys(typeDict)
 
 export const methods = ['POST', 'PUT', 'DELETE', 'GET']
 
-export type BaseTypes = keyof typeof bsTpMap
+export type BaseTypes = keyof typeof typeDict
 
-export function bsTpDefault(bsTp: BaseTypes) {
+export function typeDftVal(bsTp: BaseTypes) {
   switch (bsTp) {
     case 'Id':
     case 'Any':
@@ -175,10 +142,42 @@ export function bsTpDefault(bsTp: BaseTypes) {
     case 'Object':
       return {}
     case 'Function':
-      return () => ({})
+      return function () {
+        return
+      }
     case 'Unknown':
     default:
       return undefined
+  }
+}
+
+const boolDict = { true: true, false: false }
+
+export function strToType(str: string, bsTp: BaseTypes) {
+  switch (bsTp) {
+    case 'Number':
+      return str.includes('.') ? parseFloat(str) : parseInt(str)
+    case 'Boolean':
+      return str.toLowerCase() in boolDict
+        ? boolDict[str.toLowerCase() as keyof typeof boolDict]
+        : str
+    case 'DateTime':
+      return dayjs(str)
+    case 'Array':
+      return fixEndsWith(fixStartsWith(str, '['), ']')
+        .split(',')
+        .map(itm => itm.trim())
+    case 'Object':
+      return JSON.parse(str)
+    case 'Function':
+      return (new Function(str))()
+    case 'Id':
+    case 'Any':
+    case 'Unknown':
+    case 'String':
+    case 'LongStr':
+    default:
+      return str
   }
 }
 
@@ -197,7 +196,7 @@ export const colors: Color[] = [
   'blue'
 ]
 
-export const clrMap = {
+export const colorDict = {
   warning: '#ff9900',
   error: '#ff3300',
   success: '#00cc66',
@@ -211,4 +210,4 @@ export const clrMap = {
   green: '#389e0d',
   blue: '#0958d9'
 }
-export type Color = keyof typeof clrMap
+export type Color = keyof typeof colorDict
