@@ -17,7 +17,7 @@ export default class Field {
   disabled: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   display: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   empty: boolean
-  vModel: boolean
+  vModel: boolean // 双向绑定
   onChange: (newVal: any, oldVal: any) => any
   extra: any
 
