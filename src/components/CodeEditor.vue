@@ -1,13 +1,13 @@
 <template>
   <div
-    class="border border-solid border-gray-300 rounded"
-    :style="{ height: typeof dftHgt === 'number' ? `${dftHgt}px` : dftHgt }"
+    class="flex flex-col border border-solid border-gray-300 rounded"
+    :style="{ height: dftHgt + 'px' }"
   >
     <v-ace-editor
       v-model:value="editing"
       :lang="lang"
       theme="chrome"
-      class="h-full"
+      class="flex-1"
       :readonly="disabled"
       :options="{ tabSize: 2 }"
       @blur="updToVal"
@@ -32,7 +32,7 @@ export default defineComponent({
   emits: ['update:value'],
   props: {
     value: { type: [String, Object, Function], required: true },
-    dftHgt: { type: [String, Number], default: '12rem' },
+    dftHgt: { type: Number, default: 200 },
     lang: { type: String, default: 'javascript' },
     disabled: { type: Boolean, default: false }
   },

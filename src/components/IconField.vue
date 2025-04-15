@@ -2,7 +2,7 @@
   <a-button class="w-full" @click="visible = true">
     <template #icon>
       <keep-alive v-if="icon">
-        <component :is="icon" />
+        <component :is="getIconCompo(icon)" />
       </keep-alive>
     </template>
     {{ icon || '请选择图标' }}
@@ -21,17 +21,17 @@
             @click="selIcon = icon"
           >
             <keep-alive>
-              <component
-                :is="icon"
-                v-bind="{ class: 'text-4xl' }"
-              />
+              <component :is="getIconCompo(icon)" v-bind="{ class: 'text-4xl' }" />
             </keep-alive>
             <p class="mb-0">{{ icon }}</p>
           </a-col>
         </a-row>
         <a-divider />
         <div class="flex justify-between items-center">
-          <div>选中图标：<a>{{ selIcon }}</a></div>
+          <div>
+            选中图标：
+            <a>{{ selIcon }}</a>
+          </div>
           <a-pagination
             v-if="pages.num"
             v-model:current="pages.cur"
@@ -45,10 +45,8 @@
 </template>
 
 <script lang="ts" setup name="IconField">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import antdIcons from '@ant-design/icons-vue/lib/icons'
-
-type IconsKey = 'ant-design'
+import { computed, onMounted, reactive, ref, watch, type Component } from 'vue'
+import * as antdIcons from '@ant-design/icons-vue/lib/icons'
 
 const iconsMapper = {
   'ant-design': antdIcons
@@ -59,7 +57,7 @@ defineProps({
 })
 const visible = ref(false)
 const search = ref('')
-const selTab = ref('ant-design' as IconsKey)
+const selTab = ref('ant-design' as keyof typeof iconsMapper)
 const icons = reactive([] as string[][])
 const pages = reactive({
   num: 0,
@@ -74,9 +72,7 @@ watch(() => search.value, refresh)
 function refresh() {
   let iconsLibs = Object.keys(iconsMapper[selTab.value])
   if (search.value) {
-    iconsLibs = iconsLibs.filter((icnKey: string) =>
-      icnKey.toLowerCase().includes(search.value)
-    )
+    iconsLibs = iconsLibs.filter((icnKey: string) => icnKey.toLowerCase().includes(search.value))
   }
   icons.splice(0, icons.length)
   for (let i = 0; i < iconsLibs.length; i += 4) {
@@ -103,6 +99,9 @@ function refresh() {
 function onIconSelect() {
   emit('update:icon', selIcon.value)
   visible.value = false
+}
+function getIconCompo(name: string): Component {
+  return (iconsMapper[selTab.value] as Record<string, Component>)[name]
 }
 </script>
 

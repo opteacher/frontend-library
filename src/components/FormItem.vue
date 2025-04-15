@@ -334,9 +334,9 @@
           </EditList>
           <CodeEditor
             v-else-if="mapper.type === 'CodeEditor'"
-            class="h-80"
             :disabled="disabled"
             :lang="mapper.lang"
+            :dft-hgt="mapper.height"
             :value="getProp(form, skey, fieldDftVal(mapper.type))"
             @update:value="onFieldChanged"
           />

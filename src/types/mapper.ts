@@ -326,15 +326,18 @@ export class GroupMapper extends BaseMapper {
 
 export class CdEdtMapper extends BaseMapper {
   lang: 'javascript' | 'json'
+  height: number
 
   constructor() {
     super()
     this.lang = 'javascript'
+    this.height = 200
   }
 
   reset() {
     super.reset()
     this.lang = 'javascript'
+    this.height = 200
   }
 }
 
@@ -512,5 +515,6 @@ export function createByFields(fields: Field[]): Mapper {
       }
     }
   }
+  console.log(data)
   return new Mapper(data)
 }

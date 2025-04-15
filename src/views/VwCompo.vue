@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { ControlOutlined } from '@ant-design/icons-vue'
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch, createVNode } from 'vue'
 import Component from '../types/compo'
-import apis from '../apis'
 import { useRoute } from 'vue-router'
 import { typeDftVal } from '@/types'
-import FormItem from '../components/FormItem.vue'
 import { createByFields } from '@/types/mapper'
 import { setProp } from '@/utils'
-import type { MapperType } from '../types/mapper'
-import type Mapper from '../types/mapper'
+import compos from '../compos.json'
+import FormGroup from '@/components/FormGroup.vue'
 
 const route = useRoute()
+const rszLytX = ref(-1)
+const attrWid = reactive([400, 400]) // 拖动前宽度；拖动后宽度
 const compo = reactive(new Component())
 const attrs = reactive({} as Record<string, any>)
 const vmAttr = ref('')
 const mapper = computed(() => createByFields(compo.props))
+const rules = computed(() => Object.fromEntries(compo.props.map(prop => [prop.refer, prop.rules])))
 
 onMounted(refresh)
 watch(() => route.query.name, refresh)
@@ -25,14 +26,11 @@ async function refresh() {
   if (!cmpName) {
     return
   }
-  // if (cmpName === 'FormDialog') {
-  //   router.push('/' + cmpName)
-  // }
-  const result = await apis.component.get(cmpName)
+  const result = compos[cmpName as keyof typeof compos]
   if (!result) {
     return
   }
-  Component.copy(result, compo, true)
+  Component.copy({ name: cmpName, ...result }, compo, true)
   for (const key in attrs) {
     delete attrs[key.substring(key.indexOf('.') !== -1 ? key.indexOf('.') : 0)]
   }
@@ -43,10 +41,19 @@ async function refresh() {
     setProp(attrs, prop.refer, prop.default || typeDftVal(prop.vtype))
   }
 }
+function onMouseMove(e: MouseEvent) {
+  if (rszLytX.value !== -1) {
+    attrWid[1] = attrWid[0] - (e.clientX - rszLytX.value)
+  }
+}
+function onLytRszStart(e: MouseEvent) {
+  rszLytX.value = e.clientX
+  attrWid[0] = attrWid[1]
+}
 </script>
 
 <template>
-  <a-layout class="h-full">
+  <a-layout class="h-full" @mousemove="onMouseMove" @mouseup="() => (rszLytX = -1)">
     <a-layout-content class="p-3 overflow-auto">
       <keep-alive v-if="compo.name">
         <component :is="compo.name" v-bind="attrs" v-model:[vmAttr]="attrs[vmAttr]">
@@ -60,31 +67,14 @@ async function refresh() {
         </component>
       </keep-alive>
     </a-layout-content>
-    <a-layout-sider class="h-full p-3 overflow-y-auto" theme="light" width="30vw">
-      <a-space class="mb-3" align="center">
-        <control-outlined class="text-xl" />
-        <h1 class="text-xl font-bold">状态栏</h1>
-      </a-space>
-      <a-form :model="attrs" :label-col="{ span: 6 }">
-        <template v-for="(value, key) in mapper as Mapper" :key="key">
-          <div v-if="value.type === 'FormGroup'" class="border pt-5 px-2.5 my-5 relative rounded">
-            <p
-              class="absolute bg-white text-gray-300 text-base left-1.5 -top-2.5"
-            >
-              {{ value.label }}
-            </p>
-            <FormItem
-              v-for="(v, k) in (value.items as Record<string, any>)"
-              :key="k"
-              class="mb-3"
-              :form="attrs"
-              :skey="k"
-              :mapper="(v as MapperType)"
-            />
-          </div>
-          <FormItem v-else class="mb-3" :form="attrs" :skey="(key as string)" :mapper="value" />
-        </template>
-      </a-form>
+    <a-button class="h-full px-0.5 hover:cursor-ew-resize" @mousedown="onLytRszStart" />
+    <a-layout-sider class="h-full p-3 overflow-y-auto" theme="light" :width="attrWid[1]">
+      <a-page-header
+        title="状态栏"
+        class="px-0 pt-0"
+        :avatar="{ shape: 'square', icon: createVNode(ControlOutlined) }"
+      />
+      <FormGroup lbl-algn="left" :lbl-wid="5" :mapper="mapper" :form="attrs" :rules="rules" />
     </a-layout-sider>
   </a-layout>
 </template>
