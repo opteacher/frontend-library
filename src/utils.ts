@@ -43,27 +43,25 @@ export async function makeRequest(pms: Promise<any>, options?: RequestOptions): 
   if (!options.messages.notShow) {
     message.loading(options.messages.loading || '加载中……')
   }
-  let resp = await pms
-  if (!options.orgRes) {
-    resp = resp.data
-  }
+  const resp = await pms
+  const resData = resp.data
   if (!options.messages.notShow) {
     message.destroy()
   }
-  options.middles.after && options.middles.after(resp)
-  let result = resp
+  options.middles.after && options.middles.after(options.orgRes ? resp : resData)
+  let ret = resData
   if (options.orgRes) {
-    result = resp
+    ret = resp
   } else {
-    if (typeof resp.result !== 'undefined') {
-      result = resp.result
-    } else if (typeof resp.data !== 'undefined') {
-      result = resp.data
+    if (typeof resData.ret !== 'undefined') {
+      ret = resData.ret
+    } else if (typeof resData.data !== 'undefined') {
+      ret = resData.data
     }
     if (options.copy) {
-      result = Array.isArray(result)
-        ? result.map((item: any) => options && options.copy && options.copy(item))
-        : options.copy(result)
+      ret = Array.isArray(ret)
+        ? ret.map((item: any) => options && options.copy && options.copy(item))
+        : options.copy(ret)
     }
   }
 
@@ -71,18 +69,18 @@ export async function makeRequest(pms: Promise<any>, options?: RequestOptions): 
     if (resp.status !== 200) {
       if (options.messages.failed) {
         notification.error({ message: options.messages.failed, description: resp.statusText })
-      } else if (resp.error || result.error) {
-        notification.error({ message: resp.error || result.error })
+      } else if (resData.error || ret.error) {
+        notification.error({ message: resData.error || ret.error })
       }
     } else {
       if (options.messages.succeed) {
         message.success(options.messages.succeed)
-      } else if (result.message) {
-        message.success(result.message)
+      } else if (ret.message) {
+        message.success(ret.message)
       }
     }
   }
-  return Promise.resolve(result)
+  return Promise.resolve(ret)
 }
 
 function reqType(options?: RequestOptions): string {
