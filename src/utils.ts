@@ -1,4 +1,4 @@
-import { message } from 'ant-design-vue'
+import { message, notification } from 'ant-design-vue'
 import axios, { type AxiosRequestConfig } from 'axios'
 import dayjs from 'dayjs'
 import qs from 'qs'
@@ -67,17 +67,19 @@ export async function makeRequest(pms: Promise<any>, options?: RequestOptions): 
     }
   }
 
-  if (resp.error || result.error) {
-    if (!options.messages.notShow && options.messages.failed) {
-      message.error(options.messages.failed)
+  if (!options.messages.notShow) {
+    if (resp.status !== 200) {
+      if (options.messages.failed) {
+        notification.error({ message: options.messages.failed, description: resp.statusText })
+      } else if (resp.error || result.error) {
+        notification.error({ message: resp.error || result.error })
+      }
     } else {
-      message.error(resp.error || result.error)
-    }
-  } else {
-    if (!options.messages.notShow && options.messages.succeed) {
-      message.success(options.messages.succeed)
-    } else if (result.message) {
-      message.success(result.message)
+      if (options.messages.succeed) {
+        message.success(options.messages.succeed)
+      } else if (result.message) {
+        message.success(result.message)
+      }
     }
   }
   return Promise.resolve(result)
