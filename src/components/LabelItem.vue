@@ -5,7 +5,7 @@ const props = defineProps({
   value: { type: [Object, String, Number], required: true },
   prop: { type: String, default: '' },
   subPrp: { type: String, default: '' },
-  mapper: { type: Object, default: () => ({}) }
+  dict: { type: Object, default: () => ({}) }
 })
 const title = computed(() => pickText(props.prop))
 const desc = computed(() => props.subPrp ? pickText(props.subPrp) : '')
@@ -21,7 +21,7 @@ function pickText(prop: string): string {
   } else {
     val = props.value as string
   }
-  return val in props.mapper ? props.mapper[val] : val
+  return val in props.dict ? props.dict[val] : val
 }
 </script>
 

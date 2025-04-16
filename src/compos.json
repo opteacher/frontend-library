@@ -301,6 +301,13 @@
     "category": "field",
     "props": [
       {
+        "label": "值",
+        "refer": "value",
+        "vtype": "Array",
+        "ftype": "EditList",
+        "vModel": true
+      },
+      {
         "label": "标签字段",
         "refer": "lblProp",
         "vtype": "String",
@@ -308,23 +315,40 @@
       },
       {
         "label": "抹平元素",
-        "desc": "抹平单元素表单列表：[{ key: 'abc' }] => ['abc']，（注意：会抹去元素的键信息）",
+        "placeholder": "抹平单元素表单列表：[{ key: 'abc' }] => ['abc']，（注意：会抹去元素的键信息）",
         "refer": "flatItem",
         "vtype": "Boolean",
         "ftype": "Checkbox",
         "default": true
       },
       {
+        "label": "标签映射",
+        "refer": "lblDict",
+        "vtype": "Object",
+        "ftype": "JsonEditor",
+        "extra": {
+          "mainMenuBar": false,
+          "navigationBar": false,
+          "statusBar": false
+        }
+      },
+      {
         "label": "表单信息",
         "refer": "mapper",
         "vtype": "Object",
-        "ftype": "CodeEditor"
+        "ftype": "JsonEditor",
+        "extra": {
+          "mainMenuBar": false,
+          "navigationBar": false,
+          "statusBar": false
+        }
       },
       {
         "label": "新增函数",
         "refer": "newFun",
         "vtype": "Function",
-        "ftype": "CodeEditor"
+        "ftype": "CodeEditor",
+        "default": "return () => ({})"
       }
     ]
   },

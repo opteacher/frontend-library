@@ -5,9 +5,10 @@ import Component from '../types/compo'
 import { useRoute } from 'vue-router'
 import { typeDftVal } from '@/types'
 import { createByFields } from '@/types/mapper'
-import { setProp } from '@/utils'
+import { gnlCpy, setProp } from '@/utils'
 import compos from '../compos.json'
 import FormGroup from '@/components/FormGroup.vue'
+import { fieldsDftVals } from '@/types/field'
 
 const route = useRoute()
 const rszLytX = ref(-1)
@@ -19,10 +20,10 @@ const mapper = computed(() => createByFields(compo.props))
 const rules = computed(() => Object.fromEntries(compo.props.map(prop => [prop.refer, prop.rules])))
 
 onMounted(refresh)
-watch(() => route.query.name, refresh)
+watch(() => route.params.name, refresh)
 
 async function refresh() {
-  const cmpName = route.query.name as string
+  const cmpName = route.params.name as string
   if (!cmpName) {
     return
   }
@@ -50,6 +51,13 @@ function onLytRszStart(e: MouseEvent) {
   rszLytX.value = e.clientX
   attrWid[0] = attrWid[1]
 }
+function onAttrsSave() {
+  console.log(attrs)
+}
+function onFormUpdate(values: Record<string, any>) {
+  gnlCpy(() => fieldsDftVals(compo.props), values, attrs)
+  console.log(attrs)
+}
 </script>
 
 <template>
@@ -73,8 +81,19 @@ function onLytRszStart(e: MouseEvent) {
         title="状态栏"
         class="px-0 pt-0"
         :avatar="{ shape: 'square', icon: createVNode(ControlOutlined) }"
+      >
+        <template #extra>
+          <a-button type="primary" @click="onAttrsSave">保存</a-button>
+        </template>
+      </a-page-header>
+      <FormGroup
+        lbl-algn="left"
+        :lbl-wid="5"
+        :mapper="mapper"
+        :form="attrs"
+        :rules="rules"
+        @update:fprop="onFormUpdate"
       />
-      <FormGroup lbl-algn="left" :lbl-wid="5" :mapper="mapper" :form="attrs" :rules="rules" />
     </a-layout-sider>
   </a-layout>
 </template>

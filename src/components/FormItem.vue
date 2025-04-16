@@ -343,13 +343,24 @@
           <JsonEditor
             v-else-if="mapper.type === 'JsonEditor'"
             :disabled="disabled"
+            :mode="mapper.mode"
+            :mainMenuBar="mapper.mainMenuBar"
+            :navigationBar="mapper.navigationBar"
+            :statusBar="mapper.statusBar"
             :value="getProp(form, skey, fieldDftVal(mapper.type))"
             @update:value="onFieldChanged"
           />
           <TagList
             v-else-if="mapper.type === 'TagList'"
-            :mapper="mapper"
+            :disabled="disabled"
+            :flatItem="mapper.flatItem"
+            :lblProp="mapper.lblProp"
+            :lblDict="mapper.lblDict"
+            :mapper="mapper.mapper"
+            :new-fun="mapper.newFun"
             :value="getProp(form, skey, fieldDftVal(mapper.type))"
+            @saved="mapper.onSaved"
+            @added="mapper.onAdded"
             @update:value="onFieldChanged"
           >
             <template #formItem="{ form, elKey, value }">
@@ -435,10 +446,10 @@ function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   }
 }
 function onFieldChanged(newVal: any) {
-  emit('update:fprop', { [props.skey]: newVal })
   if (props.mapper.onChange) {
-    props.mapper.onChange(props.form, newVal)
+    props.mapper.onChange(props.form, newVal, props.form[props.skey])
   }
+  emit('update:fprop', { [props.skey]: newVal })
 }
 function chkInSlot(suffix?: string) {
   const key = props.skey + (suffix || '')

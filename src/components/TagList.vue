@@ -1,20 +1,20 @@
 <template>
   <template v-for="item in value" :key="item">
     <a-tag closable @close="onRmvTagClick(item)">
-      <LabelItem :value="item as any" :prop="mapper.lblProp" :mapper="mapper.lblMapper" />
+      <LabelItem :value="item as any" :prop="lblProp" :dict="lblDict" />
     </a-tag>
   </template>
   <a-button
     :type="addFlag ? 'primary' : 'dashed'"
     size="small"
-    :disabled="mapper.disabled"
+    :disabled="disabled"
     @click="onNewTagClick"
   >
     <template #icon><plus-outlined /></template>
     添加
   </a-button>
   <a-form v-if="addFlag" class="mt-2" :model="addState" @finish="onAddTagSubmit">
-    <template v-for="(value, key) in mapper.mapper">
+    <template v-for="(value, key) in mapper">
       <slot name="formItem" v-bind="{ form: addState, elKey: key.toString(), value }" />
     </template>
     <a-form-item class="mb-0">
@@ -29,21 +29,26 @@
 <script lang="ts" setup name="TagList">
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
-import { ref } from 'vue'
+import { ref, type PropType } from 'vue'
 
 import LabelItem from './LabelItem.vue'
 
-const emit = defineEmits(['update:value'])
+const emit = defineEmits(['saved', 'added', 'update:value'])
 const props = defineProps({
+  flatItem: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+  lblProp: { type: String, default: '' },
+  lblDict: { type: Object as PropType<Record<any, string>>, default: {} },
   mapper: { type: Object, required: true },
+  newFun: { type: Function, default: () => ({}) },
   value: { type: Array, required: true }
 })
 const addFlag = ref(false)
-const addState = ref(props.mapper.newFun())
+const addState = ref(props.newFun())
 
 function onNewTagClick() {
-  if (!addFlag.value && props.mapper.onAdded) {
-    props.mapper.onAdded(addState.value, props.value)
+  if (!addFlag.value) {
+    emit('added', addState.value, props.value)
   }
   addFlag.value = !addFlag.value
 }
@@ -53,17 +58,13 @@ async function onRmvTagClick(key: any) {
 }
 function onAddTagSubmit(form: any) {
   // 根据需要打平新增项
-  if (props.mapper.flatItem) {
+  if (props.flatItem) {
     form = Object.values(form)[0]
   }
-  emit(
-    'update:value',
-    props.mapper.onSaved
-      ? props.mapper.onSaved(form, props.value)
-      : props.value.concat(cloneDeep(form))
-  )
+  emit('saved', form, props.value)
+  emit('update:value', props.value.concat(cloneDeep(form)))
   addFlag.value = false
-  addState.value = props.mapper.newFun()
+  addState.value = props.newFun()
 }
 function onCclClick() {
   addFlag.value = false

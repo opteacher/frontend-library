@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { gnlCpy } from '@/utils'
+import { fixStartsWith, gnlCpy } from '@/utils'
 import { Cond, type BaseTypes, type CompoType } from '.'
 
 export default class Field {
@@ -58,22 +58,23 @@ export default class Field {
   }
 
   static copy(src: any, tgt?: Field, force = false): Field {
-    tgt = gnlCpy(Field, src, tgt, { force, ignProps: ['default', 'disabled', 'display'] })
-    tgt.default = force
-      ? cvtValByType(src.default, tgt.vtype) 
-      : src.default
-      ? cvtValByType(src.default, tgt.vtype)
-      : tgt.default
-    return tgt
+    return gnlCpy(Field, src, tgt, {
+      force,
+      cpyMapper: {
+        default: () => cvtValByType(src.default, src.vtype),
+        onChange: () => cvtValByType(src.onChange, 'Function')
+      },
+      ignProps: ['disabled', 'display']
+    })
   }
 }
 
-function cvtValByType(value: any, type: BaseTypes) {
+export function cvtValByType(value: any, type: BaseTypes) {
   switch (type) {
     case 'Object':
       return typeof value === 'string' ? JSON.parse(value) : value
     case 'Function':
-      return typeof value === 'string' ? new Function(value) : value
+      return typeof value === 'string' ? new Function(fixStartsWith(value, 'return '))() : value
     default:
       return value
   }

@@ -1,5 +1,5 @@
 <template>
-  <div ref="editor" />
+  <div ref="editor" :style="{ height: '200px' }" />
 </template>
 
 <script setup lang="ts" name="JsonEditor">

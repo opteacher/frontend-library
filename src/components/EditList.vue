@@ -26,7 +26,7 @@
           </template>
           <LabelItem
             :value="item"
-            :mapper="mapper.lblMapper"
+            :dict="mapper.lblDict"
             :prop="mapper.lblProp"
             :sub-prp="mapper.subProp"
           />
