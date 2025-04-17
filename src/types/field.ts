@@ -20,6 +20,7 @@ export default class Field {
   display: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   empty: boolean
   vModel: boolean // 双向绑定
+  vOn: boolean // 事件绑定，vtype固定为Function
   onChange: (newVal: any, oldVal: any) => any
   extra: any
 
@@ -38,6 +39,7 @@ export default class Field {
     this.display = true
     this.empty = false
     this.vModel = false
+    this.vOn = false
     this.onChange = () => undefined
     this.extra = {}
   }
@@ -57,6 +59,7 @@ export default class Field {
     this.display = true
     this.empty = false
     this.vModel = false
+    this.vOn = false
     this.onChange = () => undefined
     this.extra = {}
   }

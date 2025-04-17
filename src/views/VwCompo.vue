@@ -12,7 +12,6 @@ import { fieldsDftVals } from '@/types/field'
 import FlexDivider from '@/components/FlexDivider.vue'
 import { TinyEmitter } from 'tiny-emitter'
 import _ from 'lodash'
-import { cmpNickDict } from '@/types/index'
 
 const route = useRoute()
 const attrWid = ref(400) // 拖动前宽度；拖动后宽度
@@ -45,7 +44,6 @@ async function refresh() {
     }
     setProp(attrs, prop.refer, prop.default || typeDftVal(prop.vtype))
   }
-  attrs.cmpNickDict = cmpNickDict
 }
 function onAttrsSave() {
   console.log(attrs)
@@ -64,15 +62,14 @@ function onFormUpdate(values: Record<string, any>) {
     <a-layout-content class="p-3 overflow-auto">
       <keep-alive v-if="compo.name">
         <component :is="compo.name" v-bind="attrs" v-model:[vmAttr]="attrs[vmAttr]">
-          <template v-if="compo.components.length">
-            <template v-for="cmp in compo.components" :key="cmp.name" v-slot[cmp.slot]="params">
-              <component
-                :is="cmp.name"
-                v-bind="Object.fromEntries(cmp.props.map(p => [p.key, params[p.refer]]))"
-              />
-            </template>
+          <template v-if="!compo.components.length">{{ compo.inner }}</template>
+          <template v-for="cmp in compo.components" :key="cmp.name" #[cmp.slot]="params">
+            <component
+              :is="cmp.name"
+              v-bind="Object.fromEntries(cmp.props.map(p => [p.refer, params[p.default]]))"
+              v-on="Object.fromEntries(cmp.props.filter(p => p.vOn).map(p => [p.refer, p.default]))"
+            />
           </template>
-          <template v-else>{{ compo.inner }}</template>
         </component>
       </keep-alive>
     </a-layout-content>

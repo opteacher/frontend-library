@@ -304,22 +304,25 @@
         "name": "FormItem",
         "ctype": "Unknown",
         "category": "field",
-        "slot": "form-item",
+        "slot": "formItem",
         "props": [
           {
-            "key": "form",
             "refer": "form",
-            "vtype": "String"
+            "default": "form"
           },
           {
-            "key": "skey",
-            "vtype": "String",
-            "refer": "elKey"
+            "refer": "skey",
+            "default": "elKey"
           },
           {
-            "key": "mapper",
-            "vtype": "String",
-            "refer": "value"
+            "refer": "mapper",
+            "default": "value"
+          },
+          {
+            "refer": "update:fprop",
+            "vtype": "Function",
+            "vOn": true,
+            "default": "return values => console.log(values)"
           }
         ]
       }
@@ -330,7 +333,15 @@
         "refer": "value",
         "vtype": "Array",
         "ftype": "EditList",
-        "vModel": true
+        "vModel": true,
+        "extra": {
+          "inline": true,
+          "mapper": {
+            "content": {
+              "type": "Input"
+            }
+          }
+        }
       },
       {
         "label": "标签字段",
