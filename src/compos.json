@@ -299,6 +299,31 @@
   "TagList": {
     "ctype": "Array",
     "category": "field",
+    "components": [
+      {
+        "name": "FormItem",
+        "ctype": "Unknown",
+        "category": "field",
+        "slot": "form-item",
+        "props": [
+          {
+            "key": "form",
+            "refer": "form",
+            "vtype": "String"
+          },
+          {
+            "key": "skey",
+            "vtype": "String",
+            "refer": "elKey"
+          },
+          {
+            "key": "mapper",
+            "vtype": "String",
+            "refer": "value"
+          }
+        ]
+      }
+    ],
     "props": [
       {
         "label": "值",
@@ -311,7 +336,8 @@
         "label": "标签字段",
         "refer": "lblProp",
         "vtype": "String",
-        "ftype": "Select"
+        "ftype": "Select",
+        "placeholder": "Object.keys(mapper)，如果抹平元素，则该选项禁用"
       },
       {
         "label": "抹平元素",
@@ -326,6 +352,7 @@
         "refer": "lblDict",
         "vtype": "Object",
         "ftype": "JsonEditor",
+        "expable": true,
         "extra": {
           "mainMenuBar": false,
           "navigationBar": false,
@@ -337,6 +364,12 @@
         "refer": "mapper",
         "vtype": "Object",
         "ftype": "JsonEditor",
+        "expable": true,
+        "default": {
+          "content": {
+            "type": "Input"
+          }
+        },
         "extra": {
           "mainMenuBar": false,
           "navigationBar": false,
@@ -348,7 +381,8 @@
         "refer": "newFun",
         "vtype": "Function",
         "ftype": "CodeEditor",
-        "default": "return () => ({})"
+        "default": "return () => ({ content: '' })",
+        "expable": true
       }
     ]
   },
@@ -357,111 +391,98 @@
     "category": "field",
     "props": [
       {
-        "label": "标签",
-        "refer": "value.label",
-        "ftype": "Input",
-        "vtype": "String"
-      },
-      {
-        "label": "描述",
-        "refer": "value.desc",
-        "ftype": "Textarea",
-        "vtype": "String"
-      },
-      {
-        "label": "类型",
-        "refer": "value.type",
-        "ftype": "Select",
-        "vtype": "String",
-        "default": "Unknown",
+        "label": "所属表单",
+        "vtype": "Object",
+        "ftype": "JsonEditor",
+        "refer": "form",
+        "expable": true,
+        "default": {
+          "Input": "",
+          "Password": "",
+          "Number": 0,
+          "Textarea": "",
+          "CodeEditor": "",
+          "Select": "",
+          "Cascader": [],
+          "ListSelect": [],
+          "TagList": [],
+          "Datetime": "2025-01-01T00:00:00.000Z",
+          "Checkbox": false,
+          "Switch": false,
+          "Table": [],
+          "Delable": "",
+          "SelOrIpt": "",
+          "Upload": []
+        },
         "extra": {
-          "options": [
-            {
-              "label": "输入框",
-              "value": "Input"
-            },
-            {
-              "label": "密码框",
-              "value": "Password"
-            },
-            {
-              "label": "数字框",
-              "value": "Number"
-            },
-            {
-              "label": "按钮",
-              "value": "Button"
-            },
-            {
-              "label": "选择框",
-              "value": "Select"
-            },
-            {
-              "label": "日期选择",
-              "value": "DateTime"
-            },
-            {
-              "label": "多选框",
-              "value": "Checkbox"
-            },
-            {
-              "label": "单选框",
-              "value": "Switch"
-            },
-            {
-              "label": "可编辑表",
-              "value": "Table"
-            },
-            {
-              "label": "多行输入框",
-              "value": "Textarea"
-            },
-            {
-              "label": "可删除",
-              "value": "Delable"
-            },
-            {
-              "label": "可选可输入",
-              "value": "SelOrIpt"
-            },
-            {
-              "label": "上传",
-              "value": "Upload"
-            },
-            {
-              "label": "层级选择框",
-              "value": "Cascader"
-            },
-            {
-              "label": "列表选择框",
-              "value": "ListSelect"
-            },
-            {
-              "label": "代码编辑框",
-              "value": "CodeEditor"
-            },
-            {
-              "label": "可编辑列表",
-              "value": "EditList"
-            },
-            {
-              "label": "未知",
-              "value": "Unknown"
-            }
-          ]
+          "mainMenuBar": false,
+          "navigationBar": false,
+          "statusBar": false
         }
       },
       {
-        "label": "占位描述",
-        "refer": "value.placeholder",
-        "ftype": "Input",
-        "vtype": "String"
+        "label": "表单Key",
+        "refer": "skey",
+        "vtype": "String",
+        "ftype": "Select",
+        "default": "Input",
+        "extra": {
+          "options": [
+            { "label": "Input", "value": "Input" },
+            { "label": "Password", "value": "Password" },
+            { "label": "Number", "value": "Number" },
+            { "label": "Textarea", "value": "Textarea" },
+            { "label": "CodeEditor", "value": "CodeEditor" },
+            { "label": "Select", "value": "Select" },
+            { "label": "Cascader", "value": "Cascader" },
+            { "label": "ListSelect", "value": "ListSelect" },
+            { "label": "TagList", "value": "TagList" },
+            { "label": "Datetime", "value": "Datetime" },
+            { "label": "Checkbox", "value": "Checkbox" },
+            { "label": "Switch", "value": "Switch" },
+            { "label": "Table", "value": "Table" },
+            { "label": "Delable", "value": "Delable" },
+            { "label": "SelOrIpt", "value": "SelOrIpt" },
+            { "label": "Upload", "value": "Upload" }
+          ]
+        },
+        "onChange": "return (state, value) => (state.mapper = { label: state.cmpNickDict[value], type: value })"
       },
       {
-        "label": "校验规则",
-        "refer": "value.rules",
-        "ftype": "EditList",
-        "vtype": "Array"
+        "label": "标签宽度",
+        "refer": "lblWid",
+        "vtype": "Number",
+        "ftype": "Number",
+        "default": 4
+      },
+      {
+        "label": "可编辑",
+        "refer": "editable",
+        "vtype": "Boolean",
+        "ftype": "Switch",
+        "default": true
+      },
+      {
+        "label": "只读",
+        "refer": "viewOnly",
+        "vtype": "Boolean",
+        "ftype": "Switch",
+        "default": false
+      },
+      {
+        "label": "表单结构",
+        "refer": "mapper",
+        "vtype": "Object",
+        "ftype": "JsonEditor",
+        "default": {
+          "label": "输入框",
+          "type": "Input"
+        },
+        "extra": {
+          "mainMenuBar": false,
+          "navigationBar": false,
+          "statusBar": false
+        }
       }
     ]
   },

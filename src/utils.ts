@@ -665,7 +665,7 @@ export function getProp(obj: any, prop: string, dftVal: any = undefined) {
       obj = obj[p]
     }
   }
-  return obj
+  return obj || dftVal
 }
 
 export function setProp(

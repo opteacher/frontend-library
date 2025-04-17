@@ -8,6 +8,7 @@ import { type CompoType, Cond, type OpnType } from '.'
 import Column from './column'
 import Field from './field'
 import { Dayjs } from 'dayjs'
+import { gnlCpy } from '@/utils'
 
 export class BaseMapper {
   label: string
@@ -20,6 +21,7 @@ export class BaseMapper {
   loading: boolean
   display: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   empty: boolean
+  expable: boolean
   onChange: (record: any, to: any, from?: any, extra?: any) => void
 
   constructor() {
@@ -33,6 +35,7 @@ export class BaseMapper {
     this.loading = false
     this.display = true
     this.empty = false
+    this.expable = false
     this.onChange = () => undefined
   }
 
@@ -47,6 +50,7 @@ export class BaseMapper {
     this.loading = false
     this.display = true
     this.empty = false
+    this.expable = false
     this.onChange = () => undefined
   }
 }
@@ -496,6 +500,7 @@ export function createByField(field: Field): MapperType {
     label: field.label,
     desc: field.desc,
     rules: field.rules,
+    expable: typeof field.expable !== 'undefined' ? field.expable : undefined,
     placeholder: field.placeholder,
     onChange: field.onChange,
     empty: field.empty,

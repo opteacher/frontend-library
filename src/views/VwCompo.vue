@@ -9,10 +9,14 @@ import { gnlCpy, setProp } from '@/utils'
 import compos from '../compos.json'
 import FormGroup from '@/components/FormGroup.vue'
 import { fieldsDftVals } from '@/types/field'
+import FlexDivider from '@/components/FlexDivider.vue'
+import { TinyEmitter } from 'tiny-emitter'
+import _ from 'lodash'
+import { cmpNickDict } from '@/types/index'
 
 const route = useRoute()
-const rszLytX = ref(-1)
-const attrWid = reactive([400, 400]) // 拖动前宽度；拖动后宽度
+const attrWid = ref(400) // 拖动前宽度；拖动后宽度
+const emitter = new TinyEmitter()
 const compo = reactive(new Component())
 const attrs = reactive({} as Record<string, any>)
 const vmAttr = ref('')
@@ -41,42 +45,39 @@ async function refresh() {
     }
     setProp(attrs, prop.refer, prop.default || typeDftVal(prop.vtype))
   }
-}
-function onMouseMove(e: MouseEvent) {
-  if (rszLytX.value !== -1) {
-    attrWid[1] = attrWid[0] - (e.clientX - rszLytX.value)
-  }
-}
-function onLytRszStart(e: MouseEvent) {
-  rszLytX.value = e.clientX
-  attrWid[0] = attrWid[1]
+  attrs.cmpNickDict = cmpNickDict
 }
 function onAttrsSave() {
   console.log(attrs)
 }
 function onFormUpdate(values: Record<string, any>) {
   gnlCpy(() => fieldsDftVals(compo.props), values, attrs)
-  console.log(attrs)
 }
 </script>
 
 <template>
-  <a-layout class="h-full" @mousemove="onMouseMove" @mouseup="() => (rszLytX = -1)">
+  <a-layout
+    class="h-full"
+    @mousemove="(e: MouseEvent) => emitter.emit('mousemove', e)"
+    @mouseup="() => emitter.emit('mouseup')"
+  >
     <a-layout-content class="p-3 overflow-auto">
       <keep-alive v-if="compo.name">
         <component :is="compo.name" v-bind="attrs" v-model:[vmAttr]="attrs[vmAttr]">
-          <component
-            v-if="compo.components.length"
-            v-for="subCmp in compo.components"
-            :key="subCmp.name"
-            :is="subCmp.name"
-          />
+          <template v-if="compo.components.length">
+            <template v-for="cmp in compo.components" :key="cmp.name" v-slot[cmp.slot]="params">
+              <component
+                :is="cmp.name"
+                v-bind="Object.fromEntries(cmp.props.map(p => [p.key, params[p.refer]]))"
+              />
+            </template>
+          </template>
           <template v-else>{{ compo.inner }}</template>
         </component>
       </keep-alive>
     </a-layout-content>
-    <a-button class="h-full px-0.5 hover:cursor-ew-resize" @mousedown="onLytRszStart" />
-    <a-layout-sider class="h-full p-3 overflow-y-auto" theme="light" :width="attrWid[1]">
+    <FlexDivider orientation="vertical" v-model:widHgt="attrWid" :emitter="emitter" />
+    <a-layout-sider class="h-full p-3 overflow-y-auto" theme="light" :width="attrWid">
       <a-page-header
         title="状态栏"
         class="px-0 pt-0"

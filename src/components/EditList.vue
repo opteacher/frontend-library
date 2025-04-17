@@ -1,14 +1,21 @@
 <template>
-  <a-button v-if="!addMod" class="w-full" type="primary" :disabled="mapper.disabled" ghost @click="onEdtLstShow">
+  <a-button
+    v-if="!addMod"
+    class="w-full"
+    type="primary"
+    :disabled="disabled"
+    ghost
+    @click="onEdtLstShow"
+  >
     添加{{ label }}
   </a-button>
   <a-form
     v-else
-    :layout="mapper.inline ? 'inline' : 'horizontal'"
+    :layout="inline ? 'inline' : 'horizontal'"
     :model="addState"
     @finish="onEdtLstAdd"
   >
-    <template v-for="(value, key) in mapper.mapper">
+    <template v-for="(value, key) in mapper">
       <slot name="formItem" v-bind="{ form: addState, elKey: key.toString(), value }" />
     </template>
     <div class="flex justify-end space-x-2">
@@ -24,12 +31,7 @@
           <template #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
-          <LabelItem
-            :value="item"
-            :dict="mapper.lblDict"
-            :prop="mapper.lblProp"
-            :sub-prp="mapper.subProp"
-          />
+          <LabelItem :value="item" :dict="lblDict" :prop="lblProp" :sub-prp="subProp" />
         </a-list-item>
       </template>
     </a-list>
@@ -38,18 +40,25 @@
 
 <script lang="ts" setup name="EditList">
 import { cloneDeep } from 'lodash'
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch, type PropType } from 'vue'
 
 import LabelItem from './LabelItem.vue'
 
-const emit = defineEmits(['update:value'])
+const emit = defineEmits(['update:value', 'added'])
 const props = defineProps({
   label: { type: String, default: '项' },
   value: { type: Array, default: () => [] },
-  mapper: { type: Object, required: true }
+  disabled: { type: Boolean, default: false },
+  mapper: { type: Object, required: true },
+  newFun: { type: Function, default: () => ({}) },
+  flatItem: { type: Boolean, default: false },
+  lblDict: { type: Object as PropType<Record<any, string>>, default: {} },
+  lblProp: { type: String, default: '' },
+  subProp: { type: String, default: '' },
+  inline: { type: Boolean, default: true }
 })
 const addMod = ref(false)
-const addState = ref(props.mapper.newFun ? props.mapper.newFun() : {})
+const addState = ref(props.newFun())
 const list = reactive([] as any[])
 
 onMounted(refresh)
@@ -60,7 +69,7 @@ function refresh() {
 }
 function onEdtLstAdd() {
   let newItm = cloneDeep(addState.value)
-  if (props.mapper.flatItem) {
+  if (props.flatItem) {
     newItm = Object.values(newItm)
     if (newItm.length === 1) {
       newItm = newItm[0]
@@ -75,9 +84,7 @@ function onEdtLstCcl() {
   addMod.value = false
 }
 async function onEdtLstShow() {
-  if (props.mapper.onAdded) {
-    await props.mapper.onAdded(props.mapper)
-  }
+  emit('added', props.mapper)
   resetState()
   addMod.value = true
 }
@@ -89,7 +96,7 @@ function resetState() {
   if (addState.value.reset) {
     addState.value.reset()
   } else {
-    addState.value = props.mapper.newFun ? props.mapper.newFun() : {}
+    addState.value = props.newFun()
   }
 }
 </script>

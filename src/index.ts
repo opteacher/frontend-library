@@ -15,6 +15,7 @@ import BchImpBox from './components/BchImpBox.vue'
 import CButton from './components/CButton.vue'
 import OptSclPnl from './components/OptSclPnl.vue'
 import IpAddrInput from './components/IpAddrInput.vue'
+import FlexDivider from './components/FlexDivider.vue'
 
 export const components = {
     ColorSelect,
@@ -32,7 +33,8 @@ export const components = {
     BchImpBox,
     CButton,
     OptSclPnl,
-    IpAddrInput
+    IpAddrInput,
+    FlexDivider
 }
 
 export default function (app: App) {

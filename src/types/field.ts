@@ -3,6 +3,7 @@
 
 import { fixStartsWith, gnlCpy } from '@/utils'
 import { Cond, type BaseTypes, type CompoType } from '.'
+import _ from 'lodash'
 
 export default class Field {
   key: string
@@ -11,6 +12,7 @@ export default class Field {
   ftype: CompoType // 表单组件类型
   vtype: BaseTypes // 绑定值的类型
   default: any // 默认值
+  expable: boolean
   rules: any[]
   refer: string
   placeholder: string
@@ -27,6 +29,7 @@ export default class Field {
     this.desc = ''
     this.vtype = 'Unknown'
     this.default = undefined
+    this.expable = false
     this.ftype = 'Unknown'
     this.rules = []
     this.refer = ''
@@ -45,6 +48,7 @@ export default class Field {
     this.desc = ''
     this.vtype = 'Unknown'
     this.default = undefined
+    this.expable = false
     this.ftype = 'Unknown'
     this.rules = []
     this.refer = ''
