@@ -14,7 +14,7 @@ import { TinyEmitter } from 'tiny-emitter'
 import _ from 'lodash'
 
 const route = useRoute()
-const attrWid = ref(400) // 拖动前宽度；拖动后宽度
+const attrWid = ref(500) // 拖动前宽度；拖动后宽度
 const emitter = new TinyEmitter()
 const compo = reactive(new Component())
 const attrs = reactive({} as Record<string, any>)

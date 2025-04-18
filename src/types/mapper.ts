@@ -8,7 +8,6 @@ import { type CompoType, Cond, type OpnType } from '.'
 import Column from './column'
 import Field from './field'
 import { Dayjs } from 'dayjs'
-import { gnlCpy } from '@/utils'
 
 export class BaseMapper {
   label: string
@@ -503,6 +502,7 @@ export function createByField(field: Field): MapperType {
     expable: typeof field.expable !== 'undefined' ? field.expable : undefined,
     placeholder: field.placeholder,
     onChange: field.onChange,
+    onBlur: field.onBlur,
     empty: field.empty,
     ...(field.extra ? adjExtra(field.extra) : {})
   } as MapperType

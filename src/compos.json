@@ -457,7 +457,7 @@
             { "label": "Upload", "value": "Upload" }
           ]
         },
-        "onChange": "return (state, value) => (state.mapper = { label: state.cmpNickDict[value], type: value })"
+        "onChange": "return (state, value) => (state.mapper = { label: cmpNickDict[value], type: value })"
       },
       {
         "label": "标签宽度",

@@ -21,7 +21,8 @@ export default class Field {
   empty: boolean
   vModel: boolean // 双向绑定
   vOn: boolean // 事件绑定，vtype固定为Function
-  onChange: (newVal: any, oldVal: any) => any
+  onChange: (form: any, newVal: any, oldVal: any) => any
+  onBlur: (form: any, newVal: any, oldVal: any) => any
   extra: any
 
   constructor() {
@@ -41,6 +42,7 @@ export default class Field {
     this.vModel = false
     this.vOn = false
     this.onChange = () => undefined
+    this.onBlur = () => undefined
     this.extra = {}
   }
 
@@ -61,6 +63,7 @@ export default class Field {
     this.vModel = false
     this.vOn = false
     this.onChange = () => undefined
+    this.onBlur = () => undefined
     this.extra = {}
   }
 
@@ -69,7 +72,8 @@ export default class Field {
       force,
       cpyMapper: {
         default: () => cvtValByType(src.default, src.vtype),
-        onChange: () => cvtValByType(src.onChange, 'Function')
+        onChange: () => cvtValByType(src.onChange, 'Function'),
+        onBlur: () => cvtValByType(src.onBlur, 'Function')
       },
       ignProps: ['disabled', 'display']
     })
