@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { fixStartsWith, gnlCpy } from '@/utils'
+import { fixStartsWith, gnlCpy } from '../utils'
 import { Cond, type BaseTypes, type CompoType } from '.'
 import _ from 'lodash'
 

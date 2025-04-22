@@ -22,7 +22,7 @@ import 'ace-builds/src-min-noconflict/theme-chrome'
 import 'ace-builds/src-min-noconflict/mode-javascript'
 import 'ace-builds/src-min-noconflict/mode-json'
 import 'ace-builds/src-min-noconflict/ext-language_tools'
-import { fixStartsWith } from '@/utils'
+import { fixStartsWith } from '../utils'
 
 const emit = defineEmits(['update:value'])
 const props = defineProps({

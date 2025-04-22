@@ -53,8 +53,8 @@ export async function makeRequest(pms: Promise<any>, options?: RequestOptions): 
   if (options.orgRes) {
     ret = resp
   } else {
-    if (typeof resData.ret !== 'undefined') {
-      ret = resData.ret
+    if (typeof resData.result !== 'undefined') {
+      ret = resData.result
     } else if (typeof resData.data !== 'undefined') {
       ret = resData.data
     }
