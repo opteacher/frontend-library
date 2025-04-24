@@ -67,11 +67,17 @@ export async function makeRequest(pms: Promise<any>, options?: RequestOptions): 
 
   if (!options.messages.notShow) {
     if (resp.status !== 200) {
-      if (options.messages.failed) {
-        notification.error({ message: options.messages.failed, description: resp.statusText })
-      } else if (resData.error || ret.error) {
-        notification.error({ message: resData.error || ret.error })
-      }
+      notification.error({
+        message: '请求失败！',
+        description: [
+          (options.messages.failed || ''), resp.statusText
+        ].join('  ')
+      })
+    } else if (resData.error || ret.error) {
+      notification.error({
+        message: '请求失败！',
+        description: resData.error || ret.error
+      })
     } else {
       if (options.messages.succeed) {
         message.success(options.messages.succeed)
