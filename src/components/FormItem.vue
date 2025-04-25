@@ -26,7 +26,7 @@
     </a-divider>
     <div v-else class="flex">
       <slot v-if="chkInSlot('PFX')" :name="skey + 'PFX'" v-bind="{ formState: form }" />
-      <div class="flex-auto" :class="{ 'pl-2': chkInSlot('PFX'), 'pr-2': chkInSlot('SFX') }">
+      <div class="shrink-0 w-full" :class="{ 'pl-2': chkInSlot('PFX'), 'pr-2': chkInSlot('SFX') }">
         <template v-if="viewOnly">
           <slot v-if="chkInSlot('VW')" :name="skey + 'VW'" v-bind="{ formState: form }" />
           <template
