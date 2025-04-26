@@ -32,6 +32,10 @@ export class Cond {
     }
   }
 
+  static create(key: string, cmp: CmpType, val: any): Cond {
+    return new Cond({ key, cmp, val })
+  }
+
   isValid(object: Record<string, any>) {
     switch (this.cmp) {
       case '!=':
