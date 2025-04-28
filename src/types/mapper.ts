@@ -20,6 +20,7 @@ export class BaseMapper {
   loading: boolean
   display: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   empty: boolean
+  expable: boolean
   onChange: (record: any, to: any, from?: any, extra?: any) => void
 
   constructor() {
@@ -33,6 +34,7 @@ export class BaseMapper {
     this.loading = false
     this.display = true
     this.empty = false
+    this.expable = false
     this.onChange = () => undefined
   }
 
@@ -47,6 +49,7 @@ export class BaseMapper {
     this.loading = false
     this.display = true
     this.empty = false
+    this.expable = false
     this.onChange = () => undefined
   }
 }
@@ -260,7 +263,7 @@ export class LstSelMapper extends BaseMapper {
 export class EdtLstMapper extends BaseMapper {
   lblProp: string
   // 存在lblProp的情况下，则显示lblMapper[item[lblProp]]，不存在的话显示lblMapper[item]
-  lblMapper: Record<any, string>
+  lblDict: Record<any, string>
   inline: boolean
   // 抹平单元素表单列表：[{ key: 'abc' }] => ['abc']
   // 注意：会抹去元素的键信息
@@ -281,7 +284,7 @@ export class EdtLstMapper extends BaseMapper {
   constructor() {
     super()
     this.lblProp = ''
-    this.lblMapper = {}
+    this.lblDict = {}
     this.inline = true
     this.flatItem = true
     this.subProp = ''
@@ -295,7 +298,7 @@ export class EdtLstMapper extends BaseMapper {
   reset() {
     super.reset()
     this.lblProp = ''
-    this.lblMapper = {}
+    this.lblDict = {}
     this.inline = true
     this.flatItem = true
     this.subProp = ''
@@ -413,6 +416,21 @@ export class DateTimeMapper extends BaseMapper {
   }
 }
 
+export class JsonEditorMapper extends TextareaMapper {
+  mode: 'text' | 'tree' | 'table'
+  mainMenuBar: boolean
+  navigationBar: boolean
+  statusBar: boolean
+
+  constructor() {
+    super()
+    this.mode = 'text'
+    this.mainMenuBar = true
+    this.navigationBar = true
+    this.statusBar = true
+  }
+}
+
 const mapTypeTemps = {
   Unknown: () => new BaseMapper(),
   Input: () => new InputMapper(),
@@ -435,7 +453,7 @@ const mapTypeTemps = {
   TagList: () => new EdtLstMapper(),
   ListSelect: () => new LstSelMapper(),
   CodeEditor: () => new CdEdtMapper(),
-  JsonEditor: () => new TextareaMapper(),
+  JsonEditor: () => new JsonEditorMapper(),
   EditList: () => new EdtLstMapper(),
   FormGroup: () => new GroupMapper()
 } as { [mapType: string]: () => any }
@@ -476,16 +494,18 @@ function adjExtra(value: any): any {
 }
 
 export function createByField(field: Field): MapperType {
-  return Object.assign(
-    {
-      type: field.ftype,
-      label: field.label,
-      desc: field.desc,
-      rules: field.rules,
-      placeholder: field.placeholder
-    },
-    Object.fromEntries(Object.entries(field.extra || {}).map(([key, val]) => [key, adjExtra(val)]))
-  ) as MapperType
+  return {
+    type: field.ftype,
+    label: field.label,
+    desc: field.desc,
+    rules: field.rules,
+    expable: typeof field.expable !== 'undefined' ? field.expable : undefined,
+    placeholder: field.placeholder,
+    onChange: field.onChange,
+    onBlur: field.onBlur,
+    empty: field.empty,
+    ...(field.extra ? adjExtra(field.extra) : {})
+  } as MapperType
 }
 
 export function createByFields(fields: Field[]): Mapper {
@@ -515,6 +535,5 @@ export function createByFields(fields: Field[]): Mapper {
       }
     }
   }
-  console.log(data)
   return new Mapper(data)
 }

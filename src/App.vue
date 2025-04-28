@@ -24,7 +24,7 @@ const selKeys = computed<string[]>(() => [
 ])
 
 function onSdMuItmClick({ key }: { key: string }) {
-  router.push('/component?name=' + key)
+  router.push('/component/' + key)
 }
 </script>
 

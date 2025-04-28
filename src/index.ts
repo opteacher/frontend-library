@@ -9,11 +9,13 @@ import FormDialog from './components/FormDialog.vue'
 import CodeEditor from './components/CodeEditor.vue'
 import JsonEditor from './components/JsonEditor.vue'
 import EditableTable from './components/EditableTable.vue'
+import TagList from './components/TagList.vue'
 import BchExpBox from './components/BchExpBox.vue'
 import BchImpBox from './components/BchImpBox.vue'
 import CButton from './components/CButton.vue'
 import OptSclPnl from './components/OptSclPnl.vue'
 import IpAddrInput from './components/IpAddrInput.vue'
+import FlexDivider from './components/FlexDivider.vue'
 
 export const components = {
     ColorSelect,
@@ -26,11 +28,13 @@ export const components = {
     CodeEditor,
     JsonEditor,
     EditableTable,
+    TagList,
     BchExpBox,
     BchImpBox,
     CButton,
     OptSclPnl,
-    IpAddrInput
+    IpAddrInput,
+    FlexDivider
 }
 
 export default function (app: App) {

@@ -8,7 +8,11 @@
     :wrapper-col="{ offset: mapper.offset }"
   >
     <template v-if="mapper.label" #label>
-      {{ mapper.label }}&nbsp;
+      <a-button v-if="mapper.expable" size="small" @click="() => (expanded = !expanded)">
+        {{ mapper.label }}
+      </a-button>
+      <span v-else>{{ mapper.label }}</span>
+      &nbsp;
       <a-tooltip v-if="mapper.desc">
         <template #title>
           <pre>{{ mapper.desc }}</pre>
@@ -16,9 +20,13 @@
         <InfoCircleOutlined />
       </a-tooltip>
     </template>
-    <div class="flex">
+    <a-divider v-if="mapper.expable && !expanded" class="m-0 text-sm" orientation="left">
+      <arrow-left-outlined />
+      点击展开
+    </a-divider>
+    <div v-else class="flex">
       <slot v-if="chkInSlot('PFX')" :name="skey + 'PFX'" v-bind="{ formState: form }" />
-      <div class="flex-auto" :class="{ 'pl-2': chkInSlot('PFX'), 'pr-2': chkInSlot('SFX') }">
+      <div class="shrink-0 w-full" :class="{ 'pl-2': chkInSlot('PFX'), 'pr-2': chkInSlot('SFX') }">
         <template v-if="viewOnly">
           <slot v-if="chkInSlot('VW')" :name="skey + 'VW'" v-bind="{ formState: form }" />
           <template
@@ -116,7 +124,7 @@
           />
           <a-input-password
             v-else-if="mapper.type === 'Password'"
-            :value="getProp(form, skey, fieldDftVal(mapper.type))"
+            :value="getProp(form, skey, undefined)"
             :placeholder="mapper.placeholder || '请输入'"
             :disabled="disabled"
             @change="(e: any) => onFieldChanged(e.target.value)"
@@ -319,8 +327,16 @@
           />
           <EditList
             v-else-if="mapper.type === 'EditList'"
-            :mapper="mapper"
+            :disabled="disabled"
+            :newFun="mapper.newFun"
+            :flatItem="mapper.flatItem"
+            :lblDict="mapper.lblDict"
+            :lblProp="mapper.lblProp"
+            :subProp="mapper.subProp"
+            :inline="mapper.inline"
+            :mapper="mapper.mapper"
             :value="getProp(form, skey, fieldDftVal(mapper.type))"
+            @added="mapper.onAdded"
             @update:value="onFieldChanged"
           >
             <template #formItem="{ form, elKey, value }">
@@ -343,13 +359,24 @@
           <JsonEditor
             v-else-if="mapper.type === 'JsonEditor'"
             :disabled="disabled"
+            :mode="mapper.mode"
+            :mainMenuBar="mapper.mainMenuBar"
+            :navigationBar="mapper.navigationBar"
+            :statusBar="mapper.statusBar"
             :value="getProp(form, skey, fieldDftVal(mapper.type))"
             @update:value="onFieldChanged"
           />
           <TagList
             v-else-if="mapper.type === 'TagList'"
-            :mapper="mapper"
+            :disabled="disabled"
+            :flatItem="mapper.flatItem"
+            :lblProp="mapper.lblProp"
+            :lblDict="mapper.lblDict"
+            :mapper="mapper.mapper"
+            :new-fun="mapper.newFun"
             :value="getProp(form, skey, fieldDftVal(mapper.type))"
+            @saved="mapper.onSaved"
+            @added="mapper.onAdded"
             @update:value="onFieldChanged"
           >
             <template #formItem="{ form, elKey, value }">
@@ -376,7 +403,8 @@ import {
   CloseCircleOutlined,
   InfoCircleOutlined,
   EyeOutlined,
-  EyeInvisibleOutlined
+  EyeInvisibleOutlined,
+  ArrowLeftOutlined
 } from '@ant-design/icons-vue'
 import { type PropType, computed, ref, useSlots } from 'vue'
 
@@ -408,6 +436,7 @@ const disabled = computed(() => validConds(props.form, props.mapper.disabled) ||
 const onFpropChanged = (formState: any, values: any) =>
   Object.entries(values).map(([k, v]) => setProp(formState, k, v))
 const viewPwd = ref(false)
+const expanded = ref(false)
 
 function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   if (value instanceof Array) {
@@ -435,10 +464,10 @@ function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   }
 }
 function onFieldChanged(newVal: any) {
-  emit('update:fprop', { [props.skey]: newVal })
   if (props.mapper.onChange) {
-    props.mapper.onChange(props.form, newVal)
+    props.mapper.onChange(props.form, newVal, props.form[props.skey])
   }
+  emit('update:fprop', { [props.skey]: newVal })
 }
 function chkInSlot(suffix?: string) {
   const key = props.skey + (suffix || '')

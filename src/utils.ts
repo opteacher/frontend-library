@@ -67,11 +67,17 @@ export async function makeRequest(pms: Promise<any>, options?: RequestOptions): 
 
   if (!options.messages.notShow) {
     if (resp.status !== 200) {
-      if (options.messages.failed) {
-        notification.error({ message: options.messages.failed, description: resp.statusText })
-      } else if (resData.error || ret.error) {
-        notification.error({ message: resData.error || ret.error })
-      }
+      notification.error({
+        message: '请求失败！',
+        description: [
+          (options.messages.failed || ''), resp.statusText
+        ].join('  ')
+      })
+    } else if (resData.error || ret.error) {
+      notification.error({
+        message: '请求失败！',
+        description: resData.error || ret.error
+      })
     } else {
       if (options.messages.succeed) {
         message.success(options.messages.succeed)
@@ -665,7 +671,7 @@ export function getProp(obj: any, prop: string, dftVal: any = undefined) {
       obj = obj[p]
     }
   }
-  return obj
+  return obj || dftVal
 }
 
 export function setProp(
@@ -736,7 +742,7 @@ export function revsKeyVal(obj: any) {
   return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
 }
 
-export function notUndefAndNull(value: any) {
+export function notUndefOrNull(value: any) {
   return typeof value !== 'undefined' && value != null
 }
 
@@ -794,34 +800,37 @@ export function gnlCpy<T extends Record<string, any>>(
     if (options.ignProps.includes(key)) {
       continue
     }
-    if (
+    const srcNotUndefOrNull = notUndefOrNull(src[key])
+    if (key in options.cpyMapper) {
+      const cpy = options.cpyMapper[key]
+      if (Array.isArray(tgt[key]) && srcNotUndefOrNull && src[key].length) {
+        if (typeof src[key][0] === 'object') {
+          tgt[key].splice(0, tgt[key].length, ...src[key].map((ele: any) => cpy(ele)))
+        }
+      } else if (src[key]) {
+        const res = cpy(src[key] || {}, tgt[key], options.force)
+        if (res || options.force) {
+          setProp(tgt, key, res)
+        }
+      }
+    } else if (
       typeof tgt[key] === 'string' ||
       typeof tgt[key] === 'number' ||
       typeof tgt[key] === 'boolean' ||
       typeof tgt[key] === 'function'
     ) {
-      if (options.force || notUndefAndNull(src[key])) {
+      if (options.force || srcNotUndefOrNull) {
         setProp(tgt, key, src[key])
       }
     } else if (typeof tgt[key] === 'object' && tgt[key] instanceof dayjs) {
-      if (options.force || notUndefAndNull(src[key])) {
+      if (options.force || srcNotUndefOrNull) {
         setProp(tgt, key, src[key] ? dayjs(src[key]) : null)
       }
     } else if (Array.isArray(tgt[key])) {
       if (src[key]) {
-        if (typeof src[key][0] === 'object' && key in options.cpyMapper) {
-          const cpy = options.cpyMapper[key]
-          tgt[key].splice(0, tgt[key].length, ...src[key].map((ele: any) => cpy(ele)))
-        } else {
-          tgt[key].splice(0, tgt[key].length, ...src[key])
-        }
+        tgt[key].splice(0, tgt[key].length, ...src[key])
       } else if (options.force) {
         tgt[key].splice(0, tgt[key].length)
-      }
-    } else if (src[key] && key in options.cpyMapper) {
-      const res = options.cpyMapper[key](src[key] || {}, tgt[key], options.force)
-      if (!tgt[key]) {
-        setProp(tgt, key, res)
       }
     } else if (src[key] || options.force) {
       setProp(tgt, key, src[key])

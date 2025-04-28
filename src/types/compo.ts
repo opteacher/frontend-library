@@ -8,6 +8,7 @@ export default class Compo {
   name: string
   ctype: CompoType // 绑定类型
   category: string
+  slot: string
   props: Field[]
   inner: string
   components: Compo[]
@@ -17,6 +18,7 @@ export default class Compo {
     this.name = ''
     this.ctype = 'Unknown'
     this.category = ''
+    this.slot = ''
     this.props = []
     this.inner = ''
     this.components = []
@@ -27,6 +29,7 @@ export default class Compo {
     this.name = ''
     this.ctype = 'Unknown'
     this.category = ''
+    this.slot = ''
     this.props = []
     this.inner = ''
     this.components = []
