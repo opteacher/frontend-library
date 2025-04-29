@@ -58,10 +58,21 @@ export async function makeRequest(pms: Promise<any>, options?: RequestOptions): 
     } else if (typeof resData.data !== 'undefined') {
       ret = resData.data
     }
-    if (options.copy) {
-      ret = Array.isArray(ret)
-        ? ret.map((item: any) => options && options.copy && options.copy(item))
-        : options.copy(ret)
+    if (options && options.copy) {
+      const cpyFun = options.copy
+      if (Array.isArray(ret)) {
+        if (ret.length) {
+          if (cpyFun(ret[0]) instanceof Promise) {
+            ret = await Promise.all(ret.map((item: any) => cpyFun(item)))
+          } else {
+            ret = ret.map((item: any) => cpyFun(item))
+          }
+        } else {
+          ret = []
+        }
+      } else {
+        ret = cpyFun(ret) instanceof Promise ? await cpyFun(ret) : cpyFun(ret)
+      }
     }
   }
 
