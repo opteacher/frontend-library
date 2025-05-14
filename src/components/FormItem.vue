@@ -183,7 +183,7 @@
               </a-typography-text>
             </a-checkbox>
           </template>
-          <a-tooltip v-else-if="mapper.type === 'Switch'">
+          <a-space v-else-if="mapper.type === 'Switch'">
             <a-switch
               :checked="getProp(form, skey, fieldDftVal(mapper.type))"
               :disabled="disabled"
@@ -191,7 +191,8 @@
               :un-checked-children="mapper.chkLabels ? mapper.chkLabels[0] : ''"
               @change="onFieldChanged"
             />
-          </a-tooltip>
+            <span v-if="mapper.placeholder">{{ mapper.placeholder }}</span>
+          </a-space>
           <a-radio-group
             v-else-if="mapper.type === 'Radio'"
             class="w-full"
