@@ -1,5 +1,5 @@
 <template>
-  <a-button class="w-full" @click="visible = true">
+  <a-button class="w-full" :disabled="disabled" @click="visible = true">
     <template #icon>
       <keep-alive v-if="icon">
         <component :is="getIconCompo(icon)" />
@@ -8,7 +8,9 @@
     {{ icon || '请选择图标' }}
   </a-button>
   <a-modal v-model:open="visible" title="选择图标" width="60vw" @ok="onIconSelect">
-    <a-input v-model:value="search" placeholder="筛选图标" />
+    <a-form-item-rest>
+      <a-input v-model:value="search" placeholder="筛选图标" />
+    </a-form-item-rest>
     <a-tabs v-model:activeKey="selTab">
       <a-tab-pane key="ant-design" tab="ant图表库">
         <a-row v-for="group in icons.slice(begIdx, begIdx + 4)" :key="group[0]">
@@ -53,7 +55,8 @@ const iconsMapper = {
 }
 const emit = defineEmits(['update:icon'])
 defineProps({
-  icon: { type: String, default: '' }
+  icon: { type: String, default: '' },
+  disabled: { type: Boolean, default: false }
 })
 const visible = ref(false)
 const search = ref('')

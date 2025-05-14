@@ -455,6 +455,7 @@ const mapTypeTemps = {
   CodeEditor: () => new CdEdtMapper(),
   JsonEditor: () => new JsonEditorMapper(),
   EditList: () => new EdtLstMapper(),
+  IconField: () => new BaseMapper(),
   FormGroup: () => new GroupMapper()
 } as { [mapType: string]: () => any }
 
@@ -499,6 +500,7 @@ export function createByField(field: Field): MapperType {
     label: field.label,
     desc: field.desc,
     rules: field.rules,
+    display: field.display,
     expable: typeof field.expable !== 'undefined' ? field.expable : undefined,
     placeholder: field.placeholder,
     onChange: field.onChange,

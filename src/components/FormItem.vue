@@ -26,7 +26,7 @@
     </a-divider>
     <div v-else class="flex">
       <slot v-if="chkInSlot('PFX')" :name="skey + 'PFX'" v-bind="{ formState: form }" />
-      <div class="shrink-0 w-full" :class="{ 'pl-2': chkInSlot('PFX'), 'pr-2': chkInSlot('SFX') }">
+      <div class="shrink-0" :class="{ 'pl-2': chkInSlot('PFX'), 'pr-2': chkInSlot('SFX'), 'w-full': !chkInSlot('PFX') && !chkInSlot('SFX') }">
         <template v-if="viewOnly">
           <slot v-if="chkInSlot('VW')" :name="skey + 'VW'" v-bind="{ formState: form }" />
           <template
@@ -388,6 +388,12 @@
               />
             </template>
           </TagList>
+          <IconField
+            v-else-if="mapper.type === 'IconField'"
+            :disabled="disabled"
+            :icon="getProp(form, skey, fieldDftVal(mapper.type))"
+            @update:icon="onFieldChanged"
+          />
           <template v-else>
             {{ getProp(form, skey) }}
           </template>
@@ -421,6 +427,7 @@ import TagList from './TagList.vue'
 import UploadFile from './UploadFile.vue'
 import IpAddrInput from './IpAddrInput.vue'
 import { type MapperType } from '../types/mapper'
+import IconField from './IconField.vue'
 
 const props = defineProps({
   form: { type: Object, required: true },

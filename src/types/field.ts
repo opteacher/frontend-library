@@ -68,7 +68,7 @@ export default class Field {
   }
 
   static copy(src: any, tgt?: Field, force = false): Field {
-    return gnlCpy(Field, src, tgt, {
+    tgt = gnlCpy(Field, src, tgt, {
       force,
       cpyMapper: {
         default: () => cvtValByType(src.default, src.vtype),
@@ -77,6 +77,24 @@ export default class Field {
       },
       ignProps: ['disabled', 'display']
     })
+    const cpyConds = (prop: 'disabled' | 'display') => {
+      switch (true) {
+        case _.isArray(src[prop]):
+          tgt[prop] = src[prop].map((itm: any) => new Cond(itm))
+          break
+        case _.isObject(src[prop]):
+          tgt[prop] = Object.fromEntries(
+            Object.entries(src[prop]).map(([key, vals]: any) => [key, vals.map((itm: any) => new Cond(itm))])
+          )
+          break
+        case _.isBoolean(src[prop]):
+          tgt[prop] = src[prop]
+          break
+      }
+    }
+    cpyConds('disabled')
+    cpyConds('display')
+    return tgt
   }
 }
 
