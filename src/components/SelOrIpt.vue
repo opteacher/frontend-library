@@ -2,7 +2,7 @@
   <a-input-group compact class="flex">
     <a-select
       v-if="mode === 'select'"
-      class="flex-auto"
+      class="flex-1"
       :options="options"
       :value="value"
       :placeholder="placeholder || '请选择'"
@@ -11,7 +11,7 @@
     />
     <a-input
       v-else
-      class="flex-auto"
+      class="flex-1"
       :placeholder="placeholder || '请输入'"
       :value="value"
       :disabled="disabled"
