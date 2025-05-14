@@ -2,6 +2,8 @@
   <a-modal
     v-model:open="vsbState"
     :width="width"
+    :closable="closable"
+    :maskClosable="closable"
     :confirmLoading="!editable || okLoading"
     :footer="viewOnly ? null : undefined"
     @cancel="onCclClick"
@@ -25,7 +27,7 @@
         <slot name="footer" v-bind="formState" />
       </template>
       <template v-else>
-        <a-button type="default" @click="onCclClick">取消</a-button>
+        <a-button v-if="closable" type="default" @click="onCclClick">取消</a-button>
         <a-button type="primary" html-type="submit" @click="onOkClick">确定</a-button>
       </template>
     </template>
@@ -90,7 +92,8 @@ const props = defineProps({
   object: { type: Object, default: null },
   mapper: { type: Mapper, required: true },
   emitter: { type: Emitter, default: null },
-  operable: { type: Boolean, default: false }
+  operable: { type: Boolean, default: false },
+  closable: { type: Boolean, default: true }
 })
 const vsbState = ref<boolean>(props.visible)
 const iconState = ref<Raw<AntdIcons>>('')

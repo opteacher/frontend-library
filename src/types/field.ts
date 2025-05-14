@@ -77,14 +77,20 @@ export default class Field {
       },
       ignProps: ['disabled', 'display']
     })
-    const cpyConds = (prop: 'disabled' | 'display') => {
+    const cpyConds = (prop: 'disabled' | 'display', dftVal: any) => {
+      if (typeof src[prop] === 'undefined') {
+        tgt[prop] = force ? dftVal : tgt[prop]
+        return
+      }
       switch (true) {
         case _.isArray(src[prop]):
           tgt[prop] = src[prop].map((itm: any) => new Cond(itm))
           break
         case _.isObject(src[prop]):
           tgt[prop] = Object.fromEntries(
-            Object.entries(src[prop]).map(([key, vals]: any) => [key, vals.map((itm: any) => new Cond(itm))])
+            Object.entries(src[prop]).map(([key, vals]: any) => 
+              [key, vals.map((itm: any) => new Cond(itm))]
+            )
           )
           break
         case _.isBoolean(src[prop]):
@@ -92,8 +98,8 @@ export default class Field {
           break
       }
     }
-    cpyConds('disabled')
-    cpyConds('display')
+    cpyConds('disabled', false)
+    cpyConds('display', true)
     return tgt
   }
 }
