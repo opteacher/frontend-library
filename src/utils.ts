@@ -316,7 +316,7 @@ export function reqLink(
       body.child[1]
     ].join('/') + action
   if (link) {
-    return makeRequest(axios.put(url, options.axiosConfig), options)
+    return makeRequest(axios.put(url, options.axiosConfig?.data, options.axiosConfig), options)
   } else {
     return makeRequest(axios.delete(url, options.axiosConfig), options)
   }
