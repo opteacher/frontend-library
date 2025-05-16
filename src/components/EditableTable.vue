@@ -88,12 +88,12 @@
         </div>
       </template>
       <template #headerCell="{ column }: any">
-        <template v-if="$slots[column.key + 'HD']">
-          <slot :name="column.key + 'HD'" v-bind="{ column }" />
+        <template v-if="$slots[column.dataIndex + 'HD']">
+          <slot :name="column.dataIndex + 'HD'" v-bind="{ column }" />
         </template>
       </template>
       <template #bodyCell="{ text, column, record }: any">
-        <template v-if="column.key === 'opera'">
+        <template v-if="column.dataIndex === 'opera'">
           <div class="flex">
             <slot name="operaBefore" v-bind="{ record }" />
             <a-button
@@ -123,12 +123,12 @@
             <slot name="operaAfter" v-bind="{ record }" />
           </div>
         </template>
-        <slot v-else-if="$slots[column.key]" :name="column.key" v-bind="{ record }" />
+        <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
         <CellCard
           v-else
           :cell="getCells(column.dataIndex)"
           :text="getCellTxt(text, column.dict)"
-          :mapper="mapper[column.key]"
+          :mapper="mapper[column.dataIndex]"
           :record="record"
           :keyword="column.dataIndex in searchState ? searchState[column.dataIndex].content : ''"
         />

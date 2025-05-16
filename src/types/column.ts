@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { gnlCpy } from "../utils"
+
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 export default class Column {
   title: string
@@ -104,42 +107,18 @@ export default class Column {
     this.children = []
   }
 
-  static copy(src: any, tgt?: Column): Column {
-    tgt = tgt || new Column('', '')
-    tgt.key = src.key || src.dataIndex || tgt.key
-    tgt.title = src.title || tgt.title
-    tgt.dataIndex = src.dataIndex || tgt.dataIndex
-    tgt.group = src.group || tgt.group
-    tgt.width = src.width || tgt.width
-    tgt.align = src.align || tgt.align
+  static copy(src: any, tgt?: Column, force = false): Column {
+    tgt = gnlCpy(() => new Column('', ''), src, tgt, {
+      force,
+      ignProps: ['sorter'],
+      cpyMapper: { children: Column.copy }
+    })
     tgt.sorter =
       typeof src.sorter !== 'undefined'
         ? src.sorter
         : src.sortable
         ? (a: any, b: any) => (tgt ? a[tgt.dataIndex as string] - b[tgt.dataIndex as string] : 1)
         : undefined
-    tgt.defaultSortOrder =
-      typeof src.defaultSortOrder !== 'undefined'
-        ? src.defaultSortOrder
-        : typeof src.defaultSort !== 'undefined'
-        ? src.defaultSort
-        : ''
-    tgt.notDisplay = typeof src.notDisplay !== 'undefined' ? src.notDisplay : tgt.notDisplay
-    tgt.resizable = typeof src.resizable !== 'undefined' ? src.resizable : tgt.resizable
-    tgt.filterable = typeof src.filterable !== 'undefined' ? src.filterable : tgt.filterable
-    tgt.fixed = src.fixed || tgt.fixed
-    tgt.searchable = typeof src.searchable !== 'undefined' ? src.searchable : tgt.searchable
-    tgt.customFilterDropdown =
-      src.customFilterDropdown || src.searchable || tgt.customFilterDropdown
-    tgt.dict = src.dict || tgt.dict
-    tgt.onFilter = src.filter || src.onFilter || tgt.onFilter
-    tgt.custCell = src.custCell || tgt.custCell
-    tgt.custHdCell = src.custHdCell || tgt.custHdCell
-    tgt.children.splice(
-      0,
-      tgt.children.length,
-      ...(src.children || []).map((col: any) => Column.copy(col))
-    )
     return tgt
   }
 }
