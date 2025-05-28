@@ -127,6 +127,7 @@
             :value="getProp(form, skey, undefined)"
             :placeholder="mapper.placeholder || '请输入'"
             :disabled="disabled"
+            :visibility-toggle="mapper.visible"
             @change="(e: any) => onFieldChanged(e.target.value)"
             @blur="(e: any) => mapper.onBlur && mapper.onBlur(form, e.target.value)"
           />

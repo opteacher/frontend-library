@@ -77,6 +77,20 @@ export class InputMapper extends BaseMapper {
   }
 }
 
+export class PasswordMapper extends InputMapper {
+  visible: boolean
+
+  constructor() {
+    super()
+    this.visible = true
+  }
+
+  reset(): void {
+    super.reset()
+    this.visible = true
+  }
+}
+
 export class TextareaMapper extends BaseMapper {
   maxRows: number
   onBlur: (record: any, to: any) => void
@@ -436,7 +450,7 @@ const mapTypeTemps = {
   Input: () => new InputMapper(),
   Number: () => new InputMapper(),
   IpAddress: () => new BaseMapper(),
-  Password: () => new InputMapper(),
+  Password: () => new PasswordMapper(),
   Textarea: () => new TextareaMapper(),
   Select: () => new SelectMapper(),
   Cascader: () => new SelectMapper(),
