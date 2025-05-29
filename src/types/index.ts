@@ -110,6 +110,7 @@ export const typeDict = {
   String: '字符串',
   LongStr: '长字符串',
   Number: '数字',
+  Decimal: '高精浮点数',
   DateTime: '日期时间',
   Boolean: '布尔',
   Array: '数组',
@@ -133,6 +134,7 @@ export function typeDftVal(bsTp: BaseTypes) {
     case 'Any':
       return null
     case 'Number':
+    case 'Decimal':
       return 0
     case 'String':
     case 'LongStr':
@@ -160,6 +162,7 @@ const boolDict = { true: true, false: false }
 export function strToType(str: string, bsTp: BaseTypes) {
   switch (bsTp) {
     case 'Number':
+    case 'Decimal':
       return str.includes('.') ? parseFloat(str) : parseInt(str)
     case 'Boolean':
       return str.toLowerCase() in boolDict
