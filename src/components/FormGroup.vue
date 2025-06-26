@@ -7,18 +7,23 @@ import Mapper from '../types/mapper'
 import { validConds } from '../utils'
 import FormItem from './FormItem.vue'
 
-defineProps({
+const props = defineProps({
   lblWid: { type: Number, default: 4 },
   lblAlgn: { type: String, default: 'right' },
   layout: { type: String as PropType<'horizontal' | 'vertical' | 'inline'>, default: 'horizontal' },
   mapper: { type: Mapper, required: true },
   form: { type: Object, required: true },
-  rules: { type: Object, required: true },
+  rules: { type: Object, default: null },
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
 const emit = defineEmits(['update:fprop'])
 const refer = ref<FormInstance>()
+const formRules = props.rules || Object.fromEntries(
+  Object.entries(props.mapper).map(entry => {
+    return [entry[0], entry[1].rules]
+  })
+)
 
 defineExpose({ refer })
 </script>
@@ -27,7 +32,7 @@ defineExpose({ refer })
   <a-form
     ref="refer"
     :model="form"
-    :rules="rules"
+    :rules="formRules"
     :layout="layout"
     :label-col="layout === 'horizontal' ? { span: lblWid } : undefined"
     :wrapper-col="layout === 'horizontal' ? { span: 24 - lblWid } : undefined"
