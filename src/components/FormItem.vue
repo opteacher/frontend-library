@@ -4,7 +4,7 @@
     class="flex-auto"
     :ref="skey"
     :name="skey"
-    :rules="mapper.rules"
+    :rules="display ? mapper.rules : []"
     :wrapper-col="{ offset: mapper.offset }"
   >
     <template v-if="mapper.label" #label>
