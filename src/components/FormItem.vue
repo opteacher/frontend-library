@@ -332,6 +332,7 @@
             :disabled="disabled"
             :newFun="mapper.newFun"
             :flatItem="mapper.flatItem"
+            :label="mapper.label"
             :lblDict="mapper.lblDict"
             :lblProp="mapper.lblProp"
             :subProp="mapper.subProp"
