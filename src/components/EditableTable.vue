@@ -5,8 +5,10 @@
         <keep-alive v-if="icon">
           <component :is="`AntdIcons.${icon}`" v-bind="{ class: 'text-3xl' }" />
         </keep-alive>
-        <b>{{ title }}</b>&nbsp;
-        <span class="text-gray-400 text-sm">{{ description }}</span>
+        <slot v-if="$slots.title" name="title" />
+        <b v-else>{{ title }}</b>&nbsp;
+        <slot v-if="$slots.description" name="description" />
+        <span v-else class="text-gray-400 text-sm">{{ description }}</span>
       </h3>
       <a-space>
         <SelColBox v-if="dspCols" :columns="columns" @change="fmtColumns" />
@@ -34,7 +36,7 @@
     <a-table
       class="flex-1 overflow-hidden"
       :class="{ 'edtble-table': minHeight }"
-      :columns="colsState"
+      :columns="colsState as ColumnType[]"
       :data-source="records.data"
       :size="size"
       :rowClassName="() => 'bg-white'"
@@ -48,6 +50,7 @@
           onClick: clkable ? () => onRowClick(record) : undefined
         })
       "
+      @resize-column="onColWidRsz"
       @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
       @expand="(expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)"
     >
@@ -91,6 +94,17 @@
         <template v-if="$slots[column.dataIndex + 'HD']">
           <slot :name="column.dataIndex + 'HD'" v-bind="{ column }" />
         </template>
+        <template v-if="column.dataIndex === 'opera'">
+          {{ column.title }}&nbsp;
+          <a-button
+            v-if="rszCols"
+            type="link"
+            size="small"
+            @click.stop="() => fmtColumns()"
+          >
+            重置长宽
+          </a-button>
+        </template>
       </template>
       <template #bodyCell="{ text, column, record }: any">
         <template v-if="column.dataIndex === 'opera'">
@@ -99,7 +113,7 @@
             <a-button
               v-if="editable && !disable(record)"
               size="small"
-              :type="operaStyle === 'link' ? 'link' : 'default'"
+              :type="operaStyle"
               @click.stop="onEditClicked(record)"
             >
               编辑
@@ -114,7 +128,7 @@
               <a-button
                 size="small"
                 danger
-                :type="operaStyle === 'link' ? 'link' : 'default'"
+                :type="operaStyle"
                 @click.stop="(e: any) => e.preventDefault()"
               >
                 删除
@@ -169,11 +183,12 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Table as ATable } from 'ant-design-vue'
 import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { v4 as uuid } from 'uuid'
-import { computed, onMounted, reactive, ref, useSlots } from 'vue'
+import { computed, onMounted, reactive, ref, useSlots, type PropType } from 'vue'
 
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
@@ -188,6 +203,9 @@ import CellCard from './CellCard.vue'
 import FormDialog from './FormDialog.vue'
 import RefreshBox from './RefreshBox.vue'
 import SelColBox from './SelColBox.vue'
+import type { SizeType } from 'ant-design-vue/es/config-provider'
+import type { ColumnType } from 'ant-design-vue/es/table'
+import type { ButtonType } from 'ant-design-vue/es/button'
 
 const emit = defineEmits([
   'add',
@@ -209,20 +227,21 @@ const props = defineProps({
   emitter: { type: Emitter, default: new Emitter() },
   title: { type: String, default: '' },
   description: { type: String, default: '' },
-  size: { type: String, default: 'default' },
+  size: { type: String as PropType<SizeType>, default: undefined },
   pagable: { type: Boolean, default: false },
   pageSize: { type: Number, default: 10 },
   filter: { type: Function, default: () => true },
   editable: { type: Boolean, default: true },
   addable: { type: Boolean, default: true },
   delable: { type: Boolean, default: true },
+  rszCols: { type: Boolean, default: true },
   imExport: { type: [Object, Boolean], default: () => false },
   ieIgnCols: { type: Array, default: () => [] },
   disable: { type: Function, default: () => false },
   clkable: { type: Boolean, default: false },
   refshOpns: { type: Array, default: () => [] },
   mountRefsh: { type: Boolean, default: true },
-  operaStyle: { type: String, default: 'link' },
+  operaStyle: { type: String as PropType<ButtonType>, default: 'link' },
   dspCols: { type: Boolean, default: false },
   dlgWidth: { type: String, default: '50vw' },
   sclHeight: { type: String, default: '' },
@@ -297,7 +316,6 @@ async function refresh(data?: any[], params?: any) {
       case 'middle':
         colHgt = 48
         break
-      case 'default':
       case 'large':
       default:
         colHgt = 57
@@ -520,6 +538,7 @@ function fmtColumns(columns?: Column[]) {
         }))
         column.onFilter = (value: string, record: any) => record[column.dataIndex] == value
       }
+      column.resizable = props.rszCols || column.resizable
       return {
         customHeaderCell: () => ({
           ...(column.custHdCell || {}),
@@ -561,6 +580,11 @@ function fmtColumns(columns?: Column[]) {
   }
   colsState.splice(0, colsState.length, ...col4Ist)
   canvas.remove()
+}
+function onColWidRsz(w: number, col: ColumnType) {
+  if (col.resizable) {
+    setProp(col, 'width', w)
+  }
 }
 </script>
 
