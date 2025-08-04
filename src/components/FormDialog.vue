@@ -1,7 +1,8 @@
 <template>
   <a-modal
     v-model:open="vsbState"
-    :width="width"
+    :width="fullScreen ? '100%' : width"
+    :wrap-class-name="fullScreen ? 'full-modal' : undefined"
     :closable="closable"
     :maskClosable="closable"
     :confirmLoading="!editable || okLoading"
@@ -93,7 +94,8 @@ const props = defineProps({
   mapper: { type: Mapper, required: true },
   emitter: { type: Emitter, default: null },
   operable: { type: Boolean, default: false },
-  closable: { type: Boolean, default: true }
+  closable: { type: Boolean, default: true },
+  fullScreen: { type: Boolean, default: false }
 })
 const vsbState = ref<boolean>(props.visible)
 const iconState = ref<Raw<AntdIcons>>('')
@@ -247,3 +249,22 @@ async function onFormSubmit(key: string | number, value: any, form: any, next: F
   next()
 }
 </script>
+
+<style lang="less">
+.full-modal {
+  .ant-modal {
+    max-width: 100%;
+    top: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh);
+  }
+  .ant-modal-body {
+    flex: 1;
+  }
+}
+</style>

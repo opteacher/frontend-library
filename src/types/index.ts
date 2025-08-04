@@ -76,7 +76,7 @@ export const cmpNickDict = {
   Textarea: '多行输入框',
   Delable: '可删除',
   SelOrIpt: '可选可输入',
-  UploadFile: '上传',
+  UploadFile: '上传文件',
   Cascader: '层级选择框',
   ListSelect: '列表选择框',
   TagList: '标签列表',

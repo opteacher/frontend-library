@@ -347,7 +347,7 @@
                 :form="form"
                 :skey="elKey"
                 :mapper="value"
-                @update:fprop="values => onFpropChanged(form, values)"
+                @update:fprop="(values: any) => onFpropChanged(form, values)"
               />
             </template>
           </EditList>
@@ -387,7 +387,7 @@
                 :form="form"
                 :skey="elKey"
                 :mapper="value"
-                @update:fprop="values => onFpropChanged(form, values)"
+                @update:fprop="(values: any) => onFpropChanged(form, values)"
               />
             </template>
           </TagList>

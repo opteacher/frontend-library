@@ -156,6 +156,7 @@
       v-model:visible="fmDlg.visible"
       v-model:vw-only="fmDlg.vwOnly"
       :width="dlgWidth"
+      :full-screen="dlgFullScrn"
       :new-fun="newFun"
       :object="fmDlg.object"
       :title="title || (editKey ? '编辑项' : '增加项')"
@@ -244,6 +245,7 @@ const props = defineProps({
   operaStyle: { type: String as PropType<ButtonType>, default: 'link' },
   dspCols: { type: Boolean, default: false },
   dlgWidth: { type: String, default: '50vw' },
+  dlgFullScrn: { type: Boolean, default: false },
   sclHeight: { type: String, default: '' },
   minHeight: { type: String, default: '' }
 })
