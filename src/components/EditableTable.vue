@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col" :class="{ [sclHeight]: sclHeight.startsWith('h-') }">
     <div class="flex justify-between mb-2.5">
-      <h3 v-if="title" class="mb-0 ml-2 flex-1">
+      <h3 v-if="title || $slots.title" class="mb-0 ml-2 flex-1">
         <keep-alive v-if="icon">
           <component :is="`AntdIcons.${icon}`" v-bind="{ class: 'text-3xl' }" />
         </keep-alive>
@@ -108,34 +108,32 @@
       </template>
       <template #bodyCell="{ text, column, record }: any">
         <template v-if="column.dataIndex === 'opera'">
-          <div class="flex">
-            <slot name="operaBefore" v-bind="{ record }" />
+          <slot name="operaBefore" v-bind="{ record }" />
+          <a-button
+            v-if="editable && !disable(record)"
+            size="small"
+            :type="operaStyle"
+            @click.stop="onEditClicked(record)"
+          >
+            编辑
+          </a-button>
+          <a-popconfirm
+            v-if="delable && !disable(record)"
+            title="确定删除该记录吗？"
+            ok-text="确定"
+            cancel-text="取消"
+            @confirm="onRecordDel(record)"
+          >
             <a-button
-              v-if="editable && !disable(record)"
               size="small"
+              danger
               :type="operaStyle"
-              @click.stop="onEditClicked(record)"
+              @click.stop="(e: any) => e.preventDefault()"
             >
-              编辑
+              删除
             </a-button>
-            <a-popconfirm
-              v-if="delable && !disable(record)"
-              title="确定删除该记录吗？"
-              ok-text="确定"
-              cancel-text="取消"
-              @confirm="onRecordDel(record)"
-            >
-              <a-button
-                size="small"
-                danger
-                :type="operaStyle"
-                @click.stop="(e: any) => e.preventDefault()"
-              >
-                删除
-              </a-button>
-            </a-popconfirm>
-            <slot name="operaAfter" v-bind="{ record }" />
-          </div>
+          </a-popconfirm>
+          <slot name="operaAfter" v-bind="{ record }" />
         </template>
         <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
         <CellCard
@@ -189,7 +187,7 @@ import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { v4 as uuid } from 'uuid'
-import { computed, onMounted, reactive, ref, useSlots, type PropType } from 'vue'
+import { computed, onMounted, reactive, ref, useSlots, watch, type PropType } from 'vue'
 
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
@@ -216,7 +214,9 @@ const emit = defineEmits([
   'after-save',
   'delete',
   'refresh',
-  'expand'
+  'expand',
+  'form-open',
+  'form-close'
 ])
 const props = defineProps({
   icon: { type: String, default: '' },
@@ -304,6 +304,10 @@ if (props.emitter) {
     props.emitter.off('update:visible')
   }
 }
+watch(
+  () => fmDlg.visible,
+  () => fmDlg.visible ? emit('form-open') : emit('form-close')
+)
 fmtColumns()
 
 async function refresh(data?: any[], params?: any) {

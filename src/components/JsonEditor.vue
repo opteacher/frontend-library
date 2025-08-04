@@ -37,6 +37,7 @@ function refresh() {
       props: {
         content,
         mode: props.mode as Mode,
+        readOnly: props.disabled,
         statusBar: props.statusBar,
         mainMenuBar: props.mainMenuBar,
         navigationBar: props.navigationBar,
