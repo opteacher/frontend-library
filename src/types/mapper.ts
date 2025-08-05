@@ -6,10 +6,11 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 
 import { type CompoType, Cond, type OpnType } from '.'
 import Column from './column'
-import Field from './field'
+import Field, { fieldDftVal } from './field'
 import { Dayjs } from 'dayjs'
 
 export class BaseMapper {
+  key: string
   label: string
   offset: number
   desc: string
@@ -24,6 +25,7 @@ export class BaseMapper {
   onChange: (record: any, to: any, from?: any, extra?: any) => void
 
   constructor() {
+    this.key = ''
     this.label = ''
     this.offset = 0
     this.desc = ''
@@ -39,6 +41,7 @@ export class BaseMapper {
   }
 
   reset() {
+    this.key = ''
     this.label = ''
     this.offset = 0
     this.desc = ''
@@ -552,4 +555,10 @@ export function createByFields(fields: Field[]): Mapper {
     }
   }
   return new Mapper(data)
+}
+
+export function newObjByMapper(mapper: Mapper) {
+  return Object.fromEntries(
+    Object.entries(mapper).map(([key, value]) => [key, fieldDftVal(value.type)])
+  )
 }

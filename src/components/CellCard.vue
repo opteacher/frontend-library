@@ -9,7 +9,7 @@
   <template v-else-if="typeof text === 'boolean'">{{ text ? '是' : '否' }}</template>
   <template v-else-if="text instanceof Array">{{ text.join(', ') }}</template>
   <!-- mapper type -->
-  <template v-else-if="mapper.type === 'Select'">
+  <template v-else-if="mapper.type === 'Select' || mapper.type === 'Radio'">
     {{
       mapper.options.map((opn: any) => opn.value).includes(text)
         ? mapper.options.find((opn: any) => opn.value === text).label

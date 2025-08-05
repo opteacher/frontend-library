@@ -6,7 +6,8 @@
           <component :is="`AntdIcons.${icon}`" v-bind="{ class: 'text-3xl' }" />
         </keep-alive>
         <slot v-if="$slots.title" name="title" />
-        <b v-else>{{ title }}</b>&nbsp;
+        <b v-else>{{ title }}</b>
+        &nbsp;
         <slot v-if="$slots.description" name="description" />
         <span v-else class="text-gray-400 text-sm">{{ description }}</span>
       </h3>
@@ -27,15 +28,22 @@
               @submit="(info: any) => onBatchSubmit(info, 'import')"
             />
           </a-space>
-          <a-button type="primary" :loading="loading" @click="onEditClicked()">添加</a-button>
+          <a-button
+            v-if="editMode === 'form'"
+            type="primary"
+            :loading="loading"
+            @click="onEditClicked()"
+          >
+            添加
+          </a-button>
         </template>
         <slot name="extra" />
       </a-space>
     </div>
     <RefreshBox v-if="refshOpns.length" class="mb-2.5" :tblRfsh="refshOpns" @click="refresh" />
     <a-table
-      class="flex-1 overflow-hidden"
-      :class="{ 'edtble-table': minHeight }"
+      class="edit-table flex-1 overflow-hidden"
+      :class="{ 'min-hgt-table': minHeight }"
       :columns="colsState as ColumnType[]"
       :data-source="records.data"
       :size="size"
@@ -96,46 +104,59 @@
         </template>
         <template v-if="column.dataIndex === 'opera'">
           {{ column.title }}&nbsp;
-          <a-button
-            v-if="rszCols"
-            type="link"
-            size="small"
-            @click.stop="() => fmtColumns()"
-          >
+          <a-button v-if="rszCols" type="link" size="small" @click.stop="() => fmtColumns()">
             重置长宽
           </a-button>
         </template>
       </template>
       <template #bodyCell="{ text, column, record }: any">
-        <template v-if="column.dataIndex === 'opera'">
+        <template v-if="record.key === 'addForm'">
+          <div v-if="column.dataIndex === 'opera'">
+            <a-button size="small" type="link" @click="onAddFormSubmit">确定</a-button>
+            <a-button size="small" type="text" @click="onAddFormCancel">取消</a-button>
+          </div>
+          <MapperCmp v-else :mapper="mapper[column.dataIndex]" v-model:form="fmDlg.object" />
+        </template>
+        <template v-else-if="column.dataIndex === 'opera'">
           <slot name="operaBefore" v-bind="{ record }" />
-          <a-button
-            v-if="editable && !disable(record)"
-            size="small"
-            :type="operaStyle"
-            @click.stop="onEditClicked(record)"
-          >
-            编辑
-          </a-button>
-          <a-popconfirm
-            v-if="delable && !disable(record)"
-            title="确定删除该记录吗？"
-            ok-text="确定"
-            cancel-text="取消"
-            @confirm="onRecordDel(record)"
-          >
+          <template v-if="fmDlg.editing">
+            <a-button size="small" type="link" @click="onEditFormSubmit">确定</a-button>
+            <a-button size="small" type="text" @click="onEditFormCancel">取消</a-button>
+          </template>
+          <template v-else>
             <a-button
+              v-if="editable && !disable(record)"
               size="small"
-              danger
               :type="operaStyle"
-              @click.stop="(e: any) => e.preventDefault()"
+              @click.stop="onEditClicked(record)"
             >
-              删除
+              编辑
             </a-button>
-          </a-popconfirm>
+            <a-popconfirm
+              v-if="delable && !disable(record)"
+              title="确定删除该记录吗？"
+              ok-text="确定"
+              cancel-text="取消"
+              @confirm="onRecordDel(record)"
+            >
+              <a-button
+                size="small"
+                danger
+                :type="operaStyle"
+                @click.stop="(e: any) => e.preventDefault()"
+              >
+                删除
+              </a-button>
+            </a-popconfirm>
+          </template>
           <slot name="operaAfter" v-bind="{ record }" />
         </template>
         <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
+        <MapperCmp
+          v-else-if="fmDlg.editing"
+          :mapper="mapper[column.dataIndex]"
+          v-model:form="fmDlg.object"
+        />
         <CellCard
           v-else
           :cell="getCells(column.dataIndex)"
@@ -148,7 +169,16 @@
       <template v-if="$slots['expandedRowRender']" #expandedRowRender="{ record }">
         <slot name="expandedRowRender" v-bind="{ record }" />
       </template>
-      <template v-if="pagable" #footer>总共&nbsp;{{ records.data.length }}&nbsp;条记录</template>
+      <template v-if="pagable" #summary>
+        <a-table-summary-row>
+          <a-table-summary-cell>
+            总共&nbsp;{{ records.data.length }}&nbsp;条记录
+          </a-table-summary-cell>
+        </a-table-summary-row>
+      </template>
+      <template v-if="editMode === 'direct' && !drctAdding" #footer>
+        <AntdIcons.PlusOutlined />
+      </template>
     </a-table>
     <FormDialog
       v-model:visible="fmDlg.visible"
@@ -187,7 +217,7 @@ import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { v4 as uuid } from 'uuid'
-import { computed, onMounted, reactive, ref, useSlots, watch, type PropType } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, useSlots, watch, type PropType } from 'vue'
 
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
@@ -205,6 +235,7 @@ import SelColBox from './SelColBox.vue'
 import type { SizeType } from 'ant-design-vue/es/config-provider'
 import type { ColumnType } from 'ant-design-vue/es/table'
 import type { ButtonType } from 'ant-design-vue/es/button'
+import MapperCmp from './MapperCmp.vue'
 
 const emit = defineEmits([
   'add',
@@ -247,7 +278,8 @@ const props = defineProps({
   dlgWidth: { type: String, default: '50vw' },
   dlgFullScrn: { type: Boolean, default: false },
   sclHeight: { type: String, default: '' },
-  minHeight: { type: String, default: '' }
+  minHeight: { type: String, default: '' },
+  editMode: { type: String as PropType<'direct' | 'form'>, default: 'form' }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
@@ -267,9 +299,11 @@ const fmtIeIgnCols = computed(() =>
 const fmDlg = reactive({
   visible: false,
   vwOnly: false,
+  editing: false,
   object: props.newFun()
 })
 const slots = useSlots()
+const drctAdding = computed(() => records.data.find((rcd: any) => rcd.key === 'addForm'))
 
 if (props.mountRefsh) {
   onMounted(refresh)
@@ -306,9 +340,10 @@ if (props.emitter) {
 }
 watch(
   () => fmDlg.visible,
-  () => fmDlg.visible ? emit('form-open') : emit('form-close')
+  () => (fmDlg.visible ? emit('form-open') : emit('form-close'))
 )
 fmtColumns()
+bindAddForm()
 
 async function refresh(data?: any[], params?: any) {
   loading.value = true
@@ -420,7 +455,6 @@ async function refresh(data?: any[], params?: any) {
   } else {
     fmDlg.visible = false
   }
-  loading.value = false
   fmtColumns()
   loading.value = false
 }
@@ -440,7 +474,10 @@ function onEditClicked(record?: any) {
         break
     }
   }
-  if (props.emitter) {
+  if (props.editMode === 'direct') {
+    fmDlg.editing = true
+    fmDlg.object = record
+  } else if (props.emitter) {
     props.emitter.emit('update:visible', {
       show: true,
       viewOnly: false,
@@ -563,7 +600,13 @@ function fmtColumns(columns?: Column[]) {
         ...pickOrIgnore(column, ['width', 'custHdCell', 'custCell', 'dict', 'notDisplay'])
       }
     })
-  if (props.editable || props.delable || slots['opera'] || slots['operaBefore'] || slots['operaBefore']) {
+  if (
+    props.editable ||
+    props.delable ||
+    slots['opera'] ||
+    slots['operaBefore'] ||
+    slots['operaBefore']
+  ) {
     cols.push(new Column('操作', 'opera', { width: 80, fixed: 'right' }))
   }
   const col4Ist = [] as Column[]
@@ -592,6 +635,34 @@ function onColWidRsz(w: number, col: ColumnType) {
     setProp(col, 'width', w)
   }
 }
+function bindAddForm() {
+  nextTick(() => {
+    if (props.addable && props.editMode === 'direct') {
+      document
+        .querySelector('.edit-table .ant-table-footer')
+        ?.addEventListener('click', () => records.data.push({ key: 'addForm' }))
+    }
+  })
+}
+function onAddFormCancel() {
+  records.data.splice(
+    records.data.findIndex((rcd: any) => rcd.key === 'addForm'),
+    1
+  )
+  bindAddForm()
+}
+async function onAddFormSubmit() {
+  await onRecordSave(fmDlg.object, () => (fmDlg.object = props.newFun()))
+  bindAddForm()
+}
+function onEditFormCancel() {
+  fmDlg.editing = false
+  fmDlg.object = props.newFun()
+}
+async function onEditFormSubmit() {
+  await onRecordSave(fmDlg.object, () => (fmDlg.object = props.newFun()))
+  fmDlg.editing = false
+}
 </script>
 
 <style>
@@ -611,7 +682,7 @@ function onColWidRsz(w: number, col: ColumnType) {
   @apply h-full relative;
 }
 
-.edtble-table .ant-table-container {
+.min-hgt-table .ant-table-container {
   min-height: 18rem;
 }
 
@@ -619,9 +690,14 @@ function onColWidRsz(w: number, col: ColumnType) {
   @apply absolute bottom-0 left-0 right-0;
 }
 
-.ant-table-footer {
-  @apply border-b-0 !important;
-  @apply border-l-0 !important;
-  @apply border-r-0 !important;
+.edit-table .ant-table-footer {
+  @apply text-center;
+}
+.edit-table .ant-table-footer:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+}
+.edit-table .ant-table-footer:active {
+  background-color: rgba(0, 0, 0, 0.15);
 }
 </style>

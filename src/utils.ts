@@ -29,7 +29,7 @@ export interface RequestOptions {
 
 export const getDftPjt = () => import.meta.env.VITE_PJT || 'frontend-library'
 
-export async function makeRequest(pms: Promise<any>, options?: RequestOptions): Promise<any> {
+export async function makeRequest<T = any>(pms: Promise<any>, options?: RequestOptions): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -104,7 +104,7 @@ function reqType(options?: RequestOptions): string {
   return options && options.type ? options.type : 'mdl'
 }
 
-export async function reqAll(path: string, options?: RequestOptions): Promise<any> {
+export async function reqAll<T = any>(path: string, options?: RequestOptions): Promise<T[]> {
   if (!options) {
     options = {}
   }
@@ -129,13 +129,13 @@ export async function reqAll(path: string, options?: RequestOptions): Promise<an
     })
   }
   const action = options.action ? fixStartsWith(options.action, '/') : ''
-  return makeRequest(
+  return makeRequest<T[]>(
     axios.get(`/${options.project}/${reqType(options)}/v1/${path}/s${action}`, options.axiosConfig),
     options
   )
 }
 
-export async function reqGet(path: string, iden?: any, options?: RequestOptions): Promise<any> {
+export async function reqGet<T = any>(path: string, iden?: any, options?: RequestOptions): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -161,7 +161,7 @@ export async function reqGet(path: string, iden?: any, options?: RequestOptions)
   }
   const key = iden ? '/' + iden : ''
   const action = options.action ? fixStartsWith(options.action, '/') : ''
-  return makeRequest(
+  return makeRequest<T>(
     axios.get(
       `/${options.project}/${reqType(options)}/v1/${path}${key}${action}`,
       options.axiosConfig
@@ -170,7 +170,7 @@ export async function reqGet(path: string, iden?: any, options?: RequestOptions)
   )
 }
 
-export function reqPost(path: string, body?: any, options?: RequestOptions): Promise<any> {
+export function reqPost<T = any>(path: string, body?: any, options?: RequestOptions): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -196,7 +196,7 @@ export function reqPost(path: string, body?: any, options?: RequestOptions): Pro
   }
   const action = options.action ? fixStartsWith(options.action, '/') : ''
   // @_@: 对于FormData作为body的请求，pickOrIgnore方法会破坏参数结构，从而引发参数为空的问题
-  return makeRequest(
+  return makeRequest<T>(
     axios.post(
       `/${options.project}/${reqType(options)}/v1/${path}${action}`,
       body ? pickOrIgnore(body, options.ignores) : undefined,
@@ -206,7 +206,7 @@ export function reqPost(path: string, body?: any, options?: RequestOptions): Pro
   )
 }
 
-export function reqDelete(path: string, iden: any, options?: RequestOptions): Promise<any> {
+export function reqDelete<T = number>(path: string, iden: any, options?: RequestOptions): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -231,7 +231,7 @@ export function reqDelete(path: string, iden: any, options?: RequestOptions): Pr
     })
   }
   const action = options.action ? fixStartsWith(options.action, '/') : ''
-  return makeRequest(
+  return makeRequest<T>(
     axios.delete(
       `/${options.project}/${reqType(options)}/v1/${path}/${iden}${action}`,
       options.axiosConfig
@@ -240,12 +240,12 @@ export function reqDelete(path: string, iden: any, options?: RequestOptions): Pr
   )
 }
 
-export function reqPut(
+export function reqPut<T = any>(
   path: string,
   iden: any,
   body?: any,
   options?: RequestOptions
-): Promise<any> {
+): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -270,7 +270,7 @@ export function reqPut(
     options.ignores.push('key')
   }
   const action = options.action ? fixStartsWith(options.action, '/') : ''
-  return makeRequest(
+  return makeRequest<T>(
     axios.put(
       `/${options.project}/${reqType(options)}/v1/${path}/${iden}${action}`,
       body ? pickOrIgnore(body, options.ignores) : undefined,
@@ -280,14 +280,14 @@ export function reqPut(
   )
 }
 
-export function reqLink(
+export function reqLink<T = any>(
   body: {
     parent: [string, any]
     child: [string, any]
   },
   link = true,
   options?: RequestOptions
-): Promise<any> {
+): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -316,9 +316,9 @@ export function reqLink(
       body.child[1]
     ].join('/') + action
   if (link) {
-    return makeRequest(axios.put(url, options.axiosConfig?.data, options.axiosConfig), options)
+    return makeRequest<T>(axios.put(url, options.axiosConfig?.data, options.axiosConfig), options)
   } else {
-    return makeRequest(axios.delete(url, options.axiosConfig), options)
+    return makeRequest<T>(axios.delete(url, options.axiosConfig), options)
   }
 }
 

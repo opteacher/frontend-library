@@ -149,6 +149,6 @@ export function fieldDftVal(ctype: CompoType) {
     case 'IpAddress':
       return '0.0.0.0'
     case 'JsonEditor':
-      return '{}'
+      return {}
   }
 }
