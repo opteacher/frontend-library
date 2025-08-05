@@ -135,6 +135,7 @@ export function fieldDftVal(ctype: CompoType) {
     case 'ListSelect':
     case 'EditList':
     case 'TagList':
+    case 'CompactInput':
       return []
     case 'Input':
     case 'Password':

@@ -41,7 +41,7 @@ defineExpose({ refer })
     <template v-for="(value, key) in mapper" :key="key">
       <template v-if="value.type === 'FormGroup' && validConds(form, value.display, true)">
         <div
-          v-if="value.fold"
+          v-if="!value.canFold || value.fold"
           class="border border-solid border-gray-300 pt-7 px-2.5 my-7 relative rounded"
         >
           <a-button
@@ -49,11 +49,12 @@ defineExpose({ refer })
             size="small"
             class="absolute bg-white left-1.5 -top-2.5"
             @click="value.fold = !value.fold"
-            :disabled="validConds(form, value.disabled)"
+            :disabled="validConds(form, value.disabled) || !value.canFold"
           >
             {{ value.label }}
           </a-button>
           <a-button
+            v-if="value.canFold"
             type="link"
             size="small"
             class="absolute bg-white -right-3 -top-3"

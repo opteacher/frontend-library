@@ -29,7 +29,10 @@ export interface RequestOptions {
 
 export const getDftPjt = () => import.meta.env.VITE_PJT || 'frontend-library'
 
-export async function makeRequest<T = any>(pms: Promise<any>, options?: RequestOptions): Promise<T> {
+export async function makeRequest<T = any>(
+  pms: Promise<any>,
+  options?: RequestOptions
+): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -80,9 +83,7 @@ export async function makeRequest<T = any>(pms: Promise<any>, options?: RequestO
     if (resp.status !== 200) {
       notification.error({
         message: '请求失败！',
-        description: [
-          (options.messages.failed || ''), resp.statusText
-        ].join('  ')
+        description: [options.messages.failed || '', resp.statusText].join('  ')
       })
     } else if (resData.error || ret.error) {
       notification.error({
@@ -135,7 +136,11 @@ export async function reqAll<T = any>(path: string, options?: RequestOptions): P
   )
 }
 
-export async function reqGet<T = any>(path: string, iden?: any, options?: RequestOptions): Promise<T> {
+export async function reqGet<T = any>(
+  path: string,
+  iden?: any,
+  options?: RequestOptions
+): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -206,7 +211,11 @@ export function reqPost<T = any>(path: string, body?: any, options?: RequestOpti
   )
 }
 
-export function reqDelete<T = number>(path: string, iden: any, options?: RequestOptions): Promise<T> {
+export function reqDelete<T = number>(
+  path: string,
+  iden: any,
+  options?: RequestOptions
+): Promise<T> {
   if (!options) {
     options = {}
   }
@@ -757,8 +766,12 @@ export function revsKeyVal(obj: any) {
   return Object.fromEntries(Object.entries(obj).map(([key, val]) => [val, key]))
 }
 
-export function notUndefOrNull(value: any) {
-  return typeof value !== 'undefined' && value != null
+export function notUndefAndNull(value: any, valEmpty = false) {
+  const isUndefOrNull = typeof value === 'undefined' || value == null
+  if (isUndefOrNull) {
+    return false
+  }
+  return !(valEmpty ? value === '' || !value.length : false)
 }
 
 export function gnlCpy<T extends Record<string, any>>(
@@ -809,16 +822,16 @@ export function gnlCpy<T extends Record<string, any>>(
     }
   }
   if (options.baseCpy) {
-    options.baseCpy(src, tgt, options.force)
+    tgt = options.baseCpy(src, tgt, options.force) as T
   }
   for (const key of Object.keys(create())) {
     if (options.ignProps.includes(key)) {
       continue
     }
-    const srcNotUndefOrNull = notUndefOrNull(src[key])
+    const srcnotUndefAndNull = notUndefAndNull(src[key])
     if (key in options.cpyMapper) {
       const cpy = options.cpyMapper[key]
-      if (Array.isArray(tgt[key]) && srcNotUndefOrNull && src[key].length) {
+      if (Array.isArray(tgt[key]) && srcnotUndefAndNull && src[key].length) {
         if (typeof src[key][0] === 'object') {
           tgt[key].splice(0, tgt[key].length, ...src[key].map((ele: any) => cpy(ele)))
         }
@@ -834,11 +847,11 @@ export function gnlCpy<T extends Record<string, any>>(
       typeof tgt[key] === 'boolean' ||
       typeof tgt[key] === 'function'
     ) {
-      if (options.force || srcNotUndefOrNull) {
+      if (options.force || srcnotUndefAndNull) {
         setProp(tgt, key, src[key])
       }
     } else if (typeof tgt[key] === 'object' && tgt[key] instanceof dayjs) {
-      if (options.force || srcNotUndefOrNull) {
+      if (options.force || srcnotUndefAndNull) {
         setProp(tgt, key, src[key] ? dayjs(src[key]) : null)
       }
     } else if (Array.isArray(tgt[key])) {

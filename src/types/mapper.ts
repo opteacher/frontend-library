@@ -8,6 +8,7 @@ import { type CompoType, Cond, type OpnType } from '.'
 import Column from './column'
 import Field, { fieldDftVal } from './field'
 import { Dayjs } from 'dayjs'
+import { type RuleItem } from 'async-validator'
 
 export class BaseMapper {
   key: string
@@ -15,7 +16,7 @@ export class BaseMapper {
   offset: number
   desc: string
   type: CompoType
-  rules: any[]
+  rules: RuleItem[]
   placeholder: string
   disabled: boolean | Cond[] | { [cmpRel: string]: Cond[] }
   loading: boolean
@@ -157,6 +158,7 @@ export class ButtonMapper extends BaseMapper {
   danger: boolean
   primary: boolean
   ghost: boolean
+  dashed: boolean
   htmlType: 'button' | 'submit' | 'reset'
   onClick: () => void
 
@@ -166,6 +168,7 @@ export class ButtonMapper extends BaseMapper {
     this.danger = false
     this.primary = true
     this.ghost = true
+    this.dashed = false
     this.htmlType = 'button'
     this.onClick = () => undefined
   }
@@ -176,8 +179,26 @@ export class ButtonMapper extends BaseMapper {
     this.danger = false
     this.primary = true
     this.ghost = true
+    this.dashed = false
     this.htmlType = 'button'
     this.onClick = () => undefined
+  }
+}
+
+export class ButtonsMapper extends BaseMapper {
+  buttons: ButtonMapper[]
+  orientation: 'horizontal' | 'vertical'
+
+  constructor() {
+    super()
+    this.buttons = []
+    this.orientation = 'horizontal'
+  }
+
+  reset(): void {
+    super.reset()
+    this.buttons = []
+    this.orientation = 'horizontal'
   }
 }
 
@@ -328,17 +349,20 @@ export class EdtLstMapper extends BaseMapper {
 }
 
 export class GroupMapper extends BaseMapper {
+  canFold: boolean
   fold: boolean
   items: Mapper
 
   constructor() {
     super()
+    this.canFold = true
     this.fold = false
     this.items = new Mapper()
   }
 
   reset() {
     super.reset()
+    this.canFold = true
     this.fold = false
     this.items = new Mapper()
   }
@@ -448,11 +472,29 @@ export class JsonEditorMapper extends TextareaMapper {
   }
 }
 
-const mapTypeTemps = {
+export class CpctInputMapper extends BaseMapper {
+  placeholders: string[]
+  splitLetter: string
+
+  constructor() {
+    super()
+    this.placeholders = []
+    this.splitLetter = '/'
+  }
+
+  reset() {
+    super.reset()
+    this.placeholders = []
+    this.splitLetter = '/'
+  }
+}
+
+export const mapTypeTemps = {
   Unknown: () => new BaseMapper(),
   Input: () => new InputMapper(),
   Number: () => new InputMapper(),
   IpAddress: () => new BaseMapper(),
+  CompactInput: () => new CpctInputMapper(),
   Password: () => new PasswordMapper(),
   Textarea: () => new TextareaMapper(),
   Select: () => new SelectMapper(),
@@ -461,6 +503,7 @@ const mapTypeTemps = {
   Radio: () => new RadioMapper(),
   Switch: () => new CheckboxMapper(),
   Button: () => new ButtonMapper(),
+  Buttons: () => new ButtonsMapper(),
   Table: () => new TableMapper(),
   Text: () => new BaseMapper(),
   Delable: () => new TableMapper(),

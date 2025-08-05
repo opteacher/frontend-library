@@ -115,11 +115,16 @@
             <a-button size="small" type="link" @click="onAddFormSubmit">确定</a-button>
             <a-button size="small" type="text" @click="onAddFormCancel">取消</a-button>
           </div>
-          <MapperCmp v-else :mapper="mapper[column.dataIndex]" v-model:form="fmDlg.object" />
+          <MapperCmp
+            v-else
+            :mapper="mapper[column.dataIndex]"
+            v-model:form="fmDlg.object"
+            :emitter="emitter"
+          />
         </template>
         <template v-else-if="column.dataIndex === 'opera'">
           <slot name="operaBefore" v-bind="{ record }" />
-          <template v-if="fmDlg.editing">
+          <template v-if="fmDlg.editing && fmDlg.object.key === record.key">
             <a-button size="small" type="link" @click="onEditFormSubmit">确定</a-button>
             <a-button size="small" type="text" @click="onEditFormCancel">取消</a-button>
           </template>
@@ -153,9 +158,10 @@
         </template>
         <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
         <MapperCmp
-          v-else-if="fmDlg.editing"
+          v-else-if="fmDlg.editing && fmDlg.object.key === record.key"
           :mapper="mapper[column.dataIndex]"
           v-model:form="fmDlg.object"
+          :emitter="emitter"
         />
         <CellCard
           v-else
@@ -492,6 +498,16 @@ function onEditClicked(record?: any) {
 async function onRecordSave(record: any, reset: Function) {
   loading.value = true
   emit('before-save', record)
+  if (props.emitter && props.editMode === 'direct') {
+    try {
+      await new Promise((resolve, reject) =>
+        props.emitter.emit('check:rules', (checked: boolean) => (checked ? resolve('') : reject()))
+      )
+    } catch (e) {
+      loading.value = false
+      return
+    }
+  }
   const result =
     editKey.value === '' || editKey.value === -1
       ? await props.api.add(record)
@@ -659,9 +675,8 @@ function onEditFormCancel() {
   fmDlg.editing = false
   fmDlg.object = props.newFun()
 }
-async function onEditFormSubmit() {
-  await onRecordSave(fmDlg.object, () => (fmDlg.object = props.newFun()))
-  fmDlg.editing = false
+function onEditFormSubmit() {
+  onRecordSave(fmDlg.object, onEditFormCancel)
 }
 </script>
 

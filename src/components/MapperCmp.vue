@@ -1,32 +1,51 @@
 <script setup lang="ts">
-import type { MapperType } from '@/types/mapper';
-import type { PropType } from 'vue';
+import type { MapperType } from '@/types/mapper'
+import { TinyEmitter } from 'tiny-emitter'
+import { ref, type PropType } from 'vue'
 
-defineProps({
+const props = defineProps({
   mapper: {
-    type: Object as PropType<MapperType>, required: true
+    type: Object as PropType<MapperType>,
+    required: true
   },
-  form: { type: Object, required: true }
+  form: { type: Object, required: true },
+  emitter: { type: TinyEmitter, default: null }
 })
 defineEmits(['update:form'])
+const errMsgs = ref<string[]>([])
+
+if (props.emitter) {
+  props.emitter.on('check:rules', (callback: Function) => {
+    errMsgs.value = []
+    for (const rule of props.mapper.rules) {
+      if (rule.required && !props.form[props.mapper.key]) {
+        errMsgs.value.push(rule?.message as string)
+      }
+    }
+    callback(errMsgs.value.length === 0)
+  })
+}
 </script>
 
 <template>
   <a-input
     v-if="mapper.type === 'Input'"
     class="w-full"
+    :status="errMsgs.length ? 'error' : undefined"
     :placeholder="mapper.placeholder"
     v-model:value="form[mapper.key]"
   />
   <a-input-number
     v-else-if="mapper.type === 'Number'"
     class="w-full"
+    :status="errMsgs.length ? 'error' : undefined"
     :placeholder="mapper.placeholder"
     v-model:value="form[mapper.key]"
   />
   <a-textarea
     v-else-if="mapper.type === 'Textarea'"
     class="w-full"
+    :status="errMsgs.length ? 'error' : undefined"
     :rows="mapper.rows"
     :placeholder="mapper.placeholder"
     v-model:value="form[mapper.key]"
@@ -34,6 +53,7 @@ defineEmits(['update:form'])
   <a-select
     v-else-if="mapper.type === 'Select'"
     class="w-full"
+    :status="errMsgs.length ? 'error' : undefined"
     :options="mapper.options"
     :placeholder="mapper.placeholder"
     v-model:value="form[mapper.key]"
@@ -71,19 +91,15 @@ defineEmits(['update:form'])
       v-model:value="form[mapper.key]"
       :options="mapper.options"
     />
-    <a-checkbox
-      v-else
-      :name="mapper.key"
-      v-model:checked="form[mapper.key]"
-    >
+    <a-checkbox v-else :name="mapper.key" v-model:checked="form[mapper.key]">
       {{
         form[mapper.key]
           ? mapper.chkLabels
             ? mapper.chkLabels[1]
             : '是'
           : mapper.chkLabels
-            ? mapper.chkLabels[0]
-            : '否'
+          ? mapper.chkLabels[0]
+          : '否'
       }}&nbsp;
       <a-typography-text type="secondary">
         {{ mapper.placeholder || '请确认' }}
@@ -108,4 +124,9 @@ defineEmits(['update:form'])
     v-model:value="form[mapper.key]"
     :onBeforeUpload="mapper.onBeforeUpload"
   />
+  <ul class="list-none ps-0">
+    <li v-for="msg in errMsgs">
+      <a-typography-text type="danger">{{ msg }}</a-typography-text>
+    </li>
+  </ul>
 </template>
