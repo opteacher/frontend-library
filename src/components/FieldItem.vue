@@ -140,7 +140,9 @@ function filterOption(input: string, option: any) {
       :un-checked-children="mapper.chkLabels ? mapper.chkLabels[0] : ''"
       @change="onFieldChanged"
     />
-    <span v-if="mapper.placeholder">{{ mapper.placeholder }}</span>
+    <a-typography-text v-if="mapper.placeholder" type="secondary">
+      {{ mapper.placeholder }}
+    </a-typography-text>
   </a-space>
   <a-radio-group
     v-else-if="mapper.type === 'Radio'"
@@ -316,7 +318,9 @@ function filterOption(input: string, option: any) {
     @added="mapper.onAdded"
     @update:value="onFieldChanged"
   >
-    <slot name="formItem" v-bind="{ form, elKey: skey, value: mapper.mapper }" />
+    <template #formItem="params">
+      <slot name="formItem" v-bind="params" />
+    </template>
   </EditList>
   <CodeEditor
     v-else-if="mapper.type === 'CodeEditor'"
@@ -349,7 +353,9 @@ function filterOption(input: string, option: any) {
     @added="mapper.onAdded"
     @update:value="onFieldChanged"
   >
-    <slot name="formItem" v-bind="{ form, elKey: skey, value: mapper.mapper }" />
+    <template #formItem="params">
+      <slot name="formItem" v-bind="params" />
+    </template>
   </TagList>
   <IconField
     v-else-if="mapper.type === 'IconField'"

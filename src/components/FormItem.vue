@@ -120,6 +120,9 @@
               @update:fprop="(values: any) => onFpropChanged(form, values)"
             />
           </template>
+          <template #FormDialog>
+            <slot name="FormDialog" />
+          </template>
         </FieldItem>
       </div>
       <slot v-if="chkInSlot('SFX')" :name="skey + 'SFX'" v-bind="{ formState: form }" />

@@ -349,12 +349,38 @@ export class EdtLstMapper extends BaseMapper {
 }
 
 export class GroupMapper extends BaseMapper {
+  prefix: boolean // 组件组的键值是否作为items下字段的前缀
+  /** 演示如下
+   * ...
+   * testGroup: {
+   *   type: 'FormGroup',
+   *   label: '测试组',
+   *   items: {
+   *     name: {
+   *       type: 'Input',
+   *       label: '名称'
+   *     },
+   *     abcd: {
+   *       type: 'Input',
+   *       label: 'ABCD'
+   *     }
+   * }
+   * ---- 对应对象 -----------------
+   * {
+   *   ...,
+   *   testGroup: {
+   *     name: '1111',
+   *     abcd: '2222'
+   *   }
+   * }
+   */
   canFold: boolean
   fold: boolean
   items: Mapper
 
   constructor() {
     super()
+    this.prefix = false
     this.canFold = true
     this.fold = false
     this.items = new Mapper()
@@ -362,6 +388,7 @@ export class GroupMapper extends BaseMapper {
 
   reset() {
     super.reset()
+    this.prefix = false
     this.canFold = true
     this.fold = false
     this.items = new Mapper()

@@ -115,11 +115,12 @@
             <a-button size="small" type="link" @click="onAddFormSubmit">确定</a-button>
             <a-button size="small" type="text" @click="onAddFormCancel">取消</a-button>
           </div>
-          <MapperCmp
+          <DirectField
             v-else
             :mapper="mapper[column.dataIndex]"
-            v-model:form="fmDlg.object"
+            :form="fmDlg.object"
             :emitter="emitter"
+            @update:form="onEditFormUpdate"
           />
         </template>
         <template v-else-if="column.dataIndex === 'opera'">
@@ -157,11 +158,12 @@
           <slot name="operaAfter" v-bind="{ record }" />
         </template>
         <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
-        <MapperCmp
+        <DirectField
           v-else-if="fmDlg.editing && fmDlg.object.key === record.key"
           :mapper="mapper[column.dataIndex]"
-          v-model:form="fmDlg.object"
+          :form="fmDlg.object"
           :emitter="emitter"
+          @update:form="onEditFormUpdate"
         />
         <CellCard
           v-else
@@ -241,7 +243,7 @@ import SelColBox from './SelColBox.vue'
 import type { SizeType } from 'ant-design-vue/es/config-provider'
 import type { ColumnType } from 'ant-design-vue/es/table'
 import type { ButtonType } from 'ant-design-vue/es/button'
-import MapperCmp from './MapperCmp.vue'
+import DirectField from './DirectField.vue'
 
 const emit = defineEmits([
   'add',
@@ -482,7 +484,7 @@ function onEditClicked(record?: any) {
   }
   if (props.editMode === 'direct') {
     fmDlg.editing = true
-    fmDlg.object = record
+    fmDlg.object = cloneDeep(record)
   } else if (props.emitter) {
     props.emitter.emit('update:visible', {
       show: true,
@@ -675,8 +677,12 @@ function onEditFormCancel() {
   fmDlg.editing = false
   fmDlg.object = props.newFun()
 }
-function onEditFormSubmit() {
-  onRecordSave(fmDlg.object, onEditFormCancel)
+async function onEditFormSubmit() {
+  console.log('TTTTTTTTTTTTTTTT')
+  await onRecordSave(fmDlg.object, onEditFormCancel)
+}
+function onEditFormUpdate(vals: any) {
+  Object.entries(vals).map(([key, val]) => setProp(fmDlg.object, key, val))
 }
 </script>
 

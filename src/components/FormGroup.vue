@@ -19,11 +19,13 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:fprop'])
 const refer = ref<FormInstance>()
-const formRules = props.rules || Object.fromEntries(
-  Object.entries(props.mapper).map(entry => {
-    return [entry[0], entry[1].rules]
-  })
-)
+const formRules =
+  props.rules ||
+  Object.fromEntries(
+    Object.entries(props.mapper).map(entry => {
+      return [entry[0], entry[1].rules]
+    })
+  )
 
 defineExpose({ refer })
 </script>
@@ -38,7 +40,7 @@ defineExpose({ refer })
     :wrapper-col="layout === 'horizontal' ? { span: 24 - lblWid } : undefined"
     :label-align="lblAlgn"
   >
-    <template v-for="(value, key) in mapper" :key="key">
+    <template v-for="(value, key) in mapper">
       <template v-if="value.type === 'FormGroup' && validConds(form, value.display, true)">
         <div
           v-if="!value.canFold || value.fold"
@@ -65,9 +67,8 @@ defineExpose({ refer })
           </a-button>
           <FormItem
             v-for="(v, k) in value.items"
-            :key="k"
             :form="form"
-            :skey="k.toString()"
+            :skey="value.prefix ? [key, k.toString()].join('.') : k.toString()"
             :mapper="v"
             :editable="editable"
             :viewOnly="viewOnly"
@@ -77,11 +78,7 @@ defineExpose({ refer })
             <template #FormDialog>
               <slot name="FormDialog" v-bind="{ value: v, key: k }" />
             </template>
-            <template
-              v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')"
-              :key="name"
-              #[name]
-            >
+            <template v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')" #[name]>
               <slot :name="name" v-bind="{ formState: form }" />
             </template>
           </FormItem>
@@ -118,11 +115,7 @@ defineExpose({ refer })
         <template #FormDialog>
           <slot name="FormDialog" v-bind="{ value, key }" />
         </template>
-        <template
-          v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')"
-          :key="name"
-          #[name]
-        >
+        <template v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')" #[name]>
           <slot :name="name" v-bind="{ formState: form }" />
         </template>
       </FormItem>
