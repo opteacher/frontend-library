@@ -160,7 +160,7 @@
         <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
         <DirectField
           v-else-if="fmDlg.editing && fmDlg.object.key === record.key"
-          :mapper="mapper[column.dataIndex]"
+          :mapper="getProp(mapper, column.dataIndex)"
           :form="fmDlg.object"
           :emitter="emitter"
           @update:form="onEditFormUpdate"
@@ -168,8 +168,8 @@
         <CellCard
           v-else
           :cell="getCells(column.dataIndex)"
-          :text="getCellTxt(text, column.dict)"
-          :mapper="mapper[column.dataIndex]"
+          :text="getCellTxt(text, column, record)"
+          :mapper="getProp(mapper, column.dataIndex)"
           :record="record"
           :keyword="column.dataIndex in searchState ? searchState[column.dataIndex].content : ''"
         />
@@ -233,7 +233,7 @@ import BchImport from '../types/bchImport'
 import { Cells } from '../types/cell'
 import Column from '../types/column'
 import Mapper from '../types/mapper'
-import { pickOrIgnore, setProp, upperFirst, waitFor } from '../utils'
+import { pickOrIgnore, setProp, upperFirst, waitFor, getProp } from '../utils'
 import BchExpBox from './BchExpBox.vue'
 import BchImpBox from './BchImpBox.vue'
 import CellCard from './CellCard.vue'
@@ -574,9 +574,9 @@ function onSchReset(clearFilters: Function, dataIndex: string) {
 function getCells(key: string) {
   return (props.cells.find((cell: any) => cell.refer === key) || new Cells()) as Cells
 }
-function getCellTxt(data: any, dist: Record<string, string>) {
-  const text = (data || '').toString()
-  return dist && text in dist ? dist[text] : text
+function getCellTxt(text: string, column: Column, record: any) {
+  const txt = text ? text : getProp(record, column.dataIndex)
+  return column.dict && txt in column.dict ? column.dict[txt] : txt
 }
 function fmtColumns(columns?: Column[]) {
   const canvas = document.createElement('canvas')
@@ -678,7 +678,6 @@ function onEditFormCancel() {
   fmDlg.object = props.newFun()
 }
 async function onEditFormSubmit() {
-  console.log('TTTTTTTTTTTTTTTT')
   await onRecordSave(fmDlg.object, onEditFormCancel)
 }
 function onEditFormUpdate(vals: any) {

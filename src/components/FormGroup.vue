@@ -9,6 +9,7 @@ import FormItem from './FormItem.vue'
 
 const props = defineProps({
   lblWid: { type: Number, default: 4 },
+  fldWid: { type: Number, default: 20 },
   lblAlgn: { type: String, default: 'right' },
   layout: { type: String as PropType<'horizontal' | 'vertical' | 'inline'>, default: 'horizontal' },
   mapper: { type: Mapper, required: true },
@@ -73,6 +74,7 @@ defineExpose({ refer })
             :editable="editable"
             :viewOnly="viewOnly"
             :lblWid="lblWid"
+            :fldWid="fldWid"
             @update:fprop="(fm: any) => emit('update:fprop', fm)"
           >
             <template #FormDialog>
@@ -110,6 +112,7 @@ defineExpose({ refer })
         :editable="editable"
         :viewOnly="viewOnly"
         :lblWid="lblWid"
+        :fldWid="fldWid"
         @update:fprop="(fm: any) => emit('update:fprop', fm)"
       >
         <template #FormDialog>

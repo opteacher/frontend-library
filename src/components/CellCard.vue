@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup name="CellCard">
-import { endsWith, fmtStrByObj } from '../utils'
+import { endsWith, fmtStrByObj, getProp } from '../utils'
 import { computed } from 'vue'
 import dayjs from 'dayjs'
 import HighLight from './HighLight.vue'
@@ -47,7 +47,7 @@ const pcsCell = computed<Cell>((): Cell => {
       const prop = conds[0]
       const cmp = conds[1]
       const tgtVal = conds[2]
-      const srcVal = props.record[prop]
+      const srcVal = getProp(props.record, prop)
       switch (cmp) {
         case '==':
           if (srcVal == tgtVal) {

@@ -5,7 +5,7 @@
     :ref="skey"
     :name="skey"
     :rules="display ? mapper.rules : []"
-    :wrapper-col="{ offset: mapper.offset }"
+    :wrapper-col="{ offset: mapper.offset, span: fldWid }"
   >
     <template v-if="mapper.label" #label>
       <a-button v-if="mapper.expable" size="small" @click="() => (expanded = !expanded)">
@@ -148,6 +148,7 @@ const props = defineProps({
   skey: { type: String, required: true },
   mapper: { type: Object as PropType<MapperType>, required: true },
   lblWid: { type: Number, default: 4 },
+  fldWid: { type: Number, default: 20 },
   editable: { type: Boolean, default: true },
   viewOnly: { type: Boolean, default: false }
 })
