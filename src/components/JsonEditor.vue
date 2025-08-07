@@ -1,5 +1,5 @@
 <template>
-  <div ref="editor" :style="{ height: '200px' }" />
+  <div ref="editor" :style="{ height }" />
 </template>
 
 <script setup lang="ts" name="JsonEditor">
@@ -17,7 +17,8 @@ const props = defineProps({
   },
   mainMenuBar: { type: Boolean, default: true },
   navigationBar: { type: Boolean, default: true },
-  statusBar: { type: Boolean, default: true }
+  statusBar: { type: Boolean, default: true },
+  height: { type: String, default: '200px' }
 })
 const emit = defineEmits(['update:value'])
 const content = reactive<{ json: any }>({

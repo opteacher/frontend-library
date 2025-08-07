@@ -131,7 +131,11 @@
           </template>
           <template v-else>
             <a-button
-              v-if="editable && !disable(record)"
+              v-if="
+                editable &&
+                !disable(record) &&
+                (!edtableKeys.length || edtableKeys.includes(record.key))
+              "
               size="small"
               :type="operaStyle"
               @click.stop="onEditClicked(record)"
@@ -139,7 +143,11 @@
               编辑
             </a-button>
             <a-popconfirm
-              v-if="delable && !disable(record)"
+              v-if="
+                delable &&
+                !disable(record) &&
+                (!delableKeys.length || delableKeys.includes(record.key))
+              "
               title="确定删除该记录吗？"
               ok-text="确定"
               cancel-text="取消"
@@ -184,7 +192,7 @@
           </a-table-summary-cell>
         </a-table-summary-row>
       </template>
-      <template v-if="editMode === 'direct' && !drctAdding" #footer>
+      <template v-if="editMode === 'direct' && !drctAdding && addable" #footer>
         <AntdIcons.PlusOutlined />
       </template>
     </a-table>
@@ -202,14 +210,12 @@
     >
       <template
         v-for="pname in Object.keys(mapper).filter((key: any) => $slots[key + 'EDT'])"
-        :key="pname"
         #[pname]="{ formState }"
       >
         <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: mapper[pname] }" />
       </template>
       <template
         v-for="pname in Object.keys(mapper).filter((key: any) => $slots[key + 'VW'])"
-        :key="pname + 'VW'"
         #[`${pname}VW`]="{ formState }"
       >
         <slot :name="pname + 'VW'" v-bind="{ current: formState, mapper: mapper[pname] }" />
@@ -287,7 +293,9 @@ const props = defineProps({
   dlgFullScrn: { type: Boolean, default: false },
   sclHeight: { type: String, default: '' },
   minHeight: { type: String, default: '' },
-  editMode: { type: String as PropType<'direct' | 'form'>, default: 'form' }
+  editMode: { type: String as PropType<'direct' | 'form'>, default: 'form' },
+  edtableKeys: { type: Array as PropType<any[]>, default: () => [] },
+  delableKeys: { type: Array as PropType<any[]>, default: () => [] }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
