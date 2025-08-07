@@ -40,7 +40,7 @@
         <slot name="extra" />
       </a-space>
     </div>
-    <RefreshBox v-if="refshOpns.length" class="mb-2.5" :tblRfsh="refshOpns" @click="refresh" />
+    <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" />
     <a-table
       class="edit-table flex-1 overflow-hidden"
       :class="{ 'min-hgt-table': minHeight }"
@@ -193,7 +193,13 @@
         </a-table-summary-row>
       </template>
       <template v-if="editMode === 'direct' && !drctAdding && addable" #footer>
-        <AntdIcons.PlusOutlined />
+        <a-button
+          class="w-full border-0 h-auto rounded-t-none py-3"
+          type="text"
+          @click="() => records.data.push({ key: 'addForm' })"
+        >
+          <template #icon><AntdIcons.PlusOutlined /></template>
+        </a-button>
       </template>
     </a-table>
     <FormDialog
@@ -231,7 +237,7 @@ import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { v4 as uuid } from 'uuid'
-import { computed, nextTick, onMounted, reactive, ref, useSlots, watch, type PropType } from 'vue'
+import { computed, onMounted, reactive, ref, useSlots, watch, type PropType } from 'vue'
 
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
@@ -285,7 +291,7 @@ const props = defineProps({
   ieIgnCols: { type: Array, default: () => [] },
   disable: { type: Function, default: () => false },
   clkable: { type: Boolean, default: false },
-  refshOpns: { type: Array, default: () => [] },
+  refOpns: { type: Array as PropType<('manual' | 'auto')[]>, default: () => [] },
   mountRefsh: { type: Boolean, default: true },
   operaStyle: { type: String as PropType<ButtonType>, default: 'link' },
   dspCols: { type: Boolean, default: false },
@@ -359,7 +365,6 @@ watch(
   () => (fmDlg.visible ? emit('form-open') : emit('form-close'))
 )
 fmtColumns()
-bindAddForm()
 
 async function refresh(data?: any[], params?: any) {
   loading.value = true
@@ -497,12 +502,12 @@ function onEditClicked(record?: any) {
     props.emitter.emit('update:visible', {
       show: true,
       viewOnly: false,
-      object: record || props.newFun()
+      object: record ? cloneDeep(record) : props.newFun()
     })
   } else {
     fmDlg.visible = true
     fmDlg.vwOnly = false
-    fmDlg.object = record || props.newFun()
+    fmDlg.object = record ? cloneDeep(record) : props.newFun()
   }
 }
 async function onRecordSave(record: any, reset: Function) {
@@ -661,25 +666,14 @@ function onColWidRsz(w: number, col: ColumnType) {
     setProp(col, 'width', w)
   }
 }
-function bindAddForm() {
-  nextTick(() => {
-    if (props.addable && props.editMode === 'direct') {
-      document
-        .querySelector('.edit-table .ant-table-footer')
-        ?.addEventListener('click', () => records.data.push({ key: 'addForm' }))
-    }
-  })
-}
 function onAddFormCancel() {
   records.data.splice(
     records.data.findIndex((rcd: any) => rcd.key === 'addForm'),
     1
   )
-  bindAddForm()
 }
 async function onAddFormSubmit() {
   await onRecordSave(fmDlg.object, () => (fmDlg.object = props.newFun()))
-  bindAddForm()
 }
 function onEditFormCancel() {
   fmDlg.editing = false
@@ -721,11 +715,7 @@ function onEditFormUpdate(vals: any) {
 .edit-table .ant-table-footer {
   @apply text-center;
 }
-.edit-table .ant-table-footer:hover {
-  background-color: rgba(0, 0, 0, 0.06);
-  cursor: pointer;
-}
-.edit-table .ant-table-footer:active {
-  background-color: rgba(0, 0, 0, 0.15);
+.edit-table .ant-table-footer {
+  padding: 0 !important;
 }
 </style>

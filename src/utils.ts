@@ -810,10 +810,6 @@ export function gnlCpy<T extends Record<string, any>>(
     }
   }
   tgt = tgt || create()
-  if (options.force && tgt.reset) {
-    tgt.reset()
-    options.force = false
-  }
   for (const key of options.keys) {
     if (typeof src[key] !== 'undefined') {
       setProp(tgt, 'key', src[key])

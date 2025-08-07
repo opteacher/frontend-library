@@ -24,7 +24,7 @@
           <a-select
             v-model:value="autoRfsh.unit"
             :options="timeUnits"
-            class="w-25"
+            class="w-20"
             @change="autoRfsh.tip = true"
           />
         </template>
