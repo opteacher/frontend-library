@@ -589,7 +589,7 @@ function getCells(key: string) {
 }
 function getCellTxt(text: string, column: Column, record: any) {
   const txt = text ? text : getProp(record, column.dataIndex)
-  return column.dict && txt in column.dict ? column.dict[txt] : txt
+  return column.dict && txt in column.dict ? column.dict[txt] : txt || ''
 }
 function fmtColumns(columns?: Column[]) {
   const canvas = document.createElement('canvas')
