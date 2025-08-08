@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MapperType } from '@/types/mapper'
+import type { MapperType } from '../types/mapper'
 import { TinyEmitter } from 'tiny-emitter'
 import { ref, type PropType } from 'vue'
 import FieldItem from './FieldItem.vue'
