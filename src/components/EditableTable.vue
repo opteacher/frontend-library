@@ -1,17 +1,20 @@
 <template>
   <div class="flex flex-col" :class="{ [sclHeight]: sclHeight.startsWith('h-') }">
-    <div class="flex justify-between mb-2.5">
-      <h3 v-if="title || $slots.title" class="mb-0 ml-2 flex-1">
-        <keep-alive v-if="icon">
-          <component :is="`AntdIcons.${icon}`" v-bind="{ class: 'text-3xl' }" />
+    <a-page-header>
+      <template v-if="icon" #avatar>
+        <keep-alive>
+          <component :is="icon" v-bind="{ class: 'text-xl mr-3' }" />
         </keep-alive>
+      </template>
+      <template #title>
         <slot v-if="$slots.title" name="title" />
-        <b v-else>{{ title }}</b>
-        &nbsp;
+        <a-typography-title v-else class="mb-0" :level="4">{{ title }}</a-typography-title>
+      </template>
+      <template #subTitle>
         <slot v-if="$slots.description" name="description" />
-        <span v-else class="text-gray-400 text-sm">{{ description }}</span>
-      </h3>
-      <a-space>
+        <a-typography-text v-else type="secondary">{{ description }}</a-typography-text>
+      </template>
+      <template #extra>
         <SelColBox v-if="dspCols" :columns="columns" @change="fmtColumns" />
         <template v-if="addable">
           <a-space v-if="imExport">
@@ -38,8 +41,8 @@
           </a-button>
         </template>
         <slot name="extra" />
-      </a-space>
-    </div>
+      </template>
+    </a-page-header>
     <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" />
     <a-table
       class="edit-table flex-1 overflow-hidden"
@@ -237,7 +240,7 @@ import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { v4 as uuid } from 'uuid'
-import { computed, onMounted, reactive, ref, useSlots, watch, type PropType } from 'vue'
+import { computed, onMounted, reactive, ref, useSlots, watch, type PropType, type FunctionalComponent } from 'vue'
 
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
@@ -270,7 +273,7 @@ const emit = defineEmits([
   'form-close'
 ])
 const props = defineProps({
-  icon: { type: String, default: '' },
+  icon: { type: Function as PropType<FunctionalComponent>, default: () => null },
   api: { type: Object /* ComAPI */, required: true },
   columns: { type: Array, required: true },
   cells: { type: Array, default: () => [] },
@@ -301,7 +304,8 @@ const props = defineProps({
   minHeight: { type: String, default: '' },
   editMode: { type: String as PropType<'direct' | 'form'>, default: 'form' },
   edtableKeys: { type: Array as PropType<any[]>, default: () => [] },
-  delableKeys: { type: Array as PropType<any[]>, default: () => [] }
+  delableKeys: { type: Array as PropType<any[]>, default: () => [] },
+  selable: { type: Boolean, default: false }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({

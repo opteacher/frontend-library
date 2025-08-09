@@ -3,7 +3,7 @@
     v-show="display"
     class="flex-auto"
     :ref="skey"
-    :name="skey"
+    :name="skey.indexOf('.') !== -1 ? skey.split('.') : skey"
     :rules="display ? mapper.rules : []"
     :wrapper-col="{ offset: mapper.offset, span: fldWid }"
   >

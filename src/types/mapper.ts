@@ -15,7 +15,7 @@ export class BaseMapper {
   label: string
   offset: number
   desc: string
-  type: CompoType
+  type?: CompoType
   rules: RuleItem[]
   placeholder: string
   disabled: boolean | Cond[] | { [cmpRel: string]: Cond[] }
@@ -30,7 +30,7 @@ export class BaseMapper {
     this.label = ''
     this.offset = 0
     this.desc = ''
-    this.type = 'Unknown'
+    this.type = undefined
     this.rules = []
     this.placeholder = ''
     this.disabled = false
@@ -46,7 +46,7 @@ export class BaseMapper {
     this.label = ''
     this.offset = 0
     this.desc = ''
-    this.type = 'Unknown'
+    this.type = undefined
     this.rules = []
     this.placeholder = ''
     this.disabled = false
@@ -629,6 +629,6 @@ export function createByFields(fields: Field[]): Mapper {
 
 export function newObjByMapper(mapper: Mapper) {
   return Object.fromEntries(
-    Object.entries(mapper).map(([key, value]) => [key, fieldDftVal(value.type)])
+    Object.entries(mapper).map(([key, value]) => [key, fieldDftVal(value.type as CompoType)])
   )
 }

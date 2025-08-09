@@ -110,6 +110,7 @@ const formRules = Object.fromEntries(
     return [entry[0], entry[1].rules]
   })
 )
+defineExpose({ formRef })
 
 if (props.emitter) {
   props.emitter.on('editable', (edtb: boolean) => {
@@ -160,6 +161,9 @@ if (props.emitter) {
     for (const [prop, value] of Object.entries(mapper)) {
       setProp(formMapper.value, prop, value)
     }
+  })
+  props.emitter.on('delete:mprop', (mkeys: string[]) => {
+    mkeys.map(key => delete formMapper.value[key])
   })
   props.emitter.on('viewOnly', (vwOnly: boolean) => {
     viewOnly.value = vwOnly

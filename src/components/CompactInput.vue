@@ -10,7 +10,6 @@ const props = defineProps({
   splitLetter: { type: String, default: '~' },
   disabled: { type: Boolean, default: false }
 })
-console.log(props)
 const emit = defineEmits(['update:value'])
 
 function onValUpdate(newTxt: string, index: number) {
