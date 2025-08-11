@@ -1,9 +1,9 @@
 <script lang="ts" setup name="FormGroup">
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
-import { type FormInstance } from 'ant-design-vue'
+import { type FormInstance, type TourProps } from 'ant-design-vue'
 import { type PropType, ref } from 'vue'
 
-import Mapper from '../types/mapper'
+import Mapper, { type MapperType } from '../types/mapper'
 import { validConds } from '../utils'
 import FormItem from './FormItem.vue'
 
@@ -16,7 +16,8 @@ const props = defineProps({
   form: { type: Object, required: true },
   rules: { type: Object, default: null },
   editable: { type: Boolean, default: true },
-  viewOnly: { type: Boolean, default: false }
+  viewOnly: { type: Boolean, default: false },
+  tourSteps: { type: Array as PropType<TourProps['steps']>, default: [] }
 })
 const emit = defineEmits(['update:fprop'])
 const refer = ref<FormInstance>()
@@ -41,7 +42,7 @@ defineExpose({ refer })
     :wrapper-col="layout === 'horizontal' ? { span: 24 - lblWid } : undefined"
     :label-align="lblAlgn"
   >
-    <template v-for="(value, key) in mapper">
+    <template v-for="[key, value] in Object.entries(mapper)">
       <template v-if="value.type === 'FormGroup' && validConds(form, value.display, true)">
         <div
           v-if="!value.canFold || value.fold"
@@ -67,10 +68,11 @@ defineExpose({ refer })
             <template #icon><minus-outlined /></template>
           </a-button>
           <FormItem
-            v-for="(v, k) in value.items"
+            v-for="[k, v] in Object.entries(value.items)"
+            :ref="k"
             :form="form"
-            :skey="value.prefix ? [key, k.toString()].join('.') : k.toString()"
-            :mapper="v"
+            :skey="value.prefix ? [key, k].join('.') : k"
+            :mapper="v as MapperType"
             :editable="editable"
             :viewOnly="viewOnly"
             :lblWid="lblWid"
@@ -106,8 +108,9 @@ defineExpose({ refer })
       </template>
       <FormItem
         v-else
+        :ref="key"
         :form="form"
-        :skey="key.toString()"
+        :skey="key"
         :mapper="value"
         :editable="editable"
         :viewOnly="viewOnly"

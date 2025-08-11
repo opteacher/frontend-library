@@ -33,6 +33,7 @@
           </a-space>
           <a-button
             v-if="editMode === 'form'"
+            ref="addBtnRef"
             type="primary"
             :loading="loading"
             @click="onEditClicked()"
@@ -41,6 +42,9 @@
           </a-button>
         </template>
         <slot name="extra" />
+      </template>
+      <template #tags>
+        <slot name="tags" />
       </template>
     </a-page-header>
     <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" />
@@ -206,6 +210,7 @@
       </template>
     </a-table>
     <FormDialog
+      ref="fmDlgRef"
       v-model:visible="fmDlg.visible"
       v-model:vw-only="fmDlg.vwOnly"
       :width="dlgWidth"
@@ -230,17 +235,33 @@
         <slot :name="pname + 'VW'" v-bind="{ current: formState, mapper: mapper[pname] }" />
       </template>
     </FormDialog>
+    <a-tour
+      :arrow="false"
+      v-model:current="tourOpns.current"
+      :open="tourOpns.open"
+      :steps="tourSteps"
+      @close="() => (tourOpns.open = false)"
+    />
   </div>
 </template>
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Table as ATable } from 'ant-design-vue'
+import { Table as ATable, type TourProps, Tour as ATour } from 'ant-design-vue'
 import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { v4 as uuid } from 'uuid'
-import { computed, onMounted, reactive, ref, useSlots, watch, type PropType, type FunctionalComponent } from 'vue'
+import {
+  computed,
+  onMounted,
+  reactive,
+  ref,
+  useSlots,
+  watch,
+  type PropType,
+  type FunctionalComponent
+} from 'vue'
 
 import Batch from '../types/batch'
 import BchExport from '../types/bchExport'
@@ -305,7 +326,8 @@ const props = defineProps({
   editMode: { type: String as PropType<'direct' | 'form'>, default: 'form' },
   edtableKeys: { type: Array as PropType<any[]>, default: () => [] },
   delableKeys: { type: Array as PropType<any[]>, default: () => [] },
-  selable: { type: Boolean, default: false }
+  selable: { type: Boolean, default: false },
+  tourSteps: { type: Array as PropType<TourProps['steps']>, default: [] }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
@@ -330,6 +352,13 @@ const fmDlg = reactive({
 })
 const slots = useSlots()
 const drctAdding = computed(() => records.data.find((rcd: any) => rcd.key === 'addForm'))
+const addBtnRef = ref(null)
+const fmDlgRef = ref(null)
+defineExpose({ addBtnRef, fmDlgRef })
+const tourOpns = reactive({
+  current: 0,
+  open: false
+})
 
 if (props.mountRefsh) {
   onMounted(refresh)
@@ -363,6 +392,7 @@ if (props.emitter) {
   if (!props.editable && !props.addable) {
     props.emitter.off('update:visible')
   }
+  props.emitter.on('update:tour', (visible: boolean) => (tourOpns.open = visible))
 }
 watch(
   () => fmDlg.visible,
