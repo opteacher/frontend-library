@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col" :class="{ [sclHeight]: sclHeight.startsWith('h-') }">
-    <a-page-header>
+    <a-page-header v-if="showHeader">
       <template v-if="icon" #avatar>
         <keep-alive>
           <component :is="icon" v-bind="{ class: 'text-xl mr-3' }" />
@@ -49,8 +49,9 @@
     </a-page-header>
     <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" />
     <a-table
+      ref="tableRef"
       class="edit-table flex-1 overflow-hidden"
-      :class="{ 'min-hgt-table': minHeight }"
+      :class="{ 'min-hgt-table': minHeight, [tableClass]: true }"
       :columns="colsState as ColumnType[]"
       :data-source="records.data"
       :size="size"
@@ -294,7 +295,7 @@ const emit = defineEmits([
   'form-close'
 ])
 const props = defineProps({
-  icon: { type: Function as PropType<FunctionalComponent>, default: () => null },
+  icon: { type: Function as PropType<FunctionalComponent>, default: null },
   api: { type: Object /* ComAPI */, required: true },
   columns: { type: Array, required: true },
   cells: { type: Array, default: () => [] },
@@ -327,7 +328,8 @@ const props = defineProps({
   edtableKeys: { type: Array as PropType<any[]>, default: () => [] },
   delableKeys: { type: Array as PropType<any[]>, default: () => [] },
   selable: { type: Boolean, default: false },
-  tourSteps: { type: Array as PropType<TourProps['steps']>, default: [] }
+  tourSteps: { type: Array as PropType<TourProps['steps']>, default: [] },
+  tableClass: { type: String, default: '' }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
@@ -353,12 +355,24 @@ const fmDlg = reactive({
 const slots = useSlots()
 const drctAdding = computed(() => records.data.find((rcd: any) => rcd.key === 'addForm'))
 const addBtnRef = ref(null)
+const tableRef = ref(null)
 const fmDlgRef = ref(null)
-defineExpose({ addBtnRef, fmDlgRef })
+defineExpose({ addBtnRef, fmDlgRef, tableRef })
 const tourOpns = reactive({
   current: 0,
   open: false
 })
+const showHeader = computed(
+  () =>
+    props.icon ||
+    props.title ||
+    props.description ||
+    (props.addable && props.editMode === 'form') ||
+    slots.title ||
+    slots.description ||
+    slots.extra ||
+    slots.tags
+)
 
 if (props.mountRefsh) {
   onMounted(refresh)
@@ -731,11 +745,11 @@ function onEditFormUpdate(vals: any) {
 }
 
 .ant-table {
-  @apply flex-1;
+  @apply flex-1 flex flex-col;
 }
 
 .ant-table-container {
-  @apply h-full relative;
+  @apply flex-1 relative;
 }
 
 .min-hgt-table .ant-table-container {

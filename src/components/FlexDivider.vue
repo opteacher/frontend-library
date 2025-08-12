@@ -6,28 +6,31 @@ const emit = defineEmits(['update:widHgt'])
 const props = defineProps({
   orientation: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
   widHgt: { type: Number, required: true },
-  emitter: { type: TinyEmitter, required: true }
+  emitter: { type: TinyEmitter, required: true },
+  ctrlSide: { type: String as PropType<'left' | 'right'>, default: 'right' }
 })
 const clsDict = {
   horizontal: 'w-full py-0.5 hover:cursor-ns-resize',
   vertical: 'h-full px-0.5 hover:cursor-ew-resize'
 }
-const rszRng = ref(-1)
-const attrs = reactive([props.widHgt, props.widHgt])
+const begPos = ref(-1)
+const orgWidHgt = reactive([props.widHgt, props.widHgt])
 
 props.emitter.on('mousemove', (e: MouseEvent) => {
-  if (rszRng.value !== -1) {
-    attrs[1] = attrs[0] - (e[props.orientation === 'vertical' ? 'clientX' : 'clientY'] - rszRng.value)
-    emit('update:widHgt', attrs[1])
+  if (begPos.value !== -1) {
+    const curPos = e[props.orientation === 'vertical' ? 'clientX' : 'clientY']
+    const addSig = { left: 1, right: -1 }[props.ctrlSide]
+    orgWidHgt[1] = orgWidHgt[0] + addSig * (curPos - begPos.value)
+    emit('update:widHgt', orgWidHgt[1])
   }
 })
 props.emitter.on('mouseup', () => {
-  rszRng.value = -1
+  begPos.value = -1
 })
 
 function onLytRszStart(e: MouseEvent) {
-  rszRng.value = e.clientX
-  attrs[0] = attrs[1]
+  begPos.value = e.clientX
+  orgWidHgt[0] = orgWidHgt[1]
 }
 </script>
 

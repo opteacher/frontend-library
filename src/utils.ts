@@ -918,3 +918,7 @@ export function json2Object(json: object, params?: Record<string, any>) {
   }
   return json
 }
+
+export function replaceObjProps(obj: object, vals: any) {
+  return { ...pickOrIgnore(obj, Object.keys(vals)), ...vals }
+}

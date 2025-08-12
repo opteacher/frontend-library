@@ -55,7 +55,7 @@
           :newFun="value.newFun"
           :object="value.editing"
           :operable="value.editable"
-          @submit="(form: any, next: Function) => onFormSubmit(key, value, form, next)"
+          @submit="(form: any, next: Function) => onSubFormSubmit(key, value, form, next)"
         />
       </template>
       <template v-for="(_, name) in $slots" :key="name" #[name]>
@@ -76,11 +76,17 @@ import { getProp, setProp } from '../utils'
 import FormGroup from './FormGroup.vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { onMounted, ref, watch, markRaw, type Raw } from 'vue'
+import { onMounted, ref, watch, markRaw, type Raw, type PropType } from 'vue'
 
 type AntdIcons = keyof typeof antdIcons | ''
 
-const emit = defineEmits(['initialize', 'update:visible', 'update:vwOnly', 'submit'])
+const emit = defineEmits([
+  'initialize',
+  'update:visible',
+  'update:vwOnly',
+  'submit',
+  'before-submit'
+])
 const props = defineProps({
   visible: { type: Boolean, default: false },
   vwOnly: { type: Boolean, default: false },
@@ -95,7 +101,8 @@ const props = defineProps({
   emitter: { type: Emitter, default: null },
   operable: { type: Boolean, default: false },
   closable: { type: Boolean, default: true },
-  fullScreen: { type: Boolean, default: false }
+  fullScreen: { type: Boolean, default: false },
+  ignProps: { type: Array as PropType<string[]>, default: [] }
 })
 const vsbState = ref<boolean>(props.visible)
 const iconState = ref<Raw<AntdIcons>>('')
@@ -213,7 +220,9 @@ watch(
 async function onOkClick() {
   try {
     okLoading.value = true
-    await formRef.value.refer.validate()
+    await formRef.value.refer.validateFields(
+      Object.keys(props.mapper).filter(key => !props.ignProps.includes(key))
+    )
     emit('submit', formState.value, () => {
       okLoading.value = false
       formRef.value.refer.resetFields()
@@ -248,7 +257,7 @@ function onDlgClose() {
 function updateState() {
   return props.object ? cloneDeep(props.object) : props.newFun()
 }
-async function onFormSubmit(key: string | number, value: any, form: any, next: Function) {
+async function onSubFormSubmit(key: string | number, value: any, form: any, next: Function) {
   await value.onSaved(form, getProp(formState.value, key as string))
   next()
 }
