@@ -6,6 +6,7 @@ import qs from 'qs'
 import { Cond } from './types'
 import Batch from './types/batch'
 import Column from './types/column'
+import type { CondType } from './types/mapper'
 
 export interface RequestOptions {
   project?: string
@@ -618,13 +619,15 @@ export function genDspRecords(formState: Batch) {
 
 export function validConds(
   formState: any,
-  value: boolean | Cond[] | { [cmpRel: string]: Cond[] } | undefined,
+  value: CondType | undefined,
   valUndRet = false
 ): boolean {
   if (typeof value === 'undefined') {
     return valUndRet
   } else if (typeof value === 'boolean') {
     return value as boolean
+  } else if (typeof value === 'function') {
+    return value(formState) as boolean
   } else if (value && value.length) {
     return (value as Cond[])
       .map((cond: Cond) => cond.isValid(formState))

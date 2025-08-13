@@ -10,6 +10,8 @@ import Field, { fieldDftVal } from './field'
 import { Dayjs } from 'dayjs'
 import { type RuleItem } from 'async-validator'
 
+export type CondType = boolean | ((...args: any) => boolean) | Cond[] | { [cmpRel: string]: Cond[] }
+
 export class BaseMapper {
   key: string
   label: string
@@ -18,9 +20,9 @@ export class BaseMapper {
   type?: CompoType
   rules: RuleItem[]
   placeholder: string
-  disabled: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  disabled: CondType
   loading: boolean
-  display: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  display: CondType
   empty: boolean
   expable: boolean
   onChange: (record: any, to: any, from?: any, extra?: any) => void
@@ -211,9 +213,9 @@ export class TableMapper extends BaseMapper {
   onEdit: (record: any) => void
   onSaved: (record: any, extra?: any) => void
   onDeleted: (key: any, extra?: any) => void
-  addable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
-  edtable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
-  delable: boolean | Cond[] | { [cmpRel: string]: Cond[] }
+  addable: CondType
+  edtable: CondType
+  delable: CondType
 
   constructor() {
     super()

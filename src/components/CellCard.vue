@@ -33,7 +33,7 @@ import Cell, { Cells } from '../types/cell'
 
 const props = defineProps({
   cell: { type: Cells, required: true },
-  text: { type: [String, Boolean, Array], required: true },
+  text: { type: [String, Boolean, Array, Number], required: true },
   selected: { type: Boolean, default: false },
   mapper: { type: Object, default: () => ({}) },
   record: { type: Object, default: null },

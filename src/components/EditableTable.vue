@@ -48,168 +48,171 @@
       </template>
     </a-page-header>
     <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" />
-    <a-table
-      ref="tableRef"
-      class="edit-table flex-1 overflow-hidden"
-      :class="{ 'min-hgt-table': minHeight, [tableClass]: true }"
-      :columns="colsState as ColumnType[]"
-      :data-source="records.data"
-      :size="size"
-      :rowClassName="() => 'bg-white'"
-      :pagination="pagable ? { total: records.total, pageSize: records.limit } : false"
-      v-model:expandedRowKeys="expRowKeys"
-      :loading="loading"
-      bordered
-      :scroll="sclHeight ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
-      :custom-row="
+    <div class="flex-1">
+      <a-table
+        ref="tableRef"
+        class="edit-table overflow-hidden min-h-fit"
+        :class="{ 'min-hgt-table': minHeight, [tableClass]: true }"
+        :columns="colsState as ColumnType[]"
+        :data-source="records.data"
+        :size="size"
+        :rowClassName="() => 'bg-white'"
+        :pagination="pagable ? { total: records.total, pageSize: records.limit } : false"
+        v-model:expandedRowKeys="expRowKeys"
+        :loading="loading"
+        bordered
+        :scroll="sclHeight ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
+        :custom-row="
         (record: any) => ({
           onClick: clkable ? () => onRowClick(record) : undefined
         })
       "
-      @resize-column="onColWidRsz"
-      @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
-      @expand="(expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)"
-    >
-      <template #customFilterIcon="{ column, filtered }">
-        <AntdIcons.SearchOutlined
-          v-if="column.searchable"
-          :style="{ color: filtered ? '@primary-color' : undefined }"
-        />
-        <AntdIcons.FilterFilled
-          v-else
-          :style="{ color: filtered ? '@primary-color' : undefined }"
-        />
-      </template>
-      <template
-        #customFilterDropdown="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }"
+        @resize-column="onColWidRsz"
+        @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
+        @expand="(expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)"
       >
-        <div v-if="column.searchable" class="p-1">
-          <a-input
-            class="w-47 mb-1 block"
-            ref="searchInput"
-            :placeholder="`搜索${column.title}`"
-            :value="selectedKeys[0]"
-            @change="(e: any) => setSelectedKeys(e.target.value ? [e.target.value] : [])"
-            @pressEnter="onDoSearch(selectedKeys, confirm, clearFilters, column.dataIndex)"
+        <template #customFilterIcon="{ column, filtered }">
+          <AntdIcons.SearchOutlined
+            v-if="column.searchable"
+            :style="{ color: filtered ? '@primary-color' : undefined }"
           />
-          <a-button
-            class="w-23 mr-1"
-            type="primary"
-            size="small"
-            @click="onDoSearch(selectedKeys, confirm, clearFilters, column.dataIndex)"
-          >
-            <template #icon><AntdIcons.SearchOutlined /></template>
-            搜索
-          </a-button>
-          <a-button class="w-23" size="small" @click="onSchReset(clearFilters, column.dataIndex)">
-            重置
-          </a-button>
-        </div>
-      </template>
-      <template #headerCell="{ column }: any">
-        <template v-if="$slots[column.dataIndex + 'HD']">
-          <slot :name="column.dataIndex + 'HD'" v-bind="{ column }" />
-        </template>
-        <template v-if="column.dataIndex === 'opera'">
-          {{ column.title }}&nbsp;
-          <a-button v-if="rszCols" type="link" size="small" @click.stop="() => fmtColumns()">
-            重置长宽
-          </a-button>
-        </template>
-      </template>
-      <template #bodyCell="{ text, column, record }: any">
-        <template v-if="record.key === 'addForm'">
-          <div v-if="column.dataIndex === 'opera'">
-            <a-button size="small" type="link" @click="onAddFormSubmit">确定</a-button>
-            <a-button size="small" type="text" @click="onAddFormCancel">取消</a-button>
-          </div>
-          <DirectField
+          <AntdIcons.FilterFilled
             v-else
-            :mapper="mapper[column.dataIndex]"
+            :style="{ color: filtered ? '@primary-color' : undefined }"
+          />
+        </template>
+        <template
+          #customFilterDropdown="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }"
+        >
+          <div v-if="column.searchable" class="p-1">
+            <a-input
+              class="w-47 mb-1 block"
+              ref="searchInput"
+              :placeholder="`搜索${column.title}`"
+              :value="selectedKeys[0]"
+              @change="(e: any) => setSelectedKeys(e.target.value ? [e.target.value] : [])"
+              @pressEnter="onDoSearch(selectedKeys, confirm, clearFilters, column.dataIndex)"
+            />
+            <a-button
+              class="w-23 mr-1"
+              type="primary"
+              size="small"
+              @click="onDoSearch(selectedKeys, confirm, clearFilters, column.dataIndex)"
+            >
+              <template #icon><AntdIcons.SearchOutlined /></template>
+              搜索
+            </a-button>
+            <a-button class="w-23" size="small" @click="onSchReset(clearFilters, column.dataIndex)">
+              重置
+            </a-button>
+          </div>
+        </template>
+        <template #headerCell="{ column }: any">
+          <template v-if="$slots[column.dataIndex + 'HD']">
+            <slot :name="column.dataIndex + 'HD'" v-bind="{ column }" />
+          </template>
+          <template v-if="column.dataIndex === 'opera'">
+            {{ column.title }}&nbsp;
+            <a-button v-if="rszCols" type="link" size="small" @click.stop="() => fmtColumns()">
+              重置长宽
+            </a-button>
+          </template>
+        </template>
+        <template #bodyCell="{ text, column, record }: any">
+          <template v-if="record.key === 'addForm'">
+            <div v-if="column.dataIndex === 'opera'">
+              <a-button size="small" type="link" @click="onAddFormSubmit">确定</a-button>
+              <a-button size="small" type="text" @click="onAddFormCancel">取消</a-button>
+            </div>
+            <DirectField
+              v-else
+              :mapper="mapper[column.dataIndex]"
+              :form="fmDlg.object"
+              :emitter="emitter"
+              @update:form="onEditFormUpdate"
+            />
+          </template>
+          <template v-else-if="column.dataIndex === 'opera'">
+            <slot name="operaBefore" v-bind="{ record }" />
+            <template v-if="fmDlg.editing && fmDlg.object.key === record.key">
+              <a-button size="small" type="link" @click="onEditFormSubmit">确定</a-button>
+              <a-button size="small" type="text" @click="onEditFormCancel">取消</a-button>
+            </template>
+            <template v-else>
+              <a-button
+                v-if="
+                  editable &&
+                  !disable(record) &&
+                  (!edtableKeys.length || edtableKeys.includes(record.key))
+                "
+                size="small"
+                :type="operaStyle"
+                @click.stop="onEditClicked(record)"
+              >
+                编辑
+              </a-button>
+              <a-popconfirm
+                v-if="
+                  delable &&
+                  !disable(record) &&
+                  (!delableKeys.length || delableKeys.includes(record.key))
+                "
+                title="确定删除该记录吗？"
+                ok-text="确定"
+                cancel-text="取消"
+                @confirm="onRecordDel(record)"
+              >
+                <a-button
+                  size="small"
+                  danger
+                  :type="operaStyle"
+                  @click.stop="(e: any) => e.preventDefault()"
+                >
+                  删除
+                </a-button>
+              </a-popconfirm>
+            </template>
+            <slot name="operaAfter" v-bind="{ record }" />
+          </template>
+          <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
+          <DirectField
+            v-else-if="fmDlg.editing && fmDlg.object.key === record.key"
+            :mapper="getProp(mapper, column.dataIndex)"
             :form="fmDlg.object"
             :emitter="emitter"
             @update:form="onEditFormUpdate"
           />
+          <CellCard
+            v-else
+            :cell="getCells(column.dataIndex)"
+            :text="getCellTxt(text, column, record)"
+            :mapper="getProp(mapper, column.dataIndex)"
+            :record="record"
+            :keyword="column.dataIndex in searchState ? searchState[column.dataIndex].content : ''"
+          />
         </template>
-        <template v-else-if="column.dataIndex === 'opera'">
-          <slot name="operaBefore" v-bind="{ record }" />
-          <template v-if="fmDlg.editing && fmDlg.object.key === record.key">
-            <a-button size="small" type="link" @click="onEditFormSubmit">确定</a-button>
-            <a-button size="small" type="text" @click="onEditFormCancel">取消</a-button>
-          </template>
-          <template v-else>
-            <a-button
-              v-if="
-                editable &&
-                !disable(record) &&
-                (!edtableKeys.length || edtableKeys.includes(record.key))
-              "
-              size="small"
-              :type="operaStyle"
-              @click.stop="onEditClicked(record)"
-            >
-              编辑
-            </a-button>
-            <a-popconfirm
-              v-if="
-                delable &&
-                !disable(record) &&
-                (!delableKeys.length || delableKeys.includes(record.key))
-              "
-              title="确定删除该记录吗？"
-              ok-text="确定"
-              cancel-text="取消"
-              @confirm="onRecordDel(record)"
-            >
-              <a-button
-                size="small"
-                danger
-                :type="operaStyle"
-                @click.stop="(e: any) => e.preventDefault()"
-              >
-                删除
-              </a-button>
-            </a-popconfirm>
-          </template>
-          <slot name="operaAfter" v-bind="{ record }" />
+        <template v-if="$slots['expandedRowRender']" #expandedRowRender="{ record }">
+          <slot name="expandedRowRender" v-bind="{ record }" />
         </template>
-        <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
-        <DirectField
-          v-else-if="fmDlg.editing && fmDlg.object.key === record.key"
-          :mapper="getProp(mapper, column.dataIndex)"
-          :form="fmDlg.object"
-          :emitter="emitter"
-          @update:form="onEditFormUpdate"
-        />
-        <CellCard
-          v-else
-          :cell="getCells(column.dataIndex)"
-          :text="getCellTxt(text, column, record)"
-          :mapper="getProp(mapper, column.dataIndex)"
-          :record="record"
-          :keyword="column.dataIndex in searchState ? searchState[column.dataIndex].content : ''"
-        />
-      </template>
-      <template v-if="$slots['expandedRowRender']" #expandedRowRender="{ record }">
-        <slot name="expandedRowRender" v-bind="{ record }" />
-      </template>
-      <template v-if="pagable" #summary>
-        <a-table-summary-row>
-          <a-table-summary-cell>
-            总共&nbsp;{{ records.data.length }}&nbsp;条记录
-          </a-table-summary-cell>
-        </a-table-summary-row>
-      </template>
-      <template v-if="editMode === 'direct' && !drctAdding && addable" #footer>
-        <a-button
-          class="w-full border-0 h-auto rounded-t-none py-3"
-          type="text"
-          @click="() => records.data.push({ key: 'addForm' })"
-        >
-          <template #icon><AntdIcons.PlusOutlined /></template>
-        </a-button>
-      </template>
-    </a-table>
+        <template v-if="pagable" #summary>
+          <a-table-summary-row>
+            <a-table-summary-cell>
+              总共&nbsp;{{ records.data.length }}&nbsp;条记录
+            </a-table-summary-cell>
+          </a-table-summary-row>
+        </template>
+        <template v-if="editMode === 'direct' && !drctAdding && addable" #footer>
+          <a-button
+            class="w-full border-0 h-auto rounded-t-none py-3"
+            type="text"
+            @click="() => records.data.push({ key: 'addForm' })"
+          >
+            <template #icon><AntdIcons.PlusOutlined /></template>
+          </a-button>
+        </template>
+      </a-table>
+    </div>
+
     <FormDialog
       ref="fmDlgRef"
       v-model:visible="fmDlg.visible"
@@ -382,6 +385,7 @@ if (props.emitter) {
   props.emitter.on('load', (load: boolean) => {
     loading.value = load
   })
+  props.emitter.on('update:columns', fmtColumns)
   props.emitter.on('update:cprop', (column: Record<string, any>) => {
     for (const [prop, value] of Object.entries(column)) {
       const fstPoi = prop.indexOf('.')
