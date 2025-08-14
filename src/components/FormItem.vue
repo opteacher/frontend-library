@@ -84,8 +84,8 @@
                   ? mapper.chkLabels[1]
                   : '是'
                 : mapper.chkLabels
-                  ? mapper.chkLabels[0]
-                  : '否'
+                ? mapper.chkLabels[0]
+                : '否'
             }}
           </template>
           <template v-else-if="mapper.type === 'EditList' || mapper.type === 'UploadFile'">

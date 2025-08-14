@@ -90,6 +90,7 @@ function onLytRszStart(e: MouseEvent) {
       <!-- {{ hbtnTxt }} -->
     </a-button>
     <a-button
+      v-show="!isHide"
       :class="clsDict[orientation]"
       :disabled="isHide"
       @mousedown="onLytRszStart"

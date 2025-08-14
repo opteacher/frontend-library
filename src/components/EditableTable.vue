@@ -60,7 +60,7 @@
         :pagination="pagable ? { total: records.total, pageSize: records.limit } : false"
         v-model:expandedRowKeys="expRowKeys"
         :loading="loading"
-        bordered
+        :bordered="bordered"
         :scroll="sclHeight ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
         :custom-row="
         (record: any) => ({
@@ -143,7 +143,7 @@
                 v-if="
                   editable &&
                   !disable(record) &&
-                  (!edtableKeys.length || edtableKeys.includes(record.key))
+                  (edtableKeys.includes('*') || edtableKeys.includes(record.key))
                 "
                 size="small"
                 :type="operaStyle"
@@ -155,7 +155,7 @@
                 v-if="
                   delable &&
                   !disable(record) &&
-                  (!delableKeys.length || delableKeys.includes(record.key))
+                  (delableKeys.includes('*') || delableKeys.includes(record.key))
                 "
                 title="确定删除该记录吗？"
                 ok-text="确定"
@@ -328,11 +328,12 @@ const props = defineProps({
   sclHeight: { type: String, default: '' },
   minHeight: { type: String, default: '' },
   editMode: { type: String as PropType<'direct' | 'form'>, default: 'form' },
-  edtableKeys: { type: Array as PropType<any[]>, default: () => [] },
-  delableKeys: { type: Array as PropType<any[]>, default: () => [] },
+  edtableKeys: { type: Array as PropType<any[]>, default: () => ['*'] },
+  delableKeys: { type: Array as PropType<any[]>, default: () => ['*'] },
   selable: { type: Boolean, default: false },
   tourSteps: { type: Array as PropType<TourProps['steps']>, default: [] },
-  tableClass: { type: String, default: '' }
+  tableClass: { type: String, default: '' },
+  bordered: { type: Boolean, default: true }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
