@@ -48,11 +48,12 @@
       </template>
     </a-page-header>
     <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" />
-    <div class="flex-1">
+    <div class="flex-1 flex items-stretch">
+      <slot name="left" />
       <a-table
         ref="tableRef"
-        class="edit-table overflow-hidden min-h-fit"
-        :class="{ 'min-hgt-table': minHeight, [tableClass]: true }"
+        class="edit-table flex-1 overflow-hidden min-h-fit"
+        :class="{ 'min-hgt-table': minHeight, [tableClass]: true, 'no-rounded': !rounded }"
         :columns="colsState as ColumnType[]"
         :data-source="records.data"
         :size="size"
@@ -201,18 +202,22 @@
             </a-table-summary-cell>
           </a-table-summary-row>
         </template>
-        <template v-if="editMode === 'direct' && !drctAdding && addable" #footer>
-          <a-button
-            class="w-full border-0 h-auto rounded-t-none py-3"
-            type="text"
-            @click="() => records.data.push({ key: 'addForm' })"
-          >
-            <template #icon><AntdIcons.PlusOutlined /></template>
-          </a-button>
+        <template v-if="editMode === 'direct' && !drctAdding && addable && columns.length" #footer>
+          <a-tooltip>
+            <template #title>添加记录</template>
+            <a-button
+              class="w-full border-0 h-auto rounded-t-none py-3"
+              :class="{ 'rounded-b-none': !rounded }"
+              type="text"
+              @click="() => records.data.push({ key: 'addForm' })"
+            >
+              <template #icon><AntdIcons.PlusOutlined /></template>
+            </a-button>
+          </a-tooltip>
         </template>
       </a-table>
+      <slot name="right" />
     </div>
-
     <FormDialog
       ref="fmDlgRef"
       v-model:visible="fmDlg.visible"
@@ -333,7 +338,8 @@ const props = defineProps({
   selable: { type: Boolean, default: false },
   tourSteps: { type: Array as PropType<TourProps['steps']>, default: [] },
   tableClass: { type: String, default: '' },
-  bordered: { type: Boolean, default: true }
+  bordered: { type: Boolean, default: true },
+  rounded: { type: Boolean, default: true }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
@@ -757,12 +763,12 @@ function onEditFormUpdate(vals: any) {
   @apply flex-1 relative;
 }
 
-.min-hgt-table .ant-table-container {
-  min-height: 18rem;
-}
-
 .ant-table-body {
   @apply absolute bottom-0 left-0 right-0;
+}
+
+.min-hgt-table .ant-table-container {
+  min-height: 18rem;
 }
 
 .edit-table .ant-table-footer {
@@ -770,5 +776,18 @@ function onEditFormUpdate(vals: any) {
 }
 .edit-table .ant-table-footer {
   padding: 0 !important;
+}
+
+.no-rounded table {
+  @apply rounded-none;
+}
+.no-rounded table > thead > tr:first-child > *:first-child {
+  border-radius: 0 !important;
+}
+.no-rounded table > thead > tr:first-child > *:last-child {
+  border-radius: 0 !important;
+}
+.no-rounded .ant-table-footer {
+  @apply rounded-none;
 }
 </style>
