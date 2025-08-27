@@ -2,7 +2,7 @@
 import { TinyEmitter } from 'tiny-emitter'
 import { computed, reactive, ref, type PropType } from 'vue'
 import { RightOutlined, LeftOutlined } from '@ant-design/icons-vue'
-import { setProp } from '@/utils'
+import { setProp } from '../utils'
 
 const emit = defineEmits(['update:widHgt', 'hbtnClick'])
 const props = defineProps({
