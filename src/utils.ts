@@ -833,11 +833,17 @@ export function gnlCpy<T extends Record<string, any>>(
       if (Array.isArray(tgt[key]) && srcnotUndefAndNull && src[key].length) {
         if (typeof src[key][0] === 'object') {
           tgt[key].splice(0, tgt[key].length, ...src[key].map((ele: any) => cpy(ele)))
+        } else {
+          tgt[key].splice(0, tgt[key].length, ...src[key])
         }
       } else if (src[key]) {
-        const res = cpy(src[key] || {}, tgt[key], options.force)
-        if (res || options.force) {
-          setProp(tgt, key, res)
+        if (typeof src[key] === 'object') {
+          const res = cpy(src[key], tgt[key], options.force)
+          if (res || options.force) {
+            setProp(tgt, key, res)
+          }
+        } else {
+          setProp(tgt, key, src[key])
         }
       }
     } else if (

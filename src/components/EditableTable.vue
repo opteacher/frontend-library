@@ -64,10 +64,10 @@
         :bordered="bordered"
         :scroll="sclHeight ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
         :custom-row="
-        (record: any) => ({
-          onClick: clkable ? () => onRowClick(record) : undefined
-        })
-      "
+          (record: any) => ({
+            onClick: clkable ? () => onRowClick(record) : undefined
+          })
+        "
         @resize-column="onColWidRsz"
         @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
         @expand="(expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)"
@@ -233,13 +233,13 @@
     >
       <template
         v-for="pname in Object.keys(mapper).filter((key: any) => $slots[key + 'EDT'])"
-        #[pname]="{ formState }"
+        #[pname]="{ formState }: any"
       >
         <slot :name="pname + 'EDT'" v-bind="{ editing: formState, mapper: mapper[pname] }" />
       </template>
       <template
         v-for="pname in Object.keys(mapper).filter((key: any) => $slots[key + 'VW'])"
-        #[`${pname}VW`]="{ formState }"
+        #[`${pname}VW`]="{ formState }: any"
       >
         <slot :name="pname + 'VW'" v-bind="{ current: formState, mapper: mapper[pname] }" />
       </template>
