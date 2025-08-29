@@ -84,8 +84,8 @@
                   ? mapper.chkLabels[1]
                   : '是'
                 : mapper.chkLabels
-                ? mapper.chkLabels[0]
-                : '否'
+                  ? mapper.chkLabels[0]
+                  : '否'
             }}
           </template>
           <template v-else-if="mapper.type === 'EditList' || mapper.type === 'UploadFile'">
@@ -105,13 +105,7 @@
           <template v-else>{{ getProp(form, skey) }}</template>
         </template>
         <slot v-else-if="chkInSlot()" :name="skey" v-bind="{ form }" />
-        <FieldItem
-          v-else
-          :form="form"
-          :skey="skey"
-          :mapper="mapper"
-          @update:fprop="(obj: any) => emit('update:fprop', obj)"
-        >
+        <FieldItem v-else :form="form" :skey="skey" :mapper="mapper" @update:fprop="onFpropUpdate">
           <template #formItem="{ form, elKey, value }">
             <FormItem
               :form="form"
@@ -191,5 +185,8 @@ function chkInSlot(suffix?: string) {
 }
 function onVwPwdClick() {
   viewPwd.value = !viewPwd.value
+}
+function onFpropUpdate(obj: any) {
+  emit('update:fprop', obj)
 }
 </script>

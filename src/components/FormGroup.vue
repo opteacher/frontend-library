@@ -30,6 +30,10 @@ const formRules =
   )
 
 defineExpose({ refer })
+
+function onFpropUpdate(obj: any) {
+  emit('update:fprop', obj)
+}
 </script>
 
 <template>
@@ -77,7 +81,7 @@ defineExpose({ refer })
             :viewOnly="viewOnly"
             :lblWid="lblWid"
             :fldWid="fldWid"
-            @update:fprop="(fm: any) => emit('update:fprop', fm)"
+            @update:fprop="onFpropUpdate"
           >
             <template #FormDialog>
               <slot name="FormDialog" v-bind="{ value: v, key: k }" />
@@ -116,7 +120,7 @@ defineExpose({ refer })
         :viewOnly="viewOnly"
         :lblWid="lblWid"
         :fldWid="fldWid"
-        @update:fprop="(fm: any) => emit('update:fprop', fm)"
+        @update:fprop="onFpropUpdate"
       >
         <template #FormDialog>
           <slot name="FormDialog" v-bind="{ value, key }" />

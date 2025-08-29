@@ -219,6 +219,7 @@
       <slot name="right" />
     </div>
     <FormDialog
+      v-if="needFmDlg"
       ref="fmDlgRef"
       v-model:visible="fmDlg.visible"
       v-model:vw-only="fmDlg.vwOnly"
@@ -339,7 +340,8 @@ const props = defineProps({
   tourSteps: { type: Array as PropType<TourProps['steps']>, default: [] },
   tableClass: { type: String, default: '' },
   bordered: { type: Boolean, default: true },
-  rounded: { type: Boolean, default: true }
+  rounded: { type: Boolean, default: true },
+  needFmDlg: { type: Boolean, default: true }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
@@ -757,6 +759,7 @@ function onEditFormUpdate(vals: any) {
 
 .ant-table {
   @apply flex-1 flex flex-col;
+  margin: 0 !important;
 }
 
 .ant-table-container {
