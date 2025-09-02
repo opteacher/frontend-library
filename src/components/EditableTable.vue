@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col" :class="{ [sclHeight]: sclHeight.startsWith('h-') }">
-    <a-page-header v-if="showHeader">
+    <a-page-header :class="thdClass" v-if="showHeader">
       <template v-if="icon" #avatar>
         <keep-alive>
           <component :is="icon" v-bind="{ class: 'text-xl mr-3' }" />
@@ -341,7 +341,8 @@ const props = defineProps({
   tableClass: { type: String, default: '' },
   bordered: { type: Boolean, default: true },
   rounded: { type: Boolean, default: true },
-  needFmDlg: { type: Boolean, default: true }
+  needFmDlg: { type: Boolean, default: true },
+  thdClass: { type: String, default: '' }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
@@ -379,6 +380,7 @@ const showHeader = computed(
     props.icon ||
     props.title ||
     props.description ||
+    props.imExport ||
     (props.addable && props.editMode === 'form') ||
     slots.title ||
     slots.description ||
@@ -792,5 +794,9 @@ function onEditFormUpdate(vals: any) {
 }
 .no-rounded .ant-table-footer {
   @apply rounded-none;
+}
+
+.ant-tabs-nav {
+  margin-bottom: 0 !important;
 }
 </style>
