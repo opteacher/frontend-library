@@ -701,7 +701,7 @@ function fmtColumns(columns?: Column[]) {
     slots['operaBefore'] ||
     slots['operaBefore']
   ) {
-    cols.push(new Column('操作', 'opera', { width: 80, fixed: 'right' }))
+    cols.push(new Column('操作', 'opera', { width: 150, fixed: 'right' }))
   }
   const col4Ist = [] as Column[]
   for (const col of cols) {

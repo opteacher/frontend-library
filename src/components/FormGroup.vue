@@ -9,7 +9,7 @@ import FormItem from './FormItem.vue'
 
 const props = defineProps({
   lblWid: { type: Number, default: 4 },
-  fldWid: { type: Number, default: 20 },
+  fldWid: { type: Number, default: -1 },
   lblAlgn: { type: String, default: 'right' },
   layout: { type: String as PropType<'horizontal' | 'vertical' | 'inline'>, default: 'horizontal' },
   mapper: { type: Mapper, required: true },
