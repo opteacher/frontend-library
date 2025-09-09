@@ -195,13 +195,6 @@
         <template v-if="$slots['expandedRowRender']" #expandedRowRender="{ record }">
           <slot name="expandedRowRender" v-bind="{ record }" />
         </template>
-        <template v-if="pagable" #summary>
-          <a-table-summary-row>
-            <a-table-summary-cell>
-              总共&nbsp;{{ records.data.length }}&nbsp;条记录
-            </a-table-summary-cell>
-          </a-table-summary-row>
-        </template>
         <template v-if="editMode === 'direct' && !drctAdding && addable && columns.length" #footer>
           <a-tooltip>
             <template #title>添加记录</template>
