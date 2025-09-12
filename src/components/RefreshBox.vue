@@ -17,7 +17,7 @@
         v-model:value="autoRfsh.interval"
         size="small"
         :min="1"
-        class="w-50"
+        class="w-32"
         @change="autoRfsh.tip = true"
       >
         <template #addonAfter>

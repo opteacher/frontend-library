@@ -362,12 +362,21 @@ export function pickOrIgnore(obj: { [key: string]: any }, attrs: string[], ignor
   )
 }
 
-export async function until(cdFun: () => Promise<boolean>, lpLimit = 500) {
-  for (let i = 0; i < lpLimit; ++i) {
+export async function until(cdFun: () => Promise<boolean>, options?: { loop?: number; interval?: number }) {
+  if (!options) {
+    options = { loop: 500, interval: 200 }
+  }
+  if (!options.loop) {
+    options.loop = 500
+  }
+  if (!options.interval) {
+    options.interval = 200
+  }
+  for (let i = 0; i < options.loop; ++i) {
     if (await cdFun()) {
       return Promise.resolve()
     }
-    await new Promise(res => setTimeout(res, 200))
+    await new Promise(res => setTimeout(res, options.interval))
   }
   return Promise.reject()
 }
