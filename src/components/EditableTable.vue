@@ -47,7 +47,7 @@
         <slot name="tags" />
       </template>
     </a-page-header>
-    <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" />
+    <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" :emitter="emitter" />
     <div class="flex-1 flex items-stretch">
       <slot name="left" />
       <a-table
