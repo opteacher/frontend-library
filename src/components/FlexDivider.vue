@@ -9,7 +9,7 @@ const props = defineProps({
   orientation: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
   widHgt: { type: Number, required: true },
   emitter: { type: TinyEmitter, required: true },
-  ctrlSide: { type: String as PropType<'leftTop' | 'rightBottom'>, default: 'right' },
+  ctrlSide: { type: String as PropType<'leftTop' | 'rightBottom'>, default: 'rightBottom' },
   hideBtn: { type: Boolean, default: true },
   isHide: { type: Boolean, default: false },
   hbtnPos: {
