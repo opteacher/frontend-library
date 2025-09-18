@@ -15,12 +15,7 @@ export default class PageEle {
     this.xpath = ''
     this.clazz = ''
     this.tagName = ''
-    this.rectBox = {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0
-    }
+    this.rectBox = PageEle.newRect()
   }
 
   reset() {
@@ -35,6 +30,10 @@ export default class PageEle {
 
   static copy(src: any, tgt?: PageEle, force = false) {
     return gnlCpy(PageEle, src, tgt, { force })
+  }
+
+  static newRect() {
+    return ({ x: 0, y: 0, width: 0, height: 0 })
   }
 
   inRect(x: number, y: number): boolean {

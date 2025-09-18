@@ -1,5 +1,201 @@
+<template>
+  <div
+    class="h-full w-full flex overflow-hidden"
+    @mousemove="(e: MouseEvent) => flxDivEmitter.emit('mousemove', e)"
+    @mouseup="() => flxDivEmitter.emit('mouseup')"
+  >
+    <template v-if="curURL">
+      <div class="flex-1 relative">
+        <div v-if="loading" class="h-full text-center relative z-50 bg-black opacity-10">
+          <a-spin
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            tip="页面元素收集中..."
+          />
+        </div>
+        <webview
+          v-else
+          class="overflow-auto w-full h-full"
+          :src="curURL"
+          ref="webviewRef"
+          disablewebsecurity
+          nodeintegrationinsubframes
+          webpreferences="allowRunningInsecureContent"
+          @did-stop-loading="onPageLoaded"
+          @console-message="onWvCslMsg"
+          @dom-ready="onWvDomReady"
+        />
+        <a-float-button-group
+          v-if="!loading"
+          class="absolute"
+          :class="{
+            'mbtn-cursor-move': toolbox.mosPos.x !== -1
+          }"
+          trigger="click"
+          type="primary"
+          :style="{
+            right: toolbox.offset.right + 'px',
+            bottom: toolbox.offset.bottom + 'px'
+          }"
+          v-model:open="toolbox.expand"
+          @mousedown="onTboxMouseDown"
+          @mousemove="onTboxMouseMove"
+          @mouseup="onTboxMouseUp"
+        >
+          <template #icon><ToolOutlined /></template>
+          <a-float-button
+            tooltip="选择页面元素"
+            :type="toolbox.selecting ? 'primary' : 'default'"
+            @click="onSelEleClick"
+          >
+            <template #icon><SelectOutlined /></template>
+          </a-float-button>
+          <a-float-button tooltip="选择框颜色" >
+            <template #icon>
+              <BorderOutlined :style="{ color: toolbox.selColor }" />
+            </template>
+          </a-float-button>
+          <a-float-button
+            tooltip="关闭页面遮罩" 
+            :type="toolbox.maskVsb ? 'primary' : 'default'"
+            @click="() => swchBoolProp(toolbox, 'maskVsb')"
+          >
+            <template #icon><CloseSquareOutlined /></template>
+          </a-float-button>
+        </a-float-button-group>
+        <a-dropdown :trigger="['contextmenu']">
+          <div
+            class="absolute top-0 left-0 bottom-4 right-4"
+            :style="{ display: toolbox.maskVsb ? 'block' : 'none' }"
+            @wheel="onMaskScroll"
+          >
+            <svg
+              class="w-full h-full"
+              @mousemove="onMskMouseMove"
+              @mouseup="onMskMouseUp"
+              @click="() => onPageEleClick()"
+            >
+              <rect
+                v-if="hoverEl.rectBox.width"
+                class="cursor-pointer"
+                :x="hoverEl.rectBox.x - mskOffset.left"
+                :y="hoverEl.rectBox.y - mskOffset.top"
+                :rx="4"
+                :ry="4"
+                :width="hoverEl.rectBox.width"
+                :height="hoverEl.rectBox.height"
+                :style="{
+                  'fill-opacity': 0,
+                  'stroke-width': 3,
+                  stroke: toolbox.selColor
+                }"
+              />
+              <rect
+                v-for="xpath in hlEles.filter(xpath => xpath in eleDict)"
+                :key="xpath"
+                class="cursor-pointer"
+                :class="{ invisible: selKeys.includes(xpath) }"
+                :x="eleDict[xpath].rectBox.x - mskOffset.left"
+                :y="eleDict[xpath].rectBox.y - mskOffset.top"
+                :rx="4"
+                :ry="4"
+                :width="eleDict[xpath].rectBox.width"
+                :height="eleDict[xpath].rectBox.height"
+                :style="{
+                  'fill-opacity': 0,
+                  'stroke-width': 3,
+                  stroke: toolbox.stkColor
+                }"
+                @click="() => onPageEleClick(xpath)"
+              />
+            </svg>
+            <a-button
+              v-if="selRect.width"
+              class="absolute"
+              danger
+              type="text"
+              size="small"
+              :style="{
+                top: selRect.y - mskOffset.top + 'px',
+                left: selRect.x - mskOffset.left + selRect.width + 5 + 'px'
+              }"
+              @click="onPageEleClear"
+            >
+              <template #icon><CloseOutlined /></template>
+            </a-button>
+            <a-tag
+              v-for="(xpath, index) in hlEles.filter(xpath => xpath in eleDict)"
+              :key="xpath"
+              class="absolute cursor-pointer"
+              :class="{ invisible: selKeys.includes(xpath) }"
+              :style="{
+                top: eleDict[xpath].rectBox.y - mskOffset.top + 'px',
+                left:
+                  eleDict[xpath].rectBox.x -
+                  mskOffset.left +
+                  eleDict[xpath].rectBox.width +
+                  5 +
+                  'px'
+              }"
+              :color="toolbox.stkColor"
+              @click="() => onPageEleClick(xpath)"
+            >
+              {{ index + 1 }}
+            </a-tag>
+          </div>
+          <template #overlay>
+            <a-menu @click="onRgtMnuClick">
+              <a-menu-item key="select">检查</a-menu-item>
+              <a-menu-item key="clear">清空选择</a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+      </div>
+      <FlexDivider
+        orientation="vertical"
+        v-model:wid-hgt="eleTree.width"
+        :is-hide="!eleTree.visible"
+        :emitter="flxDivEmitter"
+        :hbtnPos="{ bottom: '10px' }"
+        hbtnTxt="元素树"
+        @hbtn-click="() => swchBoolProp(eleTree, 'visible')"
+      />
+      <div v-if="eleTree.visible" class="h-full flex flex-col" :style="{ width: eleTree.width + 'px' }">
+        <slot name="sideTop" />
+        <a-spin
+          wrapperClassName="flex-1"
+          tip="页面元素收集中..."
+          :spinning="loading"
+        >
+          <a-tree
+            class="overflow-auto absolute top-0 bottom-0 left-0 right-0"
+            :auto-expand-parent="true"
+            :tree-data="eleTree.data"
+            v-model:expendedKeys="expKeys"
+            :selectedKeys="selKeys"
+            @select="(selKeys: string[]) => emit('eleClick', selKeys)"
+          >
+            <template #title="{ dataRef }">
+              {{ dataRef.element ? dataRef.element.tagName : dataRef.title }}&nbsp;
+              <template v-if="dataRef.element">
+                <span v-if="dataRef.element.id">#{{ dataRef.element.id }}</span>
+                <span v-else-if="dataRef.element.clazz">.{{ dataRef.element.clazz }}</span>
+              </template>
+            </template>
+          </a-tree>
+        </a-spin>
+        <slot name="sideBottom" />
+      </div>
+    </template>
+    <div v-else class="flex-1 relative">
+      <a-typography-paragraph class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <slot name="empty" />
+      </a-typography-paragraph>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
-import { reactive, ref, type PropType } from 'vue'
+import { computed, reactive, ref, type PropType } from 'vue'
 import type { WebviewTag } from 'electron'
 import type { TreeProps } from 'ant-design-vue'
 import PageEle from '../types/pageEle'
@@ -11,20 +207,30 @@ import {
   CloseOutlined,
   CloseSquareOutlined
 } from '@ant-design/icons-vue'
+import { TinyEmitter } from 'tiny-emitter'
+import FlexDivider from './FlexDivider.vue'
 
-defineProps({
+const props = defineProps({
   curURL: { type: String, required: true },
-  hlEles: { type: Array as PropType<PageEle[]>, default: [] }
+  hlEles: { type: Array as PropType<string[]>, default: [] },
+  emitter: { type: Object as PropType<TinyEmitter>, default: () => new TinyEmitter() }
 })
-const emit = defineEmits(['update:selKeys', 'pageLoaded'])
+const emit = defineEmits(['eleClick', 'pageLoaded'])
 const webviewRef = ref<WebviewTag | null>(null)
 const mskOffset = reactive({ top: 0, left: 0 })
 const loading = ref(false)
-const treeData = ref<TreeProps['treeData']>()
-const selected = reactive({
-  keys: [] as string[],
-  rect: { x: 0, y: 0, w: 0, h: 0 }
+const eleTree = reactive({
+  data: undefined as TreeProps['treeData'],
+  width: 200,
+  visible: true
 })
+const selKeys = ref<string[]>([])
+const hoverEl = reactive(new PageEle())
+const selRect = computed(() => 
+  selKeys.value.length
+    ? eleDict.value[selKeys.value[0]].rectBox
+    : PageEle.newRect()
+)
 const expKeys = ref<string[]>([])
 const eleDict = ref<Record<string, PageEle>>({})
 const toolbox = reactive({
@@ -37,6 +243,12 @@ const toolbox = reactive({
   selColor: 'red',
   stkColor: 'green'
 })
+const flxDivEmitter = new TinyEmitter()
+defineExpose({ webviewRef })
+
+props.emitter.on('reload', (force?: boolean) => 
+  force ? webviewRef.value?.reload() : onPageLoaded()
+)
 
 async function onPageLoaded() {
   const elements: PageEle[] = JSON.parse(
@@ -76,12 +288,12 @@ async function onPageLoaded() {
         }
       }).filter(el => el))
     `)
-  ).then((els: any[]) => els.map(el => PageEle.copy(el)))
+  ).map((el: any) => PageEle.copy(el))
 
-  let tdata: TreeProps['treeData'] = []
+  let treeData: TreeProps['treeData'] = []
   for (const element of elements) {
     const xpaths = element.xpath.split('/').filter(sec => sec)
-    let subNodes = tdata
+    let subNodes = treeData
     let lastNode = null
 
     for (const [idx, xp] of xpaths.entries()) {
@@ -105,8 +317,8 @@ async function onPageLoaded() {
     }
   }
   eleDict.value = Object.fromEntries(elements.map((el: any) => [el.xpath, el]))
-  treeData.value = tdata
-  selected.keys = []
+  eleTree.data = treeData
+  selKeys.value = []
   loading.value = false
 }
 function onWvDomReady() {
@@ -163,19 +375,22 @@ function onMskMouseMove(e: MouseEvent) {
     return
   }
   const el = poiOnEle(e.offsetX, e.offsetY)
-  selected.keys = el ? [el.xpath] : []
+  if (el) {
+    PageEle.copy(el, hoverEl, true)
+  }
 }
 function onMskMouseUp(e: MouseEvent) {
   if (e.button === 2) {
     e.preventDefault()
     const el = poiOnEle(e.offsetX, e.offsetY)
-    selected.keys = el ? [el.xpath] : []
+    if (el) {
+      PageEle.copy(el, hoverEl, true)
+    }
   }
 }
 function poiOnEle(x: number, y: number): PageEle | null {
   const els = []
   for (const el of Object.values(eleDict.value)) {
-    console.log(el)
     if (el.inRect(x, y)) {
       els.push(el)
     }
@@ -193,203 +408,23 @@ function poiOnEle(x: number, y: number): PageEle | null {
   }
   return minRect.el
 }
+function onSelEleClick() {
+  swchBoolProp(toolbox, 'selecting')
+  if (!toolbox.selecting) {
+    selKeys.value = []
+  }
+}
+function onPageEleClick(elXpath = hoverEl.xpath) {
+  toolbox.selecting = false
+  selKeys.value = [elXpath]
+  emit('eleClick', elXpath)
+}
+function onPageEleClear() {
+  selKeys.value = []
+  hoverEl.reset()
+  emit('eleClick', '')
+}
 </script>
-
-<template>
-  <div class="h-full w-full flex overflow-hidden">
-    <template v-if="curURL">
-      <div class="flex-1 relative">
-        <div
-          v-if="loading"
-          class="h-full text-center relative z-50 bg-black opacity-10"
-        >
-          <a-spin
-            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            tip="页面元素收集中..."
-          />
-        </div>
-        <webview
-          v-else
-          class="overflow-auto w-full h-full"
-          :src="curURL"
-          ref="webviewRef"
-          disablewebsecurity
-          nodeintegrationinsubframes
-          webpreferences="allowRunningInsecureContent"
-          @did-stop-loading="onPageLoaded"
-          @console-message="onWvCslMsg"
-          @dom-ready="onWvDomReady"
-        />
-        <a-float-button-group
-          v-if="!loading"
-          class="absolute"
-          :class="{
-            'mbtn-cursor-move': toolbox.mosPos.x !== -1
-          }"
-          trigger="click"
-          type="primary"
-          :style="{
-            right: toolbox.offset.right + 'px',
-            bottom: toolbox.offset.bottom + 'px'
-          }"
-          v-model:open="toolbox.expand"
-          @mousedown="onTboxMouseDown"
-          @mousemove="onTboxMouseMove"
-          @mouseup="onTboxMouseUp"
-        >
-          <template #icon><ToolOutlined /></template>
-          <a-float-button
-            tooltip="选择页面元素"
-            :type="toolbox.selecting ? 'primary' : 'default'"
-            @click="() => swchBoolProp(toolbox, 'selecting')"
-          >
-            <template #icon><SelectOutlined /></template>
-          </a-float-button>
-          <a-float-button tooltip="选择框颜色" >
-            <template #icon>
-              <BorderOutlined :style="{ color: toolbox.selColor }" />
-            </template>
-          </a-float-button>
-          <a-float-button
-            tooltip="关闭页面遮罩" 
-            :type="toolbox.maskVsb ? 'primary' : 'default'"
-            @click="() => swchBoolProp(toolbox, 'maskVsb')"
-          >
-            <template #icon><CloseSquareOutlined /></template>
-          </a-float-button>
-        </a-float-button-group>
-        <a-dropdown :trigger="['contextmenu']">
-          <div
-            class="absolute top-0 left-0 bottom-4 right-4"
-            :style="{ display: toolbox.maskVsb ? 'block' : 'none' }"
-            @wheel="onMaskScroll"
-          >
-            <svg
-              class="w-full h-full"
-              @mousemove="onMskMouseMove"
-              @mouseup="onMskMouseUp"
-            >
-              <rect
-                v-if="selected.rect.w"
-                :x="mskOffset.left + selected.rect.x"
-                :y="mskOffset.top + selected.rect.y"
-                :rx="4"
-                :ry="4"
-                :width="selected.rect.w"
-                :height="selected.rect.h"
-                :style="{
-                  'fill-opacity': 0,
-                  'stroke-width': 3,
-                  stroke: toolbox.selColor
-                }"
-              />
-              <rect
-                v-for="el in hlEles.filter(el => el.xpath in eleDict)"
-                :key="el.xpath"
-                class="cursor-pointer"
-                :class="{ invisible: selected.keys.includes(el.xpath) }"
-                :x="mskOffset.left + eleDict[el.xpath].rectBox.x"
-                :y="mskOffset.top + eleDict[el.xpath].rectBox.y"
-                :rx="4"
-                :ry="4"
-                :width="eleDict[el.xpath].rectBox.width"
-                :height="eleDict[el.xpath].rectBox.height"
-                :style="{
-                  'fill-opacity': 0,
-                  'stroke-width': 3,
-                  stroke: toolbox.stkColor
-                }"
-                @click="() => emit('update:selKeys', [el.xpath])"
-              />
-            </svg>
-            <a-button
-              v-if="selected.rect.w"
-              class="absolute"
-              danger
-              type="text"
-              size="small"
-              :style="{
-                top: mskOffset.top + selected.rect.y + 'px',
-                left: mskOffset.left + selected.rect.x + selected.rect.w + 5 + 'px'
-              }"
-              @click="() => emit('update:selKeys', [])"
-            >
-              <template #icon><CloseOutlined /></template>
-            </a-button>
-            <a-tag
-              v-for="(el, index) in hlEles.filter(el => el.xpath in eleDict)"
-              :key="el.xpath"
-              class="absolute cursor-pointer"
-              :class="{ invisible: selected.keys.includes(el.xpath) }"
-              :style="{
-                top: mskOffset.top + eleDict[el.xpath].rectBox.y + 'px',
-                left:
-                  mskOffset.left +
-                  eleDict[el.xpath].rectBox.x +
-                  eleDict[el.xpath].rectBox.width +
-                  5 +
-                  'px'
-              }"
-              :color="toolbox.stkColor"
-              @click="() => emit('update:selKeys', [el.xpath])"
-            >
-              {{ index + 1 }}
-            </a-tag>
-          </div>
-          <template #overlay>
-            <a-menu @click="onRgtMnuClick">
-              <a-menu-item key="select">检查</a-menu-item>
-              <a-menu-item key="clear">清空选择</a-menu-item>
-            </a-menu>
-          </template>
-        </a-dropdown>
-      </div>
-      <a-spin wrapperClassName="w-[20vw]" tip="页面元素收集中..." :spinning="loading">
-        <a-tree
-          class="overflow-auto absolute top-0 bottom-0 left-0 right-0"
-          :auto-expand-parent="true"
-          :tree-data="treeData"
-          v-model:expendedKeys="expKeys"
-          :selectedKeys="selected.keys"
-          @select="(selKeys: string[]) => emit('update:selKeys', selKeys)"
-        >
-          <template #title="{ dataRef }">
-            {{ dataRef.element ? dataRef.element.tagName : dataRef.title }}&nbsp;
-            <template v-if="dataRef.element">
-              <span v-if="dataRef.element.id">#{{ dataRef.element.id }}</span>
-              <span v-else-if="dataRef.element.clazz">.{{ dataRef.element.clazz }}</span>
-            </template>
-          </template>
-        </a-tree>
-      </a-spin>
-    </template>
-    <div v-else class="flex-1 relative">
-      <a-typography-paragraph class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <ol>
-          <li>
-            <a-typography-text type="secondary">登录类型选择【网页登录】</a-typography-text>
-          </li>
-          <li>
-            <a-typography-text type="secondary">在【地址栏】输入网址</a-typography-text>
-          </li>
-          <li>
-            <a-typography-text type="secondary">
-              点击【跳转】加载网页并收集网页元素
-            </a-typography-text>
-          </li>
-          <li>
-            <a-typography-text type="secondary">给登录表单的元素绑定账户信息</a-typography-text>
-          </li>
-          <li>
-            <a-typography-text type="secondary">
-              点击【保存】绑定网页元素与账户信息
-            </a-typography-text>
-          </li>
-        </ol>
-      </a-typography-paragraph>
-    </div>
-  </div>
-</template>
 
 <style>
 .mbtn-cursor-move .ant-float-btn {
