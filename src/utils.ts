@@ -2,6 +2,7 @@ import { message, notification } from 'ant-design-vue'
 import axios, { type AxiosRequestConfig } from 'axios'
 import dayjs from 'dayjs'
 import qs from 'qs'
+import { cloneDeep } from 'lodash'
 
 import { Cond } from './types'
 import Batch from './types/batch'
@@ -864,9 +865,13 @@ export function gnlCpy<T extends Record<string, any>>(
       if (options.force || srcnotUndefAndNull) {
         setProp(tgt, key, src[key])
       }
-    } else if (typeof tgt[key] === 'object' && tgt[key] instanceof dayjs) {
+    } else if (typeof tgt[key] === 'object') {
       if (options.force || srcnotUndefAndNull) {
-        setProp(tgt, key, src[key] ? dayjs(src[key]) : null)
+        if (tgt[key] instanceof dayjs) {
+          setProp(tgt, key, src[key] ? dayjs(src[key]) : null)
+        } else {
+          setProp(tgt, key, src[key] ? cloneDeep(src[key]) : null)
+        }
       }
     } else if (Array.isArray(tgt[key])) {
       if (src[key]) {
