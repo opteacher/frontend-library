@@ -65,7 +65,7 @@ function onLytRszStart(e: MouseEvent) {
 <template>
   <div class="relative" :style="{ backgroundColor: bgColor }">
     <a-button
-      class="absolute z-10 h-fit px-2"
+      class="absolute z-[80] h-fit px-2"
       :class="{
         'border-s-0 rounded-s-none': ctrlSide === 'leftTop' && orientation === 'vertical',
         'border-e-0 rounded-e-none': ctrlSide === 'rightBottom' && orientation === 'vertical',

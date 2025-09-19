@@ -5,25 +5,37 @@
     @mouseup="() => flxDivEmitter.emit('mouseup')"
   >
     <template v-if="curURL">
-      <div class="flex-1 relative">
-        <div v-if="loading" class="h-full text-center relative z-50 bg-black opacity-10">
-          <a-spin
-            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            tip="页面元素收集中..."
+      <a-spin
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        tip="页面元素收集中..."
+        :spinning="loading"
+      />
+      <div class="flex-1 relative text-center">
+        <div class="h-full flex flex-col">
+          <webview
+            class="overflow-auto flex-1"
+            :src="curURL"
+            ref="webviewRef"
+            disablewebsecurity
+            nodeintegrationinsubframes
+            webpreferences="allowRunningInsecureContent"
+            @did-stop-loading="onPageLoaded"
+            @console-message="onWvCslMsg"
+            @dom-ready="onWvDomReady"
           />
+          <a-space class="px-10 h-8" align="center">
+            <p class="m-0 font-bold">选中元素：</p>
+            <template v-if="selKeys.length">
+              <p class="mb-0 truncate">{{ selKeys[0] }}</p>
+              <a-tooltip>
+                <template #title>清空选择</template>
+                <a-button type="text" danger @click="onPageEleClear">
+                  <template #icon><CloseCircleOutlined /></template>
+                </a-button>
+              </a-tooltip>
+            </template>
+          </a-space>
         </div>
-        <webview
-          v-else
-          class="overflow-auto w-full h-full"
-          :src="curURL"
-          ref="webviewRef"
-          disablewebsecurity
-          nodeintegrationinsubframes
-          webpreferences="allowRunningInsecureContent"
-          @did-stop-loading="onPageLoaded"
-          @console-message="onWvCslMsg"
-          @dom-ready="onWvDomReady"
-        />
         <a-float-button-group
           v-if="!loading"
           class="absolute"
@@ -61,10 +73,24 @@
           >
             <template #icon><CloseSquareOutlined /></template>
           </a-float-button>
+          <a-float-button
+            tooltip="缩放页面" 
+            @click="() => (toolbox.expand = false)"
+          >
+            <template #icon><ExpandAltOutlined /></template>
+          </a-float-button>
         </a-float-button-group>
+        <a-card class="absolute top-0 left-0" size="small" title="缩放页面" style="width: 300px">
+          <template #extra>
+            <a-button type="link">
+              <template #icon><CloseOutlined /></template>
+            </a-button>
+          </template>
+          <a-slider :marks="{ 0: '缩小', 100: '放大' }" v-model:value="toolbox.scale" />
+        </a-card>
         <a-dropdown :trigger="['contextmenu']">
           <div
-            class="absolute top-0 left-0 bottom-4 right-4"
+            class="absolute top-0 left-0 bottom-14 right-5"
             :style="{ display: toolbox.maskVsb ? 'block' : 'none' }"
             @wheel="onMaskScroll"
           >
@@ -161,11 +187,7 @@
       />
       <div v-if="eleTree.visible" class="h-full flex flex-col" :style="{ width: eleTree.width + 'px' }">
         <slot name="sideTop" />
-        <a-spin
-          wrapperClassName="flex-1"
-          tip="页面元素收集中..."
-          :spinning="loading"
-        >
+        <div class="flex-1 relative">
           <a-tree
             class="overflow-auto absolute top-0 bottom-0 left-0 right-0"
             :auto-expand-parent="true"
@@ -182,7 +204,7 @@
               </template>
             </template>
           </a-tree>
-        </a-spin>
+        </div>
         <slot name="sideBottom" />
       </div>
     </template>
@@ -194,7 +216,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" name="pgEleSelect">
 import { computed, reactive, ref, type PropType } from 'vue'
 import type { WebviewTag } from 'electron'
 import type { TreeProps } from 'ant-design-vue'
@@ -205,7 +227,9 @@ import {
   SelectOutlined,
   BorderOutlined,
   CloseOutlined,
-  CloseSquareOutlined
+  CloseSquareOutlined,
+  CloseCircleOutlined,
+  ExpandAltOutlined
 } from '@ant-design/icons-vue'
 import { TinyEmitter } from 'tiny-emitter'
 import FlexDivider from './FlexDivider.vue'
@@ -213,15 +237,16 @@ import FlexDivider from './FlexDivider.vue'
 const props = defineProps({
   curURL: { type: String, required: true },
   hlEles: { type: Array as PropType<string[]>, default: [] },
-  emitter: { type: Object as PropType<TinyEmitter>, default: () => new TinyEmitter() }
+  emitter: { type: Object as PropType<TinyEmitter>, default: () => new TinyEmitter() },
+  sbarWid: { type: Number, default: 200 },
+  loading: { type: Boolean, default: false }
 })
-const emit = defineEmits(['eleClick', 'pageLoaded'])
+const emit = defineEmits(['eleClick', 'pageLoaded', 'update:loading'])
 const webviewRef = ref<WebviewTag | null>(null)
 const mskOffset = reactive({ top: 0, left: 0 })
-const loading = ref(false)
 const eleTree = reactive({
   data: undefined as TreeProps['treeData'],
-  width: 200,
+  width: props.sbarWid,
   visible: true
 })
 const selKeys = ref<string[]>([])
@@ -234,14 +259,15 @@ const selRect = computed(() =>
 const expKeys = ref<string[]>([])
 const eleDict = ref<Record<string, PageEle>>({})
 const toolbox = reactive({
-  offset: { bottom: 40, right: 40 },
-  orgPos: { bottom: 40, right: 40 },
+  offset: { bottom: 60, right: 40 },
+  orgPos: { bottom: 60, right: 40 },
   mosPos: { x: -1, y: -1 },
   expand: false,
   selecting: false,
   maskVsb: true,
   selColor: 'red',
-  stkColor: 'green'
+  stkColor: 'green',
+  scale: 100
 })
 const flxDivEmitter = new TinyEmitter()
 defineExpose({ webviewRef })
@@ -319,7 +345,7 @@ async function onPageLoaded() {
   eleDict.value = Object.fromEntries(elements.map((el: any) => [el.xpath, el]))
   eleTree.data = treeData
   selKeys.value = []
-  loading.value = false
+  emit('update:loading', false)
 }
 function onWvDomReady() {
   webviewRef.value?.executeJavaScript(`
@@ -374,7 +400,7 @@ function onMskMouseMove(e: MouseEvent) {
   if (!toolbox.selecting) {
     return
   }
-  const el = poiOnEle(e.offsetX, e.offsetY)
+  const el = poiOnEle(e.offsetX + mskOffset.left, e.offsetY + mskOffset.top)
   if (el) {
     PageEle.copy(el, hoverEl, true)
   }
