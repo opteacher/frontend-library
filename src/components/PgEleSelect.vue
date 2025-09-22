@@ -5,12 +5,12 @@
     @mouseup="() => flxDivEmitter.emit('mouseup')"
   >
     <template v-if="curURL">
-      <a-spin
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        tip="页面元素收集中..."
-        :spinning="loading"
-      />
       <div class="flex-1 relative text-center">
+        <a-spin
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          tip="页面元素收集中..."
+          :spinning="loading"
+        />
         <div class="h-full flex flex-col">
           <webview
             class="overflow-auto flex-1"
@@ -52,6 +52,7 @@
           @mousedown="onTboxMouseDown"
           @mousemove="onTboxMouseMove"
           @mouseup="onTboxMouseUp"
+          @open-change="() => (toolbox.sclVsb = false)"
         >
           <template #icon><ToolOutlined /></template>
           <a-float-button
@@ -73,20 +74,55 @@
           >
             <template #icon><CloseSquareOutlined /></template>
           </a-float-button>
-          <a-float-button
-            tooltip="缩放页面" 
-            @click="() => (toolbox.expand = false)"
-          >
+          <a-float-button tooltip="缩放页面" @click="() => (toolbox.sclVsb = true)">
             <template #icon><ExpandAltOutlined /></template>
           </a-float-button>
+          <a-float-button tooltip="扫描页面元素" @click="onPageLoaded">
+            <template #icon><ScanOutlined /></template>
+          </a-float-button>
         </a-float-button-group>
-        <a-card class="absolute top-0 left-0" size="small" title="缩放页面" style="width: 300px">
-          <template #extra>
-            <a-button type="link">
-              <template #icon><CloseOutlined /></template>
+        <a-card
+          v-if="toolbox.sclVsb"
+          class="absolute z-50"
+          :style="{
+            width: '300px',
+            right: toolbox.offset.right + 48 + 'px',
+            bottom: toolbox.offset.bottom + 'px'
+          }"
+          size="small"
+        >
+          <div class="flex items-center">
+            <a-slider
+              class="flex-1"
+              v-model:value="toolbox.scale"
+              :marks="{ 0: '缩小', 50: '100%', 100: '放大' }"
+              :tip-formatter="(val?: number) => val ? (val << 1) : 100"
+              @change="onWvZoomChange"
+            >
+              <template #mark="{ point, label }: any">
+                <a-tooltip v-if="point === 100">
+                  <template #title>{{ label }}</template>
+                  <ZoomInOutlined />
+                </a-tooltip>
+                <a-tooltip v-else-if="point === 0">
+                  <template #title>{{ label }}</template>
+                  <ZoomOutOutlined />
+                </a-tooltip>
+                <a-button
+                  v-else-if="point === 50"
+                  class="mt-1"
+                  size="small"
+                  type="text"
+                  @click="() => (toolbox.scale = 50)"
+                >
+                  {{ label }}
+                </a-button>
+              </template>
+            </a-slider>
+            <a-button class="ms-3" type="link" danger @click="() => (toolbox.sclVsb = false)">
+              <template #icon><CloseCircleOutlined /></template>
             </a-button>
-          </template>
-          <a-slider :marks="{ 0: '缩小', 100: '放大' }" v-model:value="toolbox.scale" />
+          </div>
         </a-card>
         <a-dropdown :trigger="['contextmenu']">
           <div
@@ -229,7 +265,10 @@ import {
   CloseOutlined,
   CloseSquareOutlined,
   CloseCircleOutlined,
-  ExpandAltOutlined
+  ExpandAltOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
+  ScanOutlined
 } from '@ant-design/icons-vue'
 import { TinyEmitter } from 'tiny-emitter'
 import FlexDivider from './FlexDivider.vue'
@@ -267,7 +306,8 @@ const toolbox = reactive({
   maskVsb: true,
   selColor: 'red',
   stkColor: 'green',
-  scale: 100
+  scale: 50,
+  sclVsb: false
 })
 const flxDivEmitter = new TinyEmitter()
 defineExpose({ webviewRef })
@@ -277,14 +317,34 @@ props.emitter.on('reload', (force?: boolean) =>
 )
 
 async function onPageLoaded() {
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  toolbox.scale = (webviewRef.value?.getZoomFactor() || 1) * 50
   const elements: PageEle[] = JSON.parse(
     await webviewRef.value?.executeJavaScript(`
+      const getRealZoom = function (el) {
+        let zoom = 1
+        while (el) zoom /= +getComputedStyle(el).zoom || 1, el = el.parentElement
+        return zoom
+      }
+      const fixBrectByZoom = function (rect, zoom) {
+        return {
+          x: rect.x * zoom,
+          y: rect.y * zoom,
+          width: rect.width * zoom,
+          height: rect.height * zoom,
+          top: rect.y * zoom,
+          left: rect.x * zoom,
+          right: rect.x * zoom + rect.width * zoom,
+          bottom: rect.y * zoom + rect.height * zoom
+        }
+      }
       JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
         const tagName = el.tagName.toLowerCase()
+        const zoom = getRealZoom(el)
         const ret = {
           tagName,
           clazz: el.className,
-          rectBox: el.getBoundingClientRect().toJSON()
+          rectBox: fixBrectByZoom(el.getBoundingClientRect(), zoom)
         }
         if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
           return
@@ -449,6 +509,9 @@ function onPageEleClear() {
   selKeys.value = []
   hoverEl.reset()
   emit('eleClick', '')
+}
+function onWvZoomChange(newVal: number) {
+  webviewRef.value?.setZoomFactor((newVal << 1) / 100)
 }
 </script>
 
