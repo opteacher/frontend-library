@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col" :class="{ [sclHeight]: sclHeight.startsWith('h-') }">
+  <div class="h-full flex flex-col">
     <a-page-header :class="thdClass" v-if="showHeader">
       <template v-if="icon" #avatar>
         <keep-alive>
@@ -54,12 +54,12 @@
       @click="refresh"
       :emitter="emitter"
     />
-    <div class="flex-1 flex items-stretch">
-      <slot name="left" />
+    <div class="flex-1 flex">
+      <slot name="left" v-bind="{ height: tableHgt }" />
       <a-table
         ref="tableRef"
-        class="edit-table flex-1 overflow-hidden min-h-fit"
-        :class="{ 'min-hgt-table': minHeight, [tableClass]: true, 'no-rounded': !rounded }"
+        class="edit-table flex-1 overflow-hidden"
+        :class="{ [tableClass]: true, 'no-rounded': !rounded }"
         :columns="colsState as ColumnType[]"
         :data-source="records.data"
         :size="size"
@@ -68,7 +68,7 @@
         v-model:expandedRowKeys="expRowKeys"
         :loading="loading"
         :bordered="bordered"
-        :scroll="sclHeight ? { x: 'max-content', y: '100%' } : { x: 'max-content' }"
+        :scroll="{ x: 'max-content', y: tbodyHgt + 'px' }"
         :custom-row="
           (record: any) => ({
             onClick: clkable ? () => onRowClick(record) : undefined
@@ -126,20 +126,7 @@
           </template>
         </template>
         <template #bodyCell="{ text, column, record }: any">
-          <template v-if="record.key === 'addForm'">
-            <div v-if="column.dataIndex === 'opera'">
-              <a-button size="small" type="link" @click="onAddFormSubmit">确定</a-button>
-              <a-button size="small" type="text" @click="onAddFormCancel">取消</a-button>
-            </div>
-            <DirectField
-              v-else
-              :mapper="mapper[column.dataIndex]"
-              :form="fmDlg.object"
-              :emitter="emitter"
-              @update:form="onEditFormUpdate"
-            />
-          </template>
-          <template v-else-if="column.dataIndex === 'opera'">
+          <template v-if="column.dataIndex === 'opera'">
             <slot name="operaBefore" v-bind="{ record }" />
             <template v-if="fmDlg.editing && fmDlg.object.key === record.key">
               <a-button size="small" type="link" @click="onEditFormSubmit">确定</a-button>
@@ -201,21 +188,39 @@
         <template v-if="$slots['expandedRowRender']" #expandedRowRender="{ record }">
           <slot name="expandedRowRender" v-bind="{ record }" />
         </template>
-        <template v-if="editMode === 'direct' && !drctAdding && addable && columns.length" #footer>
+        <template v-if="isDrctAdd && !fmDlg.addForm" #footer>
           <a-tooltip>
             <template #title>添加记录</template>
             <a-button
               class="w-full border-0 h-auto rounded-t-none py-3"
               :class="{ 'rounded-b-none': !rounded }"
               type="text"
-              @click="() => records.data.push({ key: 'addForm' })"
+              @click="() => (fmDlg.addForm = true)"
             >
               <template #icon><AntdIcons.PlusOutlined /></template>
             </a-button>
           </a-tooltip>
         </template>
+        <template v-if="isDrctAdd && fmDlg.addForm" #summary>
+          <a-table-summary fixed>
+            <a-table-summary-row>
+              <a-table-summary-cell v-for="[key, value] in Object.entries(mapper)" :index="key">
+                <DirectField
+                  :mapper="value"
+                  :form="fmDlg.object"
+                  :emitter="emitter"
+                  @update:form="onEditFormUpdate"
+                />
+              </a-table-summary-cell>
+              <a-table-summary-cell>
+                <a-button size="small" type="link" @click="onAddFormSubmit">确定</a-button>
+                <a-button size="small" type="text" @click="onAddFormCancel">取消</a-button>
+              </a-table-summary-cell>
+            </a-table-summary-row>
+          </a-table-summary>
+        </template>
       </a-table>
-      <slot name="right" />
+      <slot name="right" v-bind="{ height: tableHgt }" />
     </div>
     <FormDialog
       v-if="needFmDlg"
@@ -269,7 +274,8 @@ import {
   useSlots,
   watch,
   type PropType,
-  type FunctionalComponent
+  type FunctionalComponent,
+  nextTick
 } from 'vue'
 
 import Batch from '../types/batch'
@@ -278,7 +284,7 @@ import BatImp from '../types/batImp'
 import { Cells } from '../types/cell'
 import Column from '../types/column'
 import Mapper from '../types/mapper'
-import { pickOrIgnore, setProp, upperFirst, waitFor, getProp } from '../utils'
+import { pickOrIgnore, setProp, upperFirst, waitFor, getProp, type RequestOptions } from '../utils'
 import BatExpBox from './BatExpBox.vue'
 import BatImpBox from './BatImpBox.vue'
 import CellCard from './CellCard.vue'
@@ -305,7 +311,18 @@ const emit = defineEmits([
 ])
 const props = defineProps({
   icon: { type: Function as PropType<FunctionalComponent>, default: null },
-  api: { type: Object /* ComAPI */, required: true },
+  api: {
+    type: Object as PropType<{
+      add?: (form: any) => Promise<any>
+      remove?: (record: any) => Promise<any>
+      update?: (record: any) => Promise<any>
+      all: (options?: RequestOptions) => Promise<any[]>
+      filter?: (filters: any) => Promise<any[]>
+      count?: () => Promise<number>
+      batch?: Record<'import' | 'export', (info: BatImp | BatExp) => Promise<any>>
+    }> /* ComAPI */,
+    required: true
+  },
   columns: { type: Array, required: true },
   cells: { type: Array, default: () => [] },
   mapper: { type: Mapper, default: new Mapper() },
@@ -331,8 +348,6 @@ const props = defineProps({
   dspCols: { type: Boolean, default: false },
   dlgWidth: { type: String, default: '50vw' },
   dlgFullScrn: { type: Boolean, default: false },
-  sclHeight: { type: String, default: '' },
-  minHeight: { type: String, default: '' },
   editMode: { type: String as PropType<'direct' | 'form'>, default: 'form' },
   edtableKeys: { type: Array as PropType<any[]>, default: () => ['*'] },
   delableKeys: { type: Array as PropType<any[]>, default: () => ['*'] },
@@ -363,13 +378,13 @@ const fmDlg = reactive({
   visible: false,
   vwOnly: false,
   editing: false,
-  object: props.newFun()
+  object: props.newFun(),
+  addForm: false
 })
 const slots = useSlots()
-const drctAdding = computed(() => records.data.find((rcd: any) => rcd.key === 'addForm'))
-const addBtnRef = ref(null)
-const tableRef = ref(null)
-const fmDlgRef = ref(null)
+const addBtnRef = ref<HTMLElement | null>(null)
+const tableRef = ref<HTMLElement | null>(null)
+const fmDlgRef = ref<HTMLElement | null>(null)
 defineExpose({ addBtnRef, fmDlgRef, tableRef })
 const tourOpns = reactive({
   current: 0,
@@ -387,6 +402,11 @@ const showHeader = computed(
     slots.extra ||
     slots.tags
 )
+const isDrctAdd = computed(
+  () => props.editMode === 'direct' && props.addable && props.columns.length
+)
+const tbodyHgt = ref(0)
+const tableHgt = ref(0)
 
 if (props.mountRefsh) {
   onMounted(refresh)
@@ -431,27 +451,6 @@ fmtColumns()
 
 async function refresh(data?: any[], params?: any) {
   loading.value = true
-  const tblBdy = await waitFor('ant-table-body', { getBy: 'class' })
-  if (tblBdy) {
-    let colHgt = 0
-    switch (props.size) {
-      case 'small':
-        colHgt = 41
-        break
-      case 'middle':
-        colHgt = 48
-        break
-      case 'large':
-      default:
-        colHgt = 57
-        break
-    }
-    const layNum =
-      Math.max(...props.columns.map((column: any) => (column.group ? column.group.length : 0))) + 1
-    if (tblBdy.style) {
-      tblBdy.style.top = layNum * colHgt + 'px'
-    }
-  }
   records.offset = 0
   records.limit = props.pageSize
   records.filters = undefined
@@ -540,6 +539,19 @@ async function refresh(data?: any[], params?: any) {
     fmDlg.visible = false
   }
   fmtColumns()
+  // 计算表体的高度
+  nextTick(async () => {
+    const edtTbl = await waitFor('edit-table', { getBy: 'class' })
+    if (edtTbl) {
+      const theader = await waitFor('ant-table-header', { getBy: 'class' })
+      const tfooter = await waitFor('ant-table-footer', { getBy: 'class' })
+      tbodyHgt.value =
+        edtTbl?.scrollHeight - (theader?.clientHeight || 0) - (tfooter?.clientHeight || 0)
+      tableHgt.value = (await waitFor('ant-spin-nested-loading', { getBy: 'class' }).then(
+        el => el?.offsetHeight
+      )) as number
+    }
+  })
   loading.value = false
 }
 function onEditClicked(record?: any) {
@@ -586,16 +598,21 @@ async function onRecordSave(record: any, reset: Function) {
       return
     }
   }
-  const result =
-    editKey.value === '' || editKey.value === -1
-      ? await props.api.add(record)
-      : await props.api.update({ ...record, key: editKey.value })
+  let result = null
+  if (editKey.value === '' || editKey.value === -1) {
+    props.api.add ? await props.api.add(record) : undefined
+  } else {
+    props.api.update ? await props.api.update({ ...record, key: editKey.value }) : undefined
+  }
   emit('save', record, refresh)
   reset()
   await refresh()
   emit('after-save', result)
 }
 async function onRecordDel(record: any) {
+  if (!props.api.remove) {
+    return
+  }
   loading.value = true
   await props.api.remove(record)
   emit('delete', record, refresh)
@@ -624,16 +641,18 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
   const data = pickOrIgnore(info, ['worksheet'])
   if (props.api.batch && opera in props.api.batch) {
     await props.api.batch[opera](data)
-  } else if (opera === 'import') {
+  } else if (opera === 'import' && props.api.add) {
     const allData = utils.sheet_to_json<any[]>(info.worksheet as WorkSheet, { header: 1 })
-    console.log(info.mapper, allData[info.hdRowNo])
-    const colDict = Object.fromEntries(
-      Object.entries(info.mapper).map(([colNam, prop]) =>
-        [allData[info.hdRowNo].indexOf(colNam), prop]
-      )
+    const colDict = Object.entries(info.mapper).map(([colNam, prop]) => [
+      allData[info.hdRowNo].indexOf(colNam),
+      prop
+    ]) as [number, string][]
+    await Promise.all(
+      allData
+        .slice(info.dtRowNo)
+        .map(record => Object.fromEntries(colDict.map(([idx, prop]) => [prop, record[idx]])))
+        .map(record => (props.api.add ? props.api.add(record) : Promise.resolve()))
     )
-    console.log(colDict)
-    // await Promise.all(allData.slice(info.dtRowNo).map(record => ))
   } else if (opera === 'export') {
     console.log(data)
   }
@@ -745,13 +764,11 @@ function onColWidRsz(w: number, col: ColumnType) {
   }
 }
 function onAddFormCancel() {
-  records.data.splice(
-    records.data.findIndex((rcd: any) => rcd.key === 'addForm'),
-    1
-  )
+  fmDlg.object = props.newFun()
+  fmDlg.addForm = false
 }
 async function onAddFormSubmit() {
-  await onRecordSave(fmDlg.object, () => (fmDlg.object = props.newFun()))
+  await onRecordSave(fmDlg.object, onAddFormCancel)
 }
 function onEditFormCancel() {
   fmDlg.editing = false
@@ -766,31 +783,9 @@ function onEditFormUpdate(vals: any) {
 </script>
 
 <style>
-.ant-spin-nested-loading {
-  @apply h-full;
-}
-
-.ant-spin-container {
-  @apply h-full flex flex-col;
-}
-
-.ant-table {
-  @apply flex-1 flex flex-col;
+.edit-table .ant-table {
   margin: 0 !important;
 }
-
-.ant-table-container {
-  @apply flex-1 relative;
-}
-
-.ant-table-body {
-  @apply absolute bottom-0 left-0 right-0;
-}
-
-.min-hgt-table .ant-table-container {
-  min-height: 18rem;
-}
-
 .edit-table .ant-table-footer {
   @apply text-center;
 }
