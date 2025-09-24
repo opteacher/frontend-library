@@ -152,6 +152,21 @@
                 }"
               />
               <rect
+                v-else-if="selRect.width"
+                class="cursor-pointer"
+                :x="selRect.x - mskOffset.left"
+                :y="selRect.y - mskOffset.top"
+                :rx="4"
+                :ry="4"
+                :width="selRect.width"
+                :height="selRect.height"
+                :style="{
+                  'fill-opacity': 0,
+                  'stroke-width': 3,
+                  stroke: toolbox.selColor
+                }"
+              />
+              <rect
                 v-for="xpath in hlEles.filter(xpath => xpath in eleDict)"
                 :key="xpath"
                 class="cursor-pointer"
@@ -230,7 +245,7 @@
             :tree-data="eleTree.data"
             v-model:expendedKeys="expKeys"
             :selectedKeys="selKeys"
-            @select="(selKeys: string[]) => emit('eleClick', selKeys)"
+            @select="(selKeys: string[]) => emit('update:selKeys', selKeys)"
           >
             <template #title="{ dataRef }">
               {{ dataRef.element ? dataRef.element.tagName : dataRef.title }}&nbsp;
@@ -278,9 +293,10 @@ const props = defineProps({
   hlEles: { type: Array as PropType<string[]>, default: [] },
   emitter: { type: Object as PropType<TinyEmitter>, default: () => new TinyEmitter() },
   sbarWid: { type: Number, default: 200 },
-  loading: { type: Boolean, default: false }
+  loading: { type: Boolean, default: false },
+  selKeys: { type: Array as PropType<string[]>, required: true }
 })
-const emit = defineEmits(['eleClick', 'pageLoaded', 'update:loading'])
+const emit = defineEmits(['update:selKeys', 'pageLoaded', 'update:loading'])
 const webviewRef = ref<WebviewTag | null>(null)
 const mskOffset = reactive({ top: 0, left: 0 })
 const eleTree = reactive({
@@ -288,11 +304,10 @@ const eleTree = reactive({
   width: props.sbarWid,
   visible: true
 })
-const selKeys = ref<string[]>([])
 const hoverEl = reactive(new PageEle())
 const selRect = computed(() => 
-  selKeys.value.length
-    ? eleDict.value[selKeys.value[0]].rectBox
+  props.selKeys.length
+    ? eleDict.value[props.selKeys[0]].rectBox
     : PageEle.newRect()
 )
 const expKeys = ref<string[]>([])
@@ -321,30 +336,12 @@ async function onPageLoaded() {
   toolbox.scale = (webviewRef.value?.getZoomFactor() || 1) * 50
   const elements: PageEle[] = JSON.parse(
     await webviewRef.value?.executeJavaScript(`
-      const getRealZoom = function (el) {
-        let zoom = 1
-        while (el) zoom /= +getComputedStyle(el).zoom || 1, el = el.parentElement
-        return zoom
-      }
-      const fixBrectByZoom = function (rect, zoom) {
-        return {
-          x: rect.x * zoom,
-          y: rect.y * zoom,
-          width: rect.width * zoom,
-          height: rect.height * zoom,
-          top: rect.y * zoom,
-          left: rect.x * zoom,
-          right: rect.x * zoom + rect.width * zoom,
-          bottom: rect.y * zoom + rect.height * zoom
-        }
-      }
       JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
         const tagName = el.tagName.toLowerCase()
-        const zoom = getRealZoom(el)
         const ret = {
           tagName,
           clazz: el.className,
-          rectBox: fixBrectByZoom(el.getBoundingClientRect(), zoom)
+          rectBox: el.getBoundingClientRect()
         }
         if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
           return
@@ -404,7 +401,7 @@ async function onPageLoaded() {
   }
   eleDict.value = Object.fromEntries(elements.map((el: any) => [el.xpath, el]))
   eleTree.data = treeData
-  selKeys.value = []
+  emit('update:selKeys', [])
   emit('update:loading', false)
 }
 function onWvDomReady() {
@@ -497,18 +494,16 @@ function poiOnEle(x: number, y: number): PageEle | null {
 function onSelEleClick() {
   swchBoolProp(toolbox, 'selecting')
   if (!toolbox.selecting) {
-    selKeys.value = []
+    emit('update:selKeys', [])
   }
 }
 function onPageEleClick(elXpath = hoverEl.xpath) {
   toolbox.selecting = false
-  selKeys.value = [elXpath]
-  emit('eleClick', elXpath)
+  emit('update:selKeys', [elXpath])
 }
 function onPageEleClear() {
-  selKeys.value = []
   hoverEl.reset()
-  emit('eleClick', '')
+  emit('update:selKeys', [])
 }
 function onWvZoomChange(newVal: number) {
   webviewRef.value?.setZoomFactor((newVal << 1) / 100)
