@@ -1,7 +1,7 @@
 import { gnlCpy } from '../utils'
 import Batch from './batch'
 
-export default class BchIpt extends Batch {
+export default class BatImp extends Batch {
   boolMapper: { TRUE: string; FALSE: string }
   dtTmFormat: string
 
@@ -17,7 +17,7 @@ export default class BchIpt extends Batch {
     this.dtTmFormat = 'YYYY-MM-DD HH:mm:ss'
   }
 
-  static copy(src: any, tgt?: BchIpt, force = false): BchIpt {
-    return gnlCpy(BchIpt, src, tgt, { force, baseCpy: Batch.copy })
+  static copy(src: any, tgt?: BatImp, force = false): BatImp {
+    return gnlCpy(BatImp, src, tgt, { force, baseCpy: Batch.copy })
   }
 }

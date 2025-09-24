@@ -18,16 +18,16 @@
         <SelColBox v-if="dspCols" :columns="columns" @change="fmtColumns" />
         <template v-if="addable">
           <a-space v-if="imExport">
-            <BchExpBox
+            <BatExpBox
               :columns="colsState.filter(col => col.dataIndex !== 'opera')"
-              :copyFun="genCpyFun(BchExport, () => ({ column: '', compare: '=' }))"
+              :copyFun="genCpyFun(BatExp, () => ({ column: '', compare: '=' }))"
               @submit="(info: any) => onBatchSubmit(info, 'export')"
             />
-            <BchImpBox
+            <BatImpBox
               :upload-url="(imExport as any).uploadUrl"
               :columns="colsState.filter(col => col.dataIndex !== 'opera')"
               :ignCols="fmtIeIgnCols"
-              :copyFun="genCpyFun(BchImport, () => '')"
+              :copyFun="genCpyFun(BatImp, () => '')"
               @submit="(info: any) => onBatchSubmit(info, 'import')"
             />
           </a-space>
@@ -47,7 +47,13 @@
         <slot name="tags" />
       </template>
     </a-page-header>
-    <RefreshBox v-if="refOpns.length" class="mb-2.5" :tblRfsh="refOpns" @click="refresh" :emitter="emitter" />
+    <RefreshBox
+      v-if="refOpns.length"
+      class="mb-2.5"
+      :tblRfsh="refOpns"
+      @click="refresh"
+      :emitter="emitter"
+    />
     <div class="flex-1 flex items-stretch">
       <slot name="left" />
       <a-table
@@ -267,14 +273,14 @@ import {
 } from 'vue'
 
 import Batch from '../types/batch'
-import BchExport from '../types/bchExport'
-import BchImport from '../types/bchImport'
+import BatExp from '../types/batExp'
+import BatImp from '../types/batImp'
 import { Cells } from '../types/cell'
 import Column from '../types/column'
 import Mapper from '../types/mapper'
 import { pickOrIgnore, setProp, upperFirst, waitFor, getProp } from '../utils'
-import BchExpBox from './BchExpBox.vue'
-import BchImpBox from './BchImpBox.vue'
+import BatExpBox from './BatExpBox.vue'
+import BatImpBox from './BatImpBox.vue'
 import CellCard from './CellCard.vue'
 import FormDialog from './FormDialog.vue'
 import RefreshBox from './RefreshBox.vue'
@@ -283,6 +289,7 @@ import type { SizeType } from 'ant-design-vue/es/config-provider'
 import type { ColumnType } from 'ant-design-vue/es/table'
 import type { ButtonType } from 'ant-design-vue/es/button'
 import DirectField from './DirectField.vue'
+import { type WorkSheet, utils } from 'xlsx'
 
 const emit = defineEmits([
   'add',
@@ -612,9 +619,24 @@ function onRowClick(record: any) {
     fmDlg.object = record
   }
 }
-async function onBatchSubmit(info: any, opera: 'import' | 'export') {
+async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') {
   loading.value = true
-  await props.api.batch[opera](pickOrIgnore(info, ['worksheet']))
+  const data = pickOrIgnore(info, ['worksheet'])
+  if (props.api.batch && opera in props.api.batch) {
+    await props.api.batch[opera](data)
+  } else if (opera === 'import') {
+    const allData = utils.sheet_to_json<any[]>(info.worksheet as WorkSheet, { header: 1 })
+    console.log(info.mapper, allData[info.hdRowNo])
+    const colDict = Object.fromEntries(
+      Object.entries(info.mapper).map(([colNam, prop]) =>
+        [allData[info.hdRowNo].indexOf(colNam), prop]
+      )
+    )
+    console.log(colDict)
+    // await Promise.all(allData.slice(info.dtRowNo).map(record => ))
+  } else if (opera === 'export') {
+    console.log(data)
+  }
   await refresh()
 }
 function genCpyFun<B extends Batch>(b: { new (): B; copy: Function }, genDft: () => any) {

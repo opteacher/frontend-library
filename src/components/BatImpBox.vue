@@ -1,12 +1,20 @@
 <template>
-  <a-button @click="() => emitter.emit('update:visible', true)">
-    <template #icon><import-outlined /></template>
-    批量导入
-  </a-button>
+  <a-upload
+    name="file"
+    :action="uploadUrl"
+    :showUploadList="false"
+    :headers="headers"
+    @change="onExcelUpload"
+  >
+    <a-button :loading="uploading" @click.prevent>
+      <template #icon><import-outlined /></template>
+      批量导入
+    </a-button>
+  </a-upload>
   <FormDialog
     title="导入登记在案的资产"
     width="70vw"
-    :new-fun="() => ({ file: [] })"
+    :new-fun="() => newOne(BatImp)"
     :emitter="emitter"
     :mapper="mapper"
     @submit="onSubmit"
@@ -109,14 +117,16 @@
 <script lang="ts" setup name="BchImpBox">
 import { CloseOutlined, ImportOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { type WorkBook, read, utils } from 'xlsx'
-
-import { type Color, Cond, colors, colorDict } from '../types'
+import { type Color, colors, colorDict } from '../types'
 import Column from '../types/column'
 import Mapper from '../types/mapper'
-import { getDftPjt } from '../utils'
+import { getDftPjt, newOne } from '../utils'
 import FormDialog from './FormDialog.vue'
+import { message, type UploadChangeParam } from 'ant-design-vue'
+import type { FileType } from 'ant-design-vue/es/upload/interface'
+import BatImp from '../types/batImp'
 
 const props = defineProps({
   uploadUrl: { type: String, default: `/${getDftPjt()}/api/v1/excel/upload` },
@@ -125,7 +135,6 @@ const props = defineProps({
   copyFun: { type: Function, required: true }
 })
 const emit = defineEmits(['refresh', 'submit'])
-
 const emitter = new Emitter()
 const dbInf = reactive<{
   cols: Column[]
@@ -160,6 +169,8 @@ const binds = reactive<{
   mapper: {},
   colors: {}
 })
+const headers = computed(() => ({ authorization: `Bearer ${localStorage.getItem('token')}` }))
+const uploading = ref(false)
 
 watch(
   () => [...props.columns],
@@ -168,8 +179,8 @@ watch(
   }
 )
 
-async function onSubmit(info: any, next: () => void) {
-  emit('submit', info)
+async function onSubmit(info: BatImp, next: () => void) {
+  emit('submit', BatImp.copy({ ...info, mapper: binds.mapper }))
   next()
 }
 function reloadExcel() {
@@ -212,50 +223,32 @@ function onColBindDrop(e: DragEvent, col: Column) {
 function onSetDragonCol(column?: Column) {
   dbInf.dragon = column ? column.key : ''
 }
+function onExcelUpload(info: UploadChangeParam) {
+  uploading.value = true
+  if (info.file.status === 'done') {
+    const reader = new FileReader()
+    reader.readAsArrayBuffer(info.file.originFileObj as FileType)
+    reader.onload = () => {
+      excInf.book = read(reader.result)
+      excInf.sheets = excInf.book.SheetNames
+      excInf.actTab = excInf.book.SheetNames[0]
+      emitter.emit('update:visible', { show: true, object: { worksheet: reloadExcel() } })
+      uploading.value = false
+    }
+  } else if (info.file.status === 'error') {
+    message.error(`${info.file.name} 上传Excel失败！`)
+    uploading.value = false
+  }
+}
 
 const mapper = new Mapper({
-  file: {
-    label: '上传在案资产',
-    type: 'UploadFile',
-    rules: [
-      {
-        required: true,
-        message: '必须选择要上传的Excel文件！'
-      }
-    ],
-    path: props.uploadUrl,
-    headers: { authorization: `Bearer ${localStorage.getItem('token')}` },
-    onChange: async (form: any, info: any) => {
-      form.loading = true
-      if (info.file && info.file.status === 'done') {
-        const reader = new FileReader()
-        reader.readAsArrayBuffer(info.file.originFileObj)
-        reader.onload = () => {
-          excInf.book = read(reader.result)
-          excInf.sheets = excInf.book.SheetNames
-          excInf.actTab = excInf.book.SheetNames[0]
-          form.worksheet = reloadExcel()
-          form.loading = false
-        }
-      }
-    },
-    disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
-  },
   itfcTable: {
     label: '对接表',
-    type: 'Unknown',
-    display: [
-      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
-      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
-    ]
+    type: 'Unknown'
   },
   advanced: {
     label: '高级',
     type: 'FormGroup',
-    display: [
-      new Cond({ key: 'file.length', cmp: '!=', val: 0 }),
-      new Cond({ key: 'file[0].status', cmp: '!=', val: 'done' })
-    ],
     items: {
       boolMapper: {
         label: '布尔对应值',
@@ -265,8 +258,7 @@ const mapper = new Mapper({
         label: '日期时间格式',
         type: 'Input'
       }
-    },
-    disabled: [new Cond({ key: 'loading', cmp: '=', val: true })]
+    }
   }
 })
 </script>

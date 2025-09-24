@@ -3,7 +3,7 @@ import Batch from './batch'
 
 export type CmpTyp = '=' | '!=' | '>' | '<' | '>=' | '<='
 
-export default class BchEpt extends Batch {
+export default class BatExp extends Batch {
   filterCols: string[]
   ttlMap: Record<string, string>
 
@@ -19,7 +19,7 @@ export default class BchEpt extends Batch {
     this.ttlMap = {}
   }
 
-  static copy(src: any, tgt?: BchEpt, force = false): BchEpt {
-    return gnlCpy(BchEpt, src, tgt, { force, baseCpy: Batch.copy })
+  static copy(src: any, tgt?: BatExp, force = false): BatExp {
+    return gnlCpy(BatExp, src, tgt, { force, baseCpy: Batch.copy })
   }
 }

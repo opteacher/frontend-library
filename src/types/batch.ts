@@ -8,23 +8,26 @@ export default class Batch {
   hdRowNo: number
   totalNum: number
   dtRowNo: number
+  mapper: Record<string, string>
 
   constructor() {
     this.file = []
     this.uploading = false
     this.worksheet = null
-    this.hdRowNo = 1
+    this.hdRowNo = 0
     this.totalNum = 0
-    this.dtRowNo = 2
+    this.dtRowNo = 1
+    this.mapper = {}
   }
 
   reset() {
     this.file = []
     this.uploading = false
     this.worksheet = null
-    this.hdRowNo = 1
+    this.hdRowNo = 0
     this.totalNum = 0
-    this.dtRowNo = 2
+    this.dtRowNo = 1
+    this.mapper = {}
   }
 
   static copy(src: any, tgt?: Batch, force = false): Batch {
