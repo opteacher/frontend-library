@@ -62,13 +62,7 @@
                 'bg-slate-600': dbInf.dragon === column.key,
                 'text-white': dbInf.dragon === column.key || column.key in binds.colors
               }"
-              :style="
-                column.key in binds.colors
-                  ? {
-                      'background-color': colorDict[binds.colors[column.key]]
-                    }
-                  : undefined
-              "
+              :style="getHdColor(column)"
               @drop="e => onColBindDrop(e, column)"
               @dragenter="() => onSetDragonCol(column)"
               @dragleave="() => onSetDragonCol()"
@@ -107,7 +101,7 @@ import { TinyEmitter as Emitter } from 'tiny-emitter'
 import { ExportOutlined, InfoCircleOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
 import { read, utils } from 'xlsx'
-import { type Color, Cond, colorDict, colors } from '../types'
+import { Cond, colors } from '../types'
 import { getDftPjt } from '../utils'
 import { genDspColumns, genDspRecords } from '../utils'
 import Batch from '../types/batch'
@@ -133,7 +127,7 @@ const binds = reactive<{
   // Record<string(excel表的列索引), string(数据库表的列索引)>
   mapper: Record<string, string>
   // Record<string(excel表的列索引/数据库表的列索引), Color(颜色)>
-  colors: Record<string, Color>
+  colors: Record<string, string>
 }>({
   mapper: {},
   colors: {}
@@ -176,6 +170,13 @@ function onColBindDrop(e: DragEvent, col: Column) {
 }
 function onSetDragonCol(column?: Column) {
   dbInf.dragon = column ? column.key : ''
+}
+function getHdColor(column: Column) {
+  return column.key in binds.colors
+    ? {
+        'background-color': binds.colors[column.key]
+      }
+    : undefined
 }
 
 const mapper = new Mapper({

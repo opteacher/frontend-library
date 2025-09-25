@@ -643,15 +643,29 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
     await props.api.batch[opera](data)
   } else if (opera === 'import' && props.api.add) {
     const allData = utils.sheet_to_json<any[]>(info.worksheet as WorkSheet, { header: 1 })
-    const colDict = Object.entries(info.mapper).map(([colNam, prop]) => [
-      allData[info.hdRowNo].indexOf(colNam),
-      prop
+    const fixMapper = Object.fromEntries(
+      Object.entries(info.mapper).filter(([_key, value]) => value.prop)
+    )
+    const colDict = Object.entries(fixMapper).map(([key, value]) => [
+      allData[info.hdRowNo].indexOf(key),
+      value.prop
     ]) as [number, string][]
+    const reqDict = Object.fromEntries(
+      Object.entries(fixMapper).map(([_colNam, prop]) => [prop.prop, prop.required])
+    )
+    const records = allData.slice(info.dtRowNo).map(record =>
+      Object.fromEntries(
+        colDict.map(([idx, prop]) => {
+          if (reqDict[prop]) {
+            return record[idx] ? [prop, record[idx]] : [prop]
+          } else {
+            return [prop, record[idx]]
+          }
+        })
+      )
+    )
     await Promise.all(
-      allData
-        .slice(info.dtRowNo)
-        .map(record => Object.fromEntries(colDict.map(([idx, prop]) => [prop, record[idx]])))
-        .map(record => (props.api.add ? props.api.add(record) : Promise.resolve()))
+      records.map(record => (props.api.add ? props.api.add(record) : Promise.resolve()))
     )
   } else if (opera === 'export') {
     console.log(data)

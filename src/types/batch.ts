@@ -8,7 +8,7 @@ export default class Batch {
   hdRowNo: number
   totalNum: number
   dtRowNo: number
-  mapper: Record<string, string>
+  mapper: Record<string, { prop: string; required: boolean }>
 
   constructor() {
     this.file = []

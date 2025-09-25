@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs'
 import { fixEndsWith, fixStartsWith, getProperty } from '../utils'
+import type Column from './column'
 
 export const compares = {
   '=': '等于',
@@ -179,7 +180,7 @@ export function strToType(str: string, bsTp: BaseTypes) {
     case 'Object':
       return JSON.parse(str)
     case 'Function':
-      return (new Function(str))()
+      return new Function(str)()
     case 'Id':
     case 'Any':
     case 'Unknown':
@@ -190,33 +191,18 @@ export function strToType(str: string, bsTp: BaseTypes) {
   }
 }
 
-export const colors: Color[] = [
-  'warning',
-  'error',
-  'success',
-  'primary',
-  'cyan',
-  'black',
+export const colors = [
   'purple',
-  'pink',
   'red',
   'orange',
   'green',
   'blue'
 ]
 
-export const colorDict = {
-  warning: '#ff9900',
-  error: '#ff3300',
-  success: '#00cc66',
-  primary: '#2db7f5',
-  cyan: '#04c1e1',
-  black: '#131313',
-  purple: '#b500fe',
-  pink: '#c41d7f',
-  red: '#cf1322',
-  orange: '#d46b08',
-  green: '#389e0d',
-  blue: '#0958d9'
+export function genRandColor(disables: string[]) {
+  let color = colors[Math.floor(Math.random() * colors.length)]
+  if (disables.includes(color)) {
+    color = genRandColor(disables)
+  }
+  return color
 }
-export type Color = keyof typeof colorDict
