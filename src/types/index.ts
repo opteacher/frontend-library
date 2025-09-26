@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs'
 import { fixEndsWith, fixStartsWith, getProperty } from '../utils'
-import type Column from './column'
 
 export const compares = {
   '=': '等于',
