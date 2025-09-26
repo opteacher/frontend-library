@@ -6,7 +6,8 @@
     :headers="headers"
     @change="onExcelUpload"
   >
-    <a-button :loading="uploading" @click.prevent>
+    <slot v-if="$slots['button']" name="button" />
+    <a-button v-else :loading="uploading" @click.prevent>
       <template #icon><import-outlined /></template>
       批量导入
     </a-button>
@@ -42,9 +43,9 @@
               <a-tooltip v-for="col in dbInf.cols" :key="col.key">
                 <template #title>拖拽到下表列头中绑定</template>
                 <a-tag
-                  :color="getProp(binds, col.key + '.color', '')"
+                  :color="getProp(dbColors, col.key, '')"
                   :draggable="true"
-                  closable
+                  :closable="col.key in dbColors"
                   @close.prevent="() => onColUnbindClick(col.key)"
                   @dragstart="(e: any) => onColDragStart(e, col)"
                 >
@@ -176,6 +177,7 @@ const imInf = reactive<{
 })
 // Record<string(excel表的列索引), { prop: string(数据库表的列索引); color: 颜色; required: 不为空 }>
 const binds = reactive<Record<string, { prop: string; color: string; required: boolean }>>({})
+const dbColors = reactive<Record<string, string>>({})
 const headers = computed(() => ({ authorization: `Bearer ${localStorage.getItem('token')}` }))
 const uploading = ref(false)
 
@@ -227,10 +229,10 @@ function onColBindDrop(e: DragEvent, col: Column) {
   const colors = Object.values(binds).map(b => b.color)
   const disables = exIdx === -1 ? [colors[colors.length - 1]] : colors.slice(exIdx - 1, exIdx + 1)
   binds[exCol] = { prop: dbCol, color: genRandColor(disables.filter(dsb => dsb)), required: false }
-  binds[dbCol] = { prop: '', color: binds[exCol].color, required: false }
+  dbColors[dbCol] = binds[exCol].color
 }
 function onColUnbindClick(dbCol: string) {
-  delete binds[dbCol]
+  delete dbColors[dbCol]
   for (const [key, val] of Object.entries(binds)) {
     if (val.prop === dbCol) {
       delete binds[key]

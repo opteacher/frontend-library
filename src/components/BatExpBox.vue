@@ -1,5 +1,6 @@
 <template>
-  <a-button @click="() => emitter.emit('update:visible', true)">
+  <slot v-if="$slots['button']" name="button" />
+  <a-button v-else @click="() => emitter.emit('update:visible', true)">
     <template #icon><export-outlined /></template>
     批量导出
   </a-button>
@@ -105,9 +106,12 @@ import { Cond, colors } from '../types'
 import { getDftPjt } from '../utils'
 import { genDspColumns, genDspRecords } from '../utils'
 import Batch from '../types/batch'
+import type { UploadChangeParam } from 'ant-design-vue'
+import type { FileType } from 'ant-design-vue/es/upload/interface'
 
 const emit = defineEmits(['submit'])
 const props = defineProps({
+  uploadUrl: { type: String, default: `/${getDftPjt()}/api/v1/excel/upload` },
   columns: { type: Array as () => Column[], required: true },
   copyFun: { type: Function, required: true }
 })
@@ -184,13 +188,13 @@ const mapper = new Mapper({
     label: '上传参照文档',
     type: 'UploadFile',
     desc: '没有参照文档，则导出所有设备',
-    path: `/${getDftPjt()}/api/v1/excel/upload`,
+    path: props.uploadUrl,
     headers: { authorization: `Bearer ${localStorage.getItem('token')}` },
-    onChange: (form: any, info: any) => {
+    onChange: (form: any, info: UploadChangeParam) => {
       form.loading = true
       if (info.file.status === 'done') {
         const reader = new FileReader()
-        reader.readAsArrayBuffer(info.file.originFileObj)
+        reader.readAsArrayBuffer(info.file.originFileObj as FileType)
         reader.onload = () => {
           const workbook = read(reader.result)
           form.worksheet = workbook.Sheets[workbook.SheetNames[0]]

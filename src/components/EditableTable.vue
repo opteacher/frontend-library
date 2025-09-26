@@ -19,6 +19,7 @@
         <template v-if="addable">
           <a-space v-if="imExport">
             <BatExpBox
+              :upload-url="(imExport as any).uploadUrl"
               :columns="colsState.filter(col => col.dataIndex !== 'opera')"
               :copyFun="genCpyFun(BatExp, () => ({ column: '', compare: '=' }))"
               @submit="(info: any) => onBatchSubmit(info, 'export')"
@@ -295,7 +296,7 @@ import type { SizeType } from 'ant-design-vue/es/config-provider'
 import type { ColumnType } from 'ant-design-vue/es/table'
 import type { ButtonType } from 'ant-design-vue/es/button'
 import DirectField from './DirectField.vue'
-import { type WorkSheet, utils } from 'xlsx'
+import { type WorkSheet, utils, write } from 'xlsx'
 
 const emit = defineEmits([
   'add',
@@ -323,7 +324,7 @@ const props = defineProps({
     }> /* ComAPI */,
     required: true
   },
-  columns: { type: Array, required: true },
+  columns: { type: Array as PropType<Column[]>, required: true },
   cells: { type: Array, default: () => [] },
   mapper: { type: Mapper, default: new Mapper() },
   newFun: { type: Function, default: () => ({}) },
@@ -642,33 +643,61 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
   if (props.api.batch && opera in props.api.batch) {
     await props.api.batch[opera](data)
   } else if (opera === 'import' && props.api.add) {
-    const allData = utils.sheet_to_json<any[]>(info.worksheet as WorkSheet, { header: 1 })
-    const fixMapper = Object.fromEntries(
-      Object.entries(info.mapper).filter(([_key, value]) => value.prop)
-    )
-    const colDict = Object.entries(fixMapper).map(([key, value]) => [
+    const allData = utils.sheet_to_json<any[]>(info.worksheet as WorkSheet, {
+      header: 1
+    })
+    const colDict = Object.entries(info.mapper).map(([key, value]) => [
       allData[info.hdRowNo].indexOf(key),
       value.prop
     ]) as [number, string][]
     const reqDict = Object.fromEntries(
-      Object.entries(fixMapper).map(([_colNam, prop]) => [prop.prop, prop.required])
+      Object.entries(info.mapper).map(([_colNam, prop]) => [prop.prop, prop.required])
     )
-    const records = allData.slice(info.dtRowNo).map(record =>
-      Object.fromEntries(
-        colDict.map(([idx, prop]) => {
-          if (reqDict[prop]) {
-            return record[idx] ? [prop, record[idx]] : [prop]
-          } else {
-            return [prop, record[idx]]
-          }
-        })
+    const records = allData
+      .slice(info.dtRowNo)
+      .map(record =>
+        Object.fromEntries(
+          colDict.map(([idx, prop]) => {
+            if (reqDict[prop]) {
+              return record[idx] ? [prop, record[idx]] : [prop]
+            } else {
+              return [prop, record[idx]]
+            }
+          })
+        )
       )
-    )
+      .filter(
+        record => !Object.entries(reqDict).some(([prop, required]) => required && !record[prop])
+      )
     await Promise.all(
       records.map(record => (props.api.add ? props.api.add(record) : Promise.resolve()))
     )
   } else if (opera === 'export') {
-    console.log(data)
+    const records = await props.api
+      .all({
+        axiosConfig: { params: { selCols: (info as BatExp).filterCols } }
+      })
+      .then(records =>
+        records.map(record =>
+          Object.fromEntries(
+            Object.entries(record).filter(([prop]) => (info as BatExp).filterCols.includes(prop))
+          )
+        )
+      )
+    const workbook = utils.book_new()
+    const worksheet = utils.json_to_sheet(records)
+    utils.sheet_add_aoa(worksheet, [props.columns.map(col => col.title)], { origin: 'A1' })
+    utils.book_append_sheet(workbook, worksheet, 'Sheet1')
+    const fileName = ((props.imExport as any)['expName'] || props.title || 'test') + '.xlsx'
+    const data = write(workbook, { type: 'array', bookType: 'xlsx' })
+    const blob = new Blob([data], { type: 'application/octet-stream' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = url
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
   }
   await refresh()
 }
