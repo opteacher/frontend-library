@@ -117,6 +117,9 @@
           <template #FormDialog>
             <slot name="FormDialog" />
           </template>
+          <template #itemLabel="params">
+            <slot name="itemLabel" v-bind="params" />
+          </template>
         </FieldItem>
       </div>
       <slot v-if="chkInSlot('SFX')" :name="skey + 'SFX'" v-bind="{ formState: form }" />

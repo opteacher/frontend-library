@@ -363,7 +363,10 @@ export function pickOrIgnore(obj: { [key: string]: any }, attrs: string[], ignor
   )
 }
 
-export async function until(cdFun: () => Promise<boolean>, options?: { loop?: number; interval?: number }) {
+export async function until(
+  cdFun: () => Promise<boolean>,
+  options?: { loop?: number; interval?: number }
+) {
   if (!options) {
     options = { loop: 500, interval: 200 }
   }
@@ -711,20 +714,30 @@ export function setProp(
   obj: any,
   prop: string,
   value: any,
-  callback = (base: any, key: any, value: any) => {
-    base[key] = value
+  options?: {
+    callback?: (base: any, key: any, value: any) => void;
+    selfChange?: boolean
   }
 ) {
+  if (!options) {
+    options = { callback: (base: any, key: any, value: any) => (base[key] = value) }
+  }
+  if (!options.callback) {
+    options.callback = (base: any, key: any, value: any) => (base[key] = value)
+  }
+  if (typeof options.selfChange === 'undefined') {
+    options.selfChange = true
+  }
   if (!prop) {
     return obj
   }
   if (prop.indexOf('.') === -1 && prop in obj) {
     prop = '.' + prop
   }
-  const ret = obj
+  const ret = options.selfChange ? obj : cloneDeep(obj)
   const props = prop.split('.')
   const lstIdx = props.length - 1
-  for (let i = 0; i < props.length; ++i) {
+  for (let i = 0, tmp = ret; i < props.length; ++i) {
     const p = props[i]
     if (p === '') {
       continue
@@ -737,14 +750,14 @@ export function setProp(
         const sub = result[1]
         const key = result[2]
         const val = result[3]
-        const idx = obj[sub].findIndex((itm: any) => itm[key] == val)
+        const idx = tmp[sub].findIndex((itm: any) => itm[key] == val)
         if (idx === -1) {
           throw new Error()
         }
         if (i === lstIdx) {
-          callback(obj[sub], idx, value)
+          options.callback(tmp[sub], idx, value)
         } else {
-          obj = obj[sub][idx]
+          tmp = tmp[sub][idx]
         }
       } else {
         const result = /^(\w+)\[(\d+)\]$/.exec(p)
@@ -754,18 +767,18 @@ export function setProp(
         const sub = result[1]
         const idx = parseInt(result[2])
         if (i === lstIdx) {
-          callback(obj[sub], idx, value)
+          options.callback(tmp[sub], idx, value)
         } else {
-          obj = obj[sub][idx]
+          tmp = tmp[sub][idx]
         }
       }
     } else if (i === lstIdx) {
-      callback(obj, p, value)
+      options.callback(tmp, p, value)
     } else {
-      if (!obj[p]) {
-        obj[p] = {}
+      if (!tmp[p]) {
+        tmp[p] = {}
       }
-      obj = obj[p]
+      tmp = tmp[p]
     }
   }
   return ret
@@ -931,11 +944,11 @@ export function json2Object(json: object, params?: Record<string, any>) {
           value = value.replace('() => ', 'return ')
         }
         if (value.startsWith('return ')) {
-          setProp(json, key, callFunc(value, params))
+          setProp(json, key, { callback: callFunc(value, params) })
         }
         break
       case typeof value === 'object':
-        setProp(json, key, json2Object(value, params))
+        setProp(json, key, { callback: json2Object(value, params) })
         break
     }
   }

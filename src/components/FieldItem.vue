@@ -321,6 +321,9 @@ function filterOption(input: string, option: any) {
     <template #formItem="params">
       <slot name="formItem" v-bind="params" />
     </template>
+    <template #itemLabel="params">
+      <slot name="itemLabel" v-bind="params" />
+    </template>
   </EditList>
   <CodeEditor
     v-else-if="mapper.type === 'CodeEditor'"

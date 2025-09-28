@@ -26,7 +26,7 @@
           <template #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
-          <slot v-if="$slots['labelItem']" name="labelItem" v-bind="{ item, index }" />
+          <slot v-if="$slots['itemLabel']" name="itemLabel" v-bind="{ item, index }" />
           <LabelItem v-else :value="item" :dict="lblDict" :prop="lblProp" :sub-prp="subProp" />
         </a-list-item>
       </template>
