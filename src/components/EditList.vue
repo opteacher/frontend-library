@@ -9,12 +9,7 @@
   >
     添加{{ label }}
   </a-button>
-  <a-form
-    v-else
-    :layout="inline ? 'inline' : 'horizontal'"
-    :model="addState"
-    @finish="onEdtLstAdd"
-  >
+  <a-form v-else :layout="inline ? 'inline' : 'horizontal'" :model="addState" @finish="onEdtLstAdd">
     <template v-for="(value, key) in mapper">
       <slot name="formItem" v-bind="{ form: addState, elKey: key.toString(), value }" />
     </template>
@@ -31,7 +26,8 @@
           <template #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
-          <LabelItem :value="item" :dict="lblDict" :prop="lblProp" :sub-prp="subProp" />
+          <slot v-if="$slots['labelItem']" name="labelItem" v-bind="{ item, index }" />
+          <LabelItem v-else :value="item" :dict="lblDict" :prop="lblProp" :sub-prp="subProp" />
         </a-list-item>
       </template>
     </a-list>

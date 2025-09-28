@@ -262,7 +262,7 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Table as ATable, type TourProps, Tour as ATour } from 'ant-design-vue'
+import { Table as ATable, type TourProps, Tour as ATour, notification } from 'ant-design-vue'
 import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
@@ -669,9 +669,16 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
       .filter(
         record => !Object.entries(reqDict).some(([prop, required]) => required && !record[prop])
       )
-    await Promise.all(
-      records.map(record => (props.api.add ? props.api.add(record) : Promise.resolve()))
-    )
+    if (props.api.add) {
+      for (const record of records) {
+        props.api.add(record)
+      } 
+    } else {
+      notification.error({
+        message: '批量导入既为定义接口，也没事新增接口！'
+      })
+      return
+    }
   } else if (opera === 'export') {
     const records = await props.api
       .all({
