@@ -16,24 +16,24 @@
       </template>
       <template #extra>
         <SelColBox v-if="dspCols" :columns="columns" @change="fmtColumns" />
-        <template v-if="addable">
-          <a-space v-if="imExport">
-            <BatExpBox
-              :upload-url="(imExport as any).uploadUrl"
-              :columns="colsState.filter(col => col.dataIndex !== 'opera')"
-              :copyFun="genCpyFun(BatExp, () => ({ column: '', compare: '=' }))"
-              @submit="(info: any) => onBatchSubmit(info, 'export')"
-            />
-            <BatImpBox
-              :upload-url="(imExport as any).uploadUrl"
-              :columns="colsState.filter(col => col.dataIndex !== 'opera')"
-              :ignCols="fmtIeIgnCols"
-              :copyFun="genCpyFun(BatImp, () => '')"
-              @submit="(info: any) => onBatchSubmit(info, 'import')"
-            />
-          </a-space>
+        <a-space>
+          <BatExpBox
+            v-if="expable"
+            :upload-url="(imExport as any).uploadUrl"
+            :columns="colsState.filter(col => col.dataIndex !== 'opera')"
+            :copyFun="genCpyFun(BatExp, () => ({ column: '', compare: '=' }))"
+            @submit="(info: any) => onBatchSubmit(info, 'export')"
+          />
+          <BatImpBox
+            v-if="addable && impable"
+            :upload-url="(imExport as any).uploadUrl"
+            :columns="colsState.filter(col => col.dataIndex !== 'opera')"
+            :ignCols="fmtIeIgnCols"
+            :copyFun="genCpyFun(BatImp, () => '')"
+            @submit="(info: any) => onBatchSubmit(info, 'import')"
+          />
           <a-button
-            v-if="editMode === 'form'"
+            v-if="addable && editMode === 'form'"
             ref="addBtnRef"
             type="primary"
             :loading="loading"
@@ -41,7 +41,7 @@
           >
             添加
           </a-button>
-        </template>
+        </a-space>
         <slot name="extra" />
       </template>
       <template #tags>
@@ -408,6 +408,26 @@ const isDrctAdd = computed(
 )
 const tbodyHgt = ref(0)
 const tableHgt = ref(0)
+const expable = computed(() => {
+  switch (typeof props.imExport) {
+    case 'object':
+      return props.imExport.expable
+    case 'boolean':
+      return props.imExport
+    default:
+      return false
+  }
+})
+const impable = computed(() => {
+  switch (typeof props.imExport) {
+    case 'object':
+      return props.imExport.impable
+    case 'boolean':
+      return props.imExport
+    default:
+      return false
+  }
+})
 
 if (props.mountRefsh) {
   onMounted(refresh)
