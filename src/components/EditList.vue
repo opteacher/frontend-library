@@ -1,14 +1,11 @@
 <template>
-  <a-button
-    v-if="!addMod"
-    class="w-full"
-    type="primary"
-    :disabled="disabled"
-    ghost
-    @click="onEdtLstShow"
-  >
-    添加{{ label }}
-  </a-button>
+  <div v-if="!addMod" class="w-full flex space-x-3">
+    <slot name="addPFX" />
+    <a-button class="flex-1" type="primary" :disabled="disabled" ghost @click="onEdtLstShow">
+      添加{{ label }}
+    </a-button>
+    <slot name="addSFX" />
+  </div>
   <a-form v-else :layout="inline ? 'inline' : 'horizontal'" :model="addState" @finish="onEdtLstAdd">
     <template v-for="(value, key) in mapper">
       <slot name="formItem" v-bind="{ form: addState, elKey: key.toString(), value }" />

@@ -65,7 +65,9 @@
         :data-source="records.data"
         :size="size"
         :rowClassName="() => 'bg-white'"
-        :pagination="pagable ? { total: records.total, pageSize: records.limit } : false"
+        :pagination="
+          pagable ? { showSizeChanger: true, total: records.total, pageSize: records.limit } : false
+        "
         v-model:expandedRowKeys="expRowKeys"
         :loading="loading"
         :bordered="bordered"
@@ -136,9 +138,7 @@
             <template v-else>
               <a-button
                 v-if="
-                  editable &&
-                  !disable(record) &&
-                  (edtableKeys.includes('*') || edtableKeys.includes(record.key))
+                  !disable(record) && (typeof editable === 'function' ? editable(record) : editable)
                 "
                 size="small"
                 :type="operaStyle"
@@ -148,9 +148,7 @@
               </a-button>
               <a-popconfirm
                 v-if="
-                  delable &&
-                  !disable(record) &&
-                  (delableKeys.includes('*') || delableKeys.includes(record.key))
+                  !disable(record) && (typeof delable === 'function' ? delable(record) : delable)
                 "
                 title="确定删除该记录吗？"
                 ok-text="确定"
@@ -335,9 +333,9 @@ const props = defineProps({
   pagable: { type: Boolean, default: false },
   pageSize: { type: Number, default: 10 },
   filter: { type: Function, default: () => true },
-  editable: { type: Boolean, default: true },
+  editable: { type: [Boolean, Function], default: true },
   addable: { type: Boolean, default: true },
-  delable: { type: Boolean, default: true },
+  delable: { type: [Boolean, Function], default: true },
   rszCols: { type: Boolean, default: true },
   imExport: { type: [Object, Boolean], default: () => false },
   ieIgnCols: { type: Array, default: () => [] },
@@ -350,8 +348,6 @@ const props = defineProps({
   dlgWidth: { type: String, default: '50vw' },
   dlgFullScrn: { type: Boolean, default: false },
   editMode: { type: String as PropType<'direct' | 'form'>, default: 'form' },
-  edtableKeys: { type: Array as PropType<any[]>, default: () => ['*'] },
-  delableKeys: { type: Array as PropType<any[]>, default: () => ['*'] },
   selable: { type: Boolean, default: false },
   tourSteps: { type: Array as PropType<TourProps['steps']>, default: [] },
   tableClass: { type: String, default: '' },
@@ -567,7 +563,10 @@ async function refresh(data?: any[], params?: any) {
       const theader = await waitFor('ant-table-header', { getBy: 'class' })
       const tfooter = await waitFor('ant-table-footer', { getBy: 'class' })
       tbodyHgt.value =
-        edtTbl?.scrollHeight - (theader?.clientHeight || 0) - (tfooter?.clientHeight || 0)
+        edtTbl?.scrollHeight -
+        (theader?.clientHeight || 0) -
+        (tfooter?.clientHeight || 0) -
+        (props.pagable ? 64 : 0)
       tableHgt.value = (await waitFor('ant-spin-nested-loading', { getBy: 'class' }).then(
         el => el?.offsetHeight
       )) as number
@@ -692,7 +691,7 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
     if (props.api.add) {
       for (const record of records) {
         props.api.add(record)
-      } 
+      }
     } else {
       notification.error({
         message: '批量导入既为定义接口，也没事新增接口！'

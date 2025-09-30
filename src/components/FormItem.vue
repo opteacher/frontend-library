@@ -3,6 +3,7 @@
     v-show="display"
     class="flex-auto"
     :ref="skey"
+    :tooltip="mapper.desc"
     :name="skey.indexOf('.') !== -1 ? skey.split('.') : skey"
     :rules="display ? mapper.rules : []"
     :wrapper-col="{ offset: mapper.offset, span: fldWid === -1 ? 24 - lblWid : fldWid }"
@@ -12,13 +13,6 @@
         {{ mapper.label }}
       </a-button>
       <span v-else>{{ mapper.label }}</span>
-      &nbsp;
-      <a-tooltip v-if="mapper.desc">
-        <template #title>
-          <pre>{{ mapper.desc }}</pre>
-        </template>
-        <InfoCircleOutlined />
-      </a-tooltip>
     </template>
     <a-divider v-if="mapper.expable && !expanded" class="m-0 text-sm" orientation="left">
       <arrow-left-outlined />
@@ -84,8 +78,8 @@
                   ? mapper.chkLabels[1]
                   : '是'
                 : mapper.chkLabels
-                  ? mapper.chkLabels[0]
-                  : '否'
+                ? mapper.chkLabels[0]
+                : '否'
             }}
           </template>
           <template v-else-if="mapper.type === 'EditList' || mapper.type === 'UploadFile'">
@@ -114,11 +108,8 @@
               @update:fprop="(values: any) => onFpropChanged(form, values)"
             />
           </template>
-          <template #FormDialog>
-            <slot name="FormDialog" />
-          </template>
-          <template #itemLabel="params">
-            <slot name="itemLabel" v-bind="params" />
+          <template v-for="name in slots" #[name]="params">
+            <slot :name="name" v-bind="params" />
           </template>
         </FieldItem>
       </div>
@@ -129,7 +120,6 @@
 
 <script lang="ts" setup name="FormItem">
 import {
-  InfoCircleOutlined,
   EyeOutlined,
   EyeInvisibleOutlined,
   ArrowLeftOutlined
@@ -155,6 +145,14 @@ const onFpropChanged = (formState: any, values: any) =>
   Object.entries(values).map(([k, v]) => setProp(formState, k, v))
 const viewPwd = ref(false)
 const expanded = ref(false)
+const slots = computed(() =>
+  Object.keys(useSlots()).filter(
+    name =>
+      ![props.skey, props.skey + 'VW', props.skey + 'PFX', props.skey + 'SFX', 'formItem'].includes(
+        name
+      )
+  )
+)
 
 function fmtDrpdwnValue(options: OpnType[], value: any | any[]) {
   if (value instanceof Array) {

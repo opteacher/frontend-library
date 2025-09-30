@@ -265,8 +265,8 @@ function filterOption(input: string, option: any) {
               }
             "
   >
-    <template #FormDialog>
-      <slot name="FormDialog" />
+    <template v-for="name in Object.keys($slots)" #[name]="params">
+      <slot :name="name" v-bind="params" />
     </template>
   </FormTable>
   <UploadFile
@@ -318,11 +318,8 @@ function filterOption(input: string, option: any) {
     @added="mapper.onAdded"
     @update:value="onFieldChanged"
   >
-    <template #formItem="params">
-      <slot name="formItem" v-bind="params" />
-    </template>
-    <template #itemLabel="params">
-      <slot name="itemLabel" v-bind="params" />
+    <template v-for="name in Object.keys($slots)" #[name]="params">
+      <slot :name="name" v-bind="params" />
     </template>
   </EditList>
   <CodeEditor
@@ -356,8 +353,8 @@ function filterOption(input: string, option: any) {
     @added="mapper.onAdded"
     @update:value="onFieldChanged"
   >
-    <template #formItem="params">
-      <slot name="formItem" v-bind="params" />
+    <template v-for="name in Object.keys($slots)" #[name]="params">
+      <slot :name="name" v-bind="params" />
     </template>
   </TagList>
   <IconField
