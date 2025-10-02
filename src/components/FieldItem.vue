@@ -15,6 +15,7 @@ import UploadFile from './UploadFile.vue'
 import IpAddrInput from './IpAddrInput.vue'
 import IconField from './IconField.vue'
 import CompactInput from './CompactInput.vue'
+import ColorSelect from './ColorSelect.vue'
 
 const props = defineProps({
   form: { type: Object, required: true },
@@ -362,6 +363,12 @@ function filterOption(input: string, option: any) {
     :disabled="disabled"
     :icon="getProp(form, skey, fieldDftVal(mapper.type))"
     @update:icon="onFieldChanged"
+  />
+  <ColorSelect
+    v-else-if="mapper.type === 'ColorSelect'"
+    :color="getProp(form, skey, fieldDftVal(mapper.type))"
+    :preset="mapper.preset"
+    @update:color="onFieldChanged"
   />
   <template v-else>
     {{ getProp(form, skey) }}

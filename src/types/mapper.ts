@@ -501,7 +501,7 @@ export class JsonEditorMapper extends TextareaMapper {
   }
 }
 
-export class CpctInputMapper extends BaseMapper {
+export class CpctIptMapper extends BaseMapper {
   placeholders: string[]
   splitLetter: string
 
@@ -518,12 +518,26 @@ export class CpctInputMapper extends BaseMapper {
   }
 }
 
+export class ColSelMapper extends BaseMapper {
+  preset: string[]
+
+  constructor() {
+    super()
+    this.preset = []
+  }
+
+  reset() {
+    super.reset()
+    this.preset = []
+  }
+}
+
 export const mapTypeTemps = {
   Unknown: () => new BaseMapper(),
   Input: () => new InputMapper(),
   Number: () => new InputMapper(),
   IpAddress: () => new BaseMapper(),
-  CompactInput: () => new CpctInputMapper(),
+  CompactInput: () => new CpctIptMapper(),
   Password: () => new PasswordMapper(),
   Textarea: () => new TextareaMapper(),
   Select: () => new SelectMapper(),
@@ -545,7 +559,8 @@ export const mapTypeTemps = {
   JsonEditor: () => new JsonEditorMapper(),
   EditList: () => new EdtLstMapper(),
   IconField: () => new BaseMapper(),
-  FormGroup: () => new GroupMapper()
+  FormGroup: () => new GroupMapper(),
+  ColorSelect: () => new ColSelMapper()
 } as { [mapType: string]: () => any }
 
 export type MapperType = BaseMapper & Record<string, any>

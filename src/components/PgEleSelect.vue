@@ -24,6 +24,7 @@
             @dom-ready="onWvDomReady"
           />
           <a-space class="px-10 h-8" align="center">
+            <AimOutlined />
             <p class="m-0 font-bold">选中元素：</p>
             <template v-if="selKeys.length">
               <p class="mb-0 truncate">{{ selKeys[0] }}</p>
@@ -283,7 +284,8 @@ import {
   ExpandAltOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
-  ScanOutlined
+  ScanOutlined,
+  AimOutlined
 } from '@ant-design/icons-vue'
 import { TinyEmitter } from 'tiny-emitter'
 import FlexDivider from './FlexDivider.vue'
