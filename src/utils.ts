@@ -673,10 +673,8 @@ export function getProp(obj: any, prop: string, dftVal: any = undefined) {
   if (prop.indexOf('.') === -1 && prop in obj) {
     prop += '.'
   }
-  for (const p of prop.split('.')) {
-    if (p === '') {
-      continue
-    } else if (!obj) {
+  for (const p of prop.split('.').filter(p => p)) {
+    if (!obj) {
       return dftVal
     } else if (p.endsWith(']')) {
       if (p.endsWith('}]')) {
@@ -707,7 +705,7 @@ export function getProp(obj: any, prop: string, dftVal: any = undefined) {
       obj = obj[p]
     }
   }
-  return obj || dftVal
+  return typeof obj !== 'undefined' ? obj : dftVal
 }
 
 export function setProp(

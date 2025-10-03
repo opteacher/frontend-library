@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs'
-import { fixEndsWith, fixStartsWith, getProperty } from '../utils'
+import { fixEndsWith, fixStartsWith, getProp } from '../utils'
 
 export const compares = {
   '=': '等于',
@@ -40,16 +40,16 @@ export class Cond {
     switch (this.cmp) {
       case '!=':
         if (this.val === 'undefined' || typeof this.val === 'undefined') {
-          return typeof getProperty(object, this.key) !== 'undefined'
+          return typeof getProp(object, this.key) !== 'undefined'
         } else {
-          return getProperty(object, this.key) !== this.val
+          return getProp(object, this.key) !== this.val
         }
       case '=':
       default:
         if (this.val === 'undefined' || typeof this.val === 'undefined') {
-          return typeof getProperty(object, this.key) === 'undefined'
+          return typeof getProp(object, this.key) === 'undefined'
         } else {
-          return getProperty(object, this.key) === this.val
+          return getProp(object, this.key) === this.val
         }
     }
   }

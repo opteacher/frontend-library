@@ -17,6 +17,7 @@ export default class Node {
   title: string
   desc: string
   color: string
+  addMode: 'insert' | 'append'
   previous: string[]
   nexts: string[]
   relative: string
@@ -38,6 +39,7 @@ export default class Node {
     this.title = ''
     this.desc = ''
     this.color = '#1677ff'
+    this.addMode = 'insert'
     this.previous = []
     this.nexts = []
     this.relative = ''
@@ -58,6 +60,7 @@ export default class Node {
     this.title = ''
     this.desc = ''
     this.color = '#1677ff'
+    this.addMode = 'insert'
     this.previous = []
     this.nexts = []
     this.relative = ''

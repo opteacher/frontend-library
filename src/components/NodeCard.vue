@@ -1,19 +1,39 @@
 <template>
   <a-card
     :id="node.key"
-    class="absolute w-80"
+    class="absolute"
+    :headStyle="{
+      backgroundColor: node.color
+    }"
     :size="size"
     hoverable
     :style="{
+      width: width + 'px',
       top: node.rect.y + 'px',
       left: node.rect.x + 'px'
     }"
     @click="() => emit('card-click', node)"
   >
     <template #title>
-      <a-typography-title :level="5">{{ node.title }}</a-typography-title>
+      <a-typography-title class="text-white mb-0" :level="5">
+        {{ node.title }}
+      </a-typography-title>
     </template>
-    <template #extra><a href="#">more</a></template>
+    <template #extra>
+      <a-dropdown>
+        <a class="ant-dropdown-link text-white text-xl" @click.prevent>
+          <MoreOutlined />
+        </a>
+        <template #overlay>
+          <a-menu @click="({ key }: any) => key === 'delete' ? emit('del-click', node) : undefined">
+            <a-menu-item key="delete" class="text-[#ff4d4f]">
+              <template #icon><DeleteOutlined /></template>
+              删除
+            </a-menu-item>
+          </a-menu>
+        </template>
+      </a-dropdown>
+    </template>
     <pre v-if="node.desc">{{ node.desc }}</pre>
     <a-typography-text v-else type="secondary">输入描述</a-typography-text>
   </a-card>
@@ -34,13 +54,14 @@
 <script setup lang="ts">
 import { computed, type PropType } from 'vue'
 import Node from '../types/node'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, MoreOutlined, DeleteOutlined } from '@ant-design/icons-vue'
 
-const emit = defineEmits(['card-click', 'add-click'])
+const emit = defineEmits(['card-click', 'add-click', 'del-click'])
 const props = defineProps({
   direction: { type: String as PropType<'vertical' | 'horizontal'>, default: 'horizontal' },
   size: { type: String  as PropType<'default' | 'small'>, default: 'default' },
   node: { type: Node, required: true },
+  width: { type: Number, default: 300 },
   gutter: { type: Number, default: 100 }
 })
 const addBtnDict = computed(() => ({

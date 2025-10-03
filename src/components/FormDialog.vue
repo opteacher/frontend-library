@@ -76,7 +76,7 @@ import { getProp, setProp } from '../utils'
 import FormGroup from './FormGroup.vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { onMounted, ref, watch, markRaw, type Raw, type PropType } from 'vue'
+import { onMounted, ref, watch, markRaw, type Raw, type PropType, toRef, computed } from 'vue'
 
 type AntdIcons = keyof typeof antdIcons | ''
 
@@ -110,12 +110,14 @@ const editable = ref(true)
 const viewOnly = ref(false)
 const okLoading = ref(false)
 const formRef = ref()
-const formMapper = ref<Mapper>(props.mapper)
+const formMapper = toRef(props.mapper)
 const formState = ref(updateState())
-const formRules = Object.fromEntries(
-  Object.entries(props.mapper).map(entry => {
-    return [entry[0], entry[1].rules]
-  })
+const formRules = computed(() => 
+  Object.fromEntries(
+    Object.entries(props.mapper).map(entry => {
+      return [entry[0], entry[1].rules]
+    })
+  )
 )
 defineExpose({ formRef })
 

@@ -19,12 +19,19 @@
     <a-divider class="my-2 mx-0" />
     <a-list size="small" :data-source="list">
       <template #renderItem="{ item, index }">
-        <a-list-item class="py-1.5">
-          <template #actions>
+        <a-list-item class="py-1.5 hover:bg-[#00000012] hover:cursor-pointer">
+          <template v-if="!disRmvIdxs.includes(index)" #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
           <slot v-if="$slots['itemLabel']" name="itemLabel" v-bind="{ item, index }" />
-          <LabelItem v-else :value="item" :dict="lblDict" :prop="lblProp" :sub-prp="subProp" />
+          <LabelItem
+            v-else
+            :value="item"
+            :dict="lblDict"
+            :prop="lblProp"
+            :sub-prp="subProp"
+            :tip="JSON.stringify(item)"
+          />
         </a-list-item>
       </template>
     </a-list>
@@ -48,7 +55,8 @@ const props = defineProps({
   lblDict: { type: Object as PropType<Record<any, string>>, default: {} },
   lblProp: { type: String, default: '' },
   subProp: { type: String, default: '' },
-  inline: { type: Boolean, default: true }
+  inline: { type: Boolean, default: true },
+  disRmvIdxs: { type: Array, default: [] }
 })
 const addMod = ref(false)
 const addState = ref(props.newFun())

@@ -317,6 +317,8 @@ export class EdtLstMapper extends BaseMapper {
   mapper: Mapper
   // 数据发生变化后必须触发update:value，重写onSaved也必须注意这一点！
   emitter: Emitter
+  // 不可删除的项索引
+  disRmvIdxs: number[]
   newFun: () => any
   onAdded: () => Promise<void>
   onSaved: (nItem: any, array?: any[]) => Promise<void>
@@ -330,6 +332,7 @@ export class EdtLstMapper extends BaseMapper {
     this.subProp = ''
     this.mapper = new Mapper()
     this.emitter = new Emitter()
+    this.disRmvIdxs = []
     this.newFun = () => ({})
     this.onAdded = () => Promise.resolve()
     this.onSaved = () => Promise.resolve()
@@ -344,6 +347,7 @@ export class EdtLstMapper extends BaseMapper {
     this.subProp = ''
     this.mapper = new Mapper({})
     this.emitter = new Emitter()
+    this.disRmvIdxs = []
     this.newFun = () => ({})
     this.onAdded = () => Promise.resolve()
     this.onSaved = () => Promise.resolve()

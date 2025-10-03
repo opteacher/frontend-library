@@ -153,25 +153,22 @@ function filterOption(input: string, option: any) {
     :value="getProp(form, skey, fieldDftVal(mapper.type))"
     @change="(e: any) => onFieldChanged(e.target.value)"
   >
-    <template v-if="mapper.style === 'button'">
-      <a-tooltip v-for="opn in mapper.options" :key="opn.value" color="#108ee9">
-        <template #title>
-          {{ opn.subLabel }}
-        </template>
-        <a-radio-button
-          class="text-center"
-          :value="opn.value"
-          :style="{ width: 100 / mapper.options.length + '%' }"
-        >
-          {{ opn.label }}
-        </a-radio-button>
-      </a-tooltip>
-    </template>
-    <template v-else>
-      <a-radio v-for="opn in mapper.options" :key="opn.value" :value="opn.value">
+    <a-tooltip v-for="opn in mapper.options" :key="opn.value">
+      <template #title>
+        {{ opn.subLabel }}
+      </template>
+      <a-radio-button
+        v-if="mapper.style === 'button'"
+        class="text-center"
+        :value="opn.value"
+        :style="{ width: 100 / mapper.options.length + '%' }"
+      >
+        {{ opn.label }}
+      </a-radio-button>
+      <a-radio v-else-if="mapper.style === 'circle'" :value="opn.value">
         {{ opn.label }}
       </a-radio>
-    </template>
+    </a-tooltip>
   </a-radio-group>
   <a-textarea
     v-else-if="mapper.type === 'Textarea'"
@@ -315,6 +312,7 @@ function filterOption(input: string, option: any) {
     :subProp="mapper.subProp"
     :inline="mapper.inline"
     :mapper="mapper.mapper"
+    :disRmvIdxs="mapper.disRmvIdxs"
     :value="getProp(form, skey, fieldDftVal(mapper.type))"
     @added="mapper.onAdded"
     @update:value="onFieldChanged"
