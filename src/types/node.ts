@@ -1,4 +1,5 @@
-import { gnlCpy } from "../utils"
+import { gnlCpy } from '../utils'
+import * as antdIcon from '@ant-design/icons-vue'
 
 export default class Node {
   key: string
@@ -16,6 +17,7 @@ export default class Node {
   }
   title: string
   desc: string
+  icon: keyof typeof antdIcon
   color: string
   addMode: 'insert' | 'append'
   previous: string[]
@@ -38,6 +40,7 @@ export default class Node {
     }
     this.title = ''
     this.desc = ''
+    this.icon = 'NumberOutlined'
     this.color = '#1677ff'
     this.addMode = 'insert'
     this.previous = []
@@ -59,6 +62,7 @@ export default class Node {
     this.rect.swh = 0
     this.title = ''
     this.desc = ''
+    this.icon = 'NumberOutlined'
     this.color = '#1677ff'
     this.addMode = 'insert'
     this.previous = []

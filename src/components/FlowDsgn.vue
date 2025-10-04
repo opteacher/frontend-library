@@ -1,5 +1,5 @@
 <template>
-  <div id="dsgnPanel" class="flex-1 relative overflow-auto mx-5">
+  <div id="dsgnPanel" class="flex-1 relative overflow-auto m-5">
     <a-button
       v-if="!nodes.length"
       class="absolute"
@@ -84,7 +84,6 @@ import {
 import { v4 as uuid } from 'uuid'
 import { Cond } from '../types'
 import { Modal } from 'ant-design-vue'
-import { difference } from 'lodash'
 
 const props = defineProps({
   direction: { type: String as PropType<'vertical' | 'horizontal'>, default: 'vertical' },
@@ -105,6 +104,10 @@ const props = defineProps({
       color: {
         type: 'ColorSelect',
         label: '颜色'
+      },
+      icon: {
+        type: 'IconField',
+        label: '图标'
       },
       addMode: {
         type: 'Radio',
@@ -137,23 +140,25 @@ const props = defineProps({
             placeholder: '选择父节点'
           }
         })
-      },
-      delBtn: {
-        type: 'Button',
-        inner: '删除',
-        danger: true,
-        offset: 4,
-        display: [Cond.create('key', '!=', '')]
       }
     })
   },
-  keygenFun: { type: Function as PropType<() => string>, default: () => uuid() }
+  keygenFun: { type: Function as PropType<(newNode: any) => Promise<string>>, default: () => uuid() },
+  emitter: { type: TinyEmitter, default: new TinyEmitter() },
+  copy: { type: Function, default: Node.copy }
 })
 const emit = defineEmits(['update:nodes', 'add:node', 'edt:node', 'del:node'])
 const direction = toRef(props.direction)
 const nodes = toRef(props.nodes)
 const mapper = toRef(props.mapper)
-setProp(mapper.value, 'delBtn.onClick', onDelNdClick)
+setProp(mapper.value, 'delBtn', {
+  type: 'Button',
+  inner: '删除',
+  danger: true,
+  offset: 4,
+  display: [Cond.create('key', '!=', '')],
+  onClick: onDelNdClick
+})
 const size = toRef(props.size)
 const ndDict = computed<Record<string, Node>>(() =>
   Object.fromEntries(nodes.value.map(node => [node.key, node]))
@@ -162,7 +167,6 @@ const width = ref(300)
 const gutter = ref(100)
 const rsxObs = new ResizeObserver(() => refresh())
 const dirDict = { vertical: 'width', horizontal: 'height' } as Record<'vertical' | 'horizontal', 'width' | 'height'>
-const emitter = new TinyEmitter()
 const pnlRect = ref<DOMRect>()
 const emptyAddBtn = computed(() => {
   if (direction.value === 'vertical') {
@@ -185,6 +189,7 @@ const emptyAddBtn = computed(() => {
 const toolboxVsb = ref(false)
 
 onMounted(() => refresh(true))
+props.emitter.on('refresh', () => refresh())
 
 async function refresh(force = false) {
   const panel = await waitFor('dsgnPanel')
@@ -238,30 +243,32 @@ function getNodeCenPos(node: Node) {
   }
 }
 function onNodeClick(oper: 'node' | 'add', node?: Node) {
-  const object = oper === 'node' ? node : Node.copy({
+  const object = oper === 'node' ? node : props.copy({
     previous: node ? [node.key] : [],
     nexts: node ? node.nexts : [] // 预设为insert模式
   })
-  emitter.emit('update:visible', { show: true, object } )
-  setProp(mapper.value, 'previous.lblDict', Object.fromEntries(nodes.value.map(nd => [nd.key, nd.title])))
-  setProp(
-    mapper.value,
-    'previous.mapper.edtKey.options',
-    nodes.value
-      .filter(nd => !nd.nexts.length && (node && nd.key !== node.key))
-      .map(nd => ({ value: nd.key, label: nd.title }))
-  )
+  props.emitter.emit('update:visible', { show: true, object } )
+  if ('previous' in mapper.value) {
+    setProp(mapper.value, 'previous.lblDict', Object.fromEntries(nodes.value.map(nd => [nd.key, nd.title])))
+    setProp(
+      mapper.value,
+      'previous.mapper.edtKey.options',
+      nodes.value
+        .filter(nd => !nd.nexts.length && (node && nd.key !== node.key))
+        .map(nd => ({ value: nd.key, label: nd.title }))
+    )
+  }
 }
 async function onEdtNdSubmit(node: Node, next: Function) {
-  const edtNode = Node.copy(node)
+  const edtNode = props.copy(node)
   if (edtNode.key) {
     nodes.value.splice(nodes.value.findIndex(nd => nd.key === edtNode.key), 1, edtNode)
     emit('edt:node', edtNode)
   } else {
-    nodes.value.push(setProp(edtNode, 'key', props.keygenFun()))
+    nodes.value.push(setProp(edtNode, 'key', await props.keygenFun(edtNode)))
     // 关联父子节点
     if (edtNode.previous.length) {
-      const preNodes = edtNode.previous.map(key => ndDict.value[key])
+      const preNodes = edtNode.previous.map((key: any) => ndDict.value[key])
       if (edtNode.addMode === 'insert') {
         // 多个父节点不能做insert模式添加节点
         const preNode = preNodes[0]
@@ -275,7 +282,7 @@ async function onEdtNdSubmit(node: Node, next: Function) {
         // 在append模式下，TODO: 应可选择与那个兄弟节点共享子节点
         edtNode.nexts = []
       }
-      preNodes.map(nd => nd.nexts.push(edtNode.key))
+      preNodes.map((nd: any) => nd.nexts.push(edtNode.key))
     }
     emit('add:node', edtNode)
   }
@@ -305,12 +312,12 @@ function onDelNdClick(node: Node) {
         })
       }
       nodes.value.splice(nodes.value.findIndex(nd => nd.key === node.key), 1)
-      emit('del:node', Node.copy(node))
+      emit('del:node', props.copy(node))
       emit('update:nodes', nodes.value)
       await refresh()
     }
   })
-  emitter.emit('update:visible', false)
+  props.emitter.emit('update:visible', false)
 }
 async function onDirSwchClick() {
   direction.value = direction.value === 'vertical' ? 'horizontal' : 'vertical'
