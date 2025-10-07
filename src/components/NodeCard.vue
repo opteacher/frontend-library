@@ -28,8 +28,9 @@
           <antdIcon.MoreOutlined />
         </a>
         <template #overlay>
-          <a-menu @click="({ key }: any) => key === 'delete' ? emit('del-click', node) : undefined">
-            <a-menu-item key="delete" class="text-[#ff4d4f]">
+          <a-menu>
+            <slot name="moreMuItms" v-bind="{ node }" />
+            <a-menu-item key="delete" class="text-[#ff4d4f]" @click="() => emit('del-click', node)">
               <template #icon><antdIcon.DeleteOutlined /></template>
               删除
             </a-menu-item>

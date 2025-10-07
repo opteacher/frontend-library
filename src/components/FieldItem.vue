@@ -37,6 +37,10 @@ function filterOption(input: string, option: any) {
     ? option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
     : true
 }
+function onTblRcdDeleted(key: any, val: any) {
+  props.mapper.onDeleted && props.mapper.onDeleted(key, val)
+  onFieldChanged(val)
+}
 </script>
 
 <template>
@@ -256,12 +260,7 @@ function filterOption(input: string, option: any) {
     :edtable="validConds(form, mapper.edtable, true)"
     :delable="validConds(form, mapper.delable, true)"
     @edit="() => mapper.onEdit && mapper.onEdit(form)"
-    @delete="
-              (delKey: any, val: any) => {
-                mapper.onDeleted && mapper.onDeleted(delKey, val)
-                onFieldChanged(val)
-              }
-            "
+    @delete="onTblRcdDeleted"
   >
     <template v-for="name in Object.keys($slots)" #[name]="params">
       <slot :name="name" v-bind="params" />

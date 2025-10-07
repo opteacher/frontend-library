@@ -225,17 +225,8 @@ export class TableMapper extends BaseMapper {
     this.emitter = new Emitter()
     this.newFun = () => ({})
     this.onEdit = () => undefined
-    this.onSaved = <T extends { key: string }>(nItm: T, array: T[]) => {
-      array.push(cloneDeep(nItm))
-      this.emitter.emit('update:visible', false)
-    }
-    this.onDeleted = <T extends { key: string }>(key: string, array: T[]) => {
-      array.splice(
-        array.findIndex(item => item.key === key),
-        1
-      )
-      this.emitter.emit('update:visible', false)
-    }
+    this.onSaved = () => undefined
+    this.onDeleted = () => undefined
     this.addable = true
     this.edtable = true
     this.delable = true
@@ -249,17 +240,8 @@ export class TableMapper extends BaseMapper {
     this.emitter = new Emitter()
     this.newFun = () => ({})
     this.onEdit = () => undefined
-    this.onSaved = <T extends { key: string }>(nItm: T, array: T[]) => {
-      array.push(cloneDeep(nItm))
-      this.emitter.emit('update:visible', false)
-    }
-    this.onDeleted = <T extends { key: string }>(key: string, array: T[]) => {
-      array.splice(
-        array.findIndex(item => item.key === key),
-        1
-      )
-      this.emitter.emit('update:visible', false)
-    }
+    this.onSaved = () => undefined
+    this.onDeleted = () => undefined
     this.addable = true
     this.edtable = true
     this.delable = true

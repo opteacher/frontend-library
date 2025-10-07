@@ -259,8 +259,16 @@ function onDlgClose() {
 function updateState() {
   return props.object ? cloneDeep(props.object) : props.newFun()
 }
-async function onSubFormSubmit(key: string | number, value: any, form: any, next: Function) {
-  await value.onSaved(form, getProp(formState.value, key as string))
+async function onSubFormSubmit(
+  key: string | number,
+  mapper: any,
+  form: any,
+  next: Function
+) {
+  const value = getProp(formState.value, key.toString())
+  value.push(cloneDeep(form))
+  mapper.emitter.emit('update:visible', false)
+  value.onSaved && await value.onSaved(form, value)
   next()
 }
 </script>

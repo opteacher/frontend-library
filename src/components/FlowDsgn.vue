@@ -20,7 +20,11 @@
         @card-click="() => onNodeClick('node', node)"
         @add-click="() => onNodeClick('add', node)"
         @del-click="() => onDelNdClick(node)"
-      />
+      >
+        <template v-for="name in Object.keys($slots)" #[name]="params">
+          <slot :name="name" v-bind="params" />
+        </template>
+      </NodeCard>
     </template>
     <svg class="absolute top-0 left-0 bottom-0 right-0 z-[-1]" width="100%" height="100%">
       <NodeLine
@@ -60,6 +64,7 @@
         <ZoomOutOutlined v-else />
       </template>
     </a-float-button>
+    <slot name="extToolBtns" />
   </a-float-button-group>
 </template>
 
