@@ -47,6 +47,7 @@
       <template #tags>
         <slot name="tags" />
       </template>
+      <slot name="hdContent" />
     </a-page-header>
     <RefreshBox
       v-if="refOpns.length"
@@ -273,8 +274,7 @@ import {
   useSlots,
   watch,
   type PropType,
-  type FunctionalComponent,
-  nextTick
+  type FunctionalComponent
 } from 'vue'
 
 import Batch from '../types/batch'
@@ -382,7 +382,7 @@ const slots = useSlots()
 const addBtnRef = ref<HTMLElement | null>(null)
 const tableRef = ref<HTMLElement | null>(null)
 const fmDlgRef = ref<HTMLElement | null>(null)
-defineExpose({ addBtnRef, fmDlgRef, tableRef })
+defineExpose({ addBtnRef, fmDlgRef, tableRef, records })
 const tourOpns = reactive({
   current: 0,
   open: false
@@ -559,21 +559,22 @@ async function refresh(data?: any[], params?: any) {
   }
   fmtColumns()
   // 计算表体的高度
-  nextTick(async () => {
-    const edtTbl = await waitFor('edit-table', { getBy: 'class' })
-    if (edtTbl) {
-      const theader = await waitFor('ant-table-header', { getBy: 'class' })
-      const tfooter = await waitFor('ant-table-footer', { getBy: 'class' })
-      tbodyHgt.value =
-        edtTbl?.scrollHeight -
-        (theader?.clientHeight || 0) -
-        (tfooter?.clientHeight || 0) -
-        (props.pagable ? 64 : 0)
-      tableHgt.value = (await waitFor('ant-spin-nested-loading', { getBy: 'class' }).then(
-        el => el?.offsetHeight
-      )) as number
+  const edtTbl = await waitFor('edit-table', { getBy: 'class' })
+  if (edtTbl) {
+    const theader = edtTbl.getElementsByClassName('ant-table-header')[0]
+    const tfooter = edtTbl.getElementsByClassName('ant-table-footer')[0]
+    tbodyHgt.value =
+      edtTbl?.clientHeight -
+      (theader?.clientHeight || 0) -
+      (tfooter?.clientHeight || 0)
+    if (props.pagable) {
+      const pag = await waitFor('ant-pagination', { getBy: 'class' })
+      tbodyHgt.value -= pag?.clientHeight || 0
     }
-  })
+    tableHgt.value = (await waitFor('ant-spin-nested-loading', { getBy: 'class' }).then(
+      el => el?.offsetHeight
+    )) as number
+  }
   loading.value = false
 }
 function onEditClicked(record?: any) {
@@ -862,6 +863,11 @@ function onEditFormUpdate(vals: any) {
 }
 .edit-table .ant-table-footer {
   padding: 0 !important;
+}
+
+.edit-table .ant-pagination {
+  margin: 0 !important;
+  padding-top: 16px !important;
 }
 
 .no-rounded table {
