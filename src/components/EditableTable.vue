@@ -472,6 +472,10 @@ async function refresh(data?: any[], params?: any) {
   records.limit = props.pageSize
   records.filters = undefined
   let ignPams = new Set(['data', 'total', 'filters', 'offset', 'limit'])
+  if (props.pagable) {
+    ignPams.delete('offset')
+    ignPams.delete('limit')
+  }
   if (params) {
     if (params.filters) {
       for (const [key, val] of Object.entries(params.filters)) {
@@ -493,8 +497,6 @@ async function refresh(data?: any[], params?: any) {
       if (params.pagination.current) {
         records.offset = (params.pagination.current - 1) * records.limit
       }
-      ignPams.delete('offset')
-      ignPams.delete('limit')
     }
   } else {
     const keywords = {} as Record<string, string>
