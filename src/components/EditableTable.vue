@@ -781,23 +781,25 @@ function fmtColumns(columns?: Column[]) {
       }
       column.resizable = props.rszCols || column.resizable
       return {
-        customHeaderCell: (column: Column) => ({
-          ...((typeof column.custHdCell === 'function'
-            ? column.custHdCell(column)
-            : column.custHdCell) || {}),
-          style: { width }
-        }),
-        customCell: (record: any, rowIndex: number, column: Column) => ({
-          ...((typeof column.custCell === 'function'
-            ? column.custCell(record, rowIndex, column)
-            : column.custCell) || {}),
-          style: {
-            'white-space': 'nowrap',
-            'text-overflow': 'ellipsis',
-            overflow: 'hidden',
-            width
-          }
-        }),
+        customHeaderCell:
+          typeof column.custHdCell === 'function'
+            ? column.custHdCell
+            : () => ({
+                ...(column.custHdCell || {}),
+                style: { width }
+              }),
+        customCell:
+          typeof column.custCell === 'function'
+            ? column.custCell
+            : () => ({
+                ...(column.custCell || {}),
+                style: {
+                  'white-space': 'nowrap',
+                  'text-overflow': 'ellipsis',
+                  overflow: 'hidden',
+                  width
+                }
+              }),
         width,
         ...pickOrIgnore(column, ['width', 'custHdCell', 'custCell', 'dict', 'notDisplay'])
       }

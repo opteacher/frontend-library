@@ -9,7 +9,7 @@ export default class Column {
   group: string[]
   key: string
   width?: number
-  align: 'left' | 'right' | 'center'
+  align: 'left' | 'right' | 'center' | undefined
   sorter: ((a: any, b: any) => number) | undefined
   defaultSortOrder: string
   notDisplay: boolean
@@ -55,7 +55,7 @@ export default class Column {
       if (options.width) {
         this.width = options.width
       }
-      this.align = options.align || 'left'
+      this.align = options.align
       this.sorter = options.sortable ? (a: any, b: any) => a[dataIdx] - b[dataIdx] : undefined
       this.defaultSortOrder = typeof options.defaultSort !== 'undefined' ? options.defaultSort : ''
       this.notDisplay = typeof options.notDisplay !== 'undefined' ? options.notDisplay : false
