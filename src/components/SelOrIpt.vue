@@ -7,6 +7,7 @@
       :value="value"
       :placeholder="placeholder || '请选择'"
       :disabled="disabled"
+      allowClear
       @change="(val: any) => emit('update:value', val)"
     />
     <a-input
@@ -15,6 +16,7 @@
       :placeholder="placeholder || '请输入'"
       :value="value"
       :disabled="disabled"
+      allowClear
       @change="(e: any) => emit('update:value', e.target.value)"
     />
     <a-button @click="onModeUpdate" :disabled="disabled">
@@ -28,7 +30,7 @@
 
 <script setup lang="ts" name="SelOrIpt">
 import { EditOutlined, SelectOutlined } from '@ant-design/icons-vue'
-import { ref } from 'vue'
+import { toRef } from 'vue'
 
 const emit = defineEmits(['update:value', 'update:mode'])
 const props = defineProps({
@@ -38,7 +40,7 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   mode: { type: String, default: 'input' }
 })
-const mode = ref(props.mode)
+const mode = toRef(props.mode)
 
 function onModeUpdate() {
   mode.value = mode.value === 'select' ? 'input' : 'select'

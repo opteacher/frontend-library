@@ -564,9 +564,7 @@ async function refresh(data?: any[], params?: any) {
     const theader = edtTbl.getElementsByClassName('ant-table-header')[0]
     const tfooter = edtTbl.getElementsByClassName('ant-table-footer')[0]
     tbodyHgt.value =
-      edtTbl?.clientHeight -
-      (theader?.clientHeight || 0) -
-      (tfooter?.clientHeight || 0)
+      edtTbl?.clientHeight - (theader?.clientHeight || 0) - (tfooter?.clientHeight || 0)
     if (props.pagable) {
       const pag = await waitFor('ant-pagination', { getBy: 'class' })
       tbodyHgt.value -= pag?.clientHeight || 0
@@ -783,12 +781,16 @@ function fmtColumns(columns?: Column[]) {
       }
       column.resizable = props.rszCols || column.resizable
       return {
-        customHeaderCell: () => ({
-          ...(column.custHdCell || {}),
+        customHeaderCell: (column: Column) => ({
+          ...((typeof column.custHdCell === 'function'
+            ? column.custHdCell(column)
+            : column.custHdCell) || {}),
           style: { width }
         }),
-        customCell: () => ({
-          ...(column.custCell || {}),
+        customCell: (record: any, rowIndex: number, column: Column) => ({
+          ...((typeof column.custCell === 'function'
+            ? column.custCell(record, rowIndex, column)
+            : column.custCell) || {}),
           style: {
             'white-space': 'nowrap',
             'text-overflow': 'ellipsis',
