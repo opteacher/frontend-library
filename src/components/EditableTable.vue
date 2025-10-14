@@ -621,9 +621,9 @@ async function onRecordSave(record: any, reset: Function) {
   }
   let result = null
   if (editKey.value === '' || editKey.value === -1) {
-    props.api.add ? await props.api.add(record) : undefined
+    result = props.api.add ? await props.api.add(record) : undefined
   } else {
-    props.api.update ? await props.api.update({ ...record, key: editKey.value }) : undefined
+    result = props.api.update ? await props.api.update({ ...record, key: editKey.value }) : undefined
   }
   emit('save', record, refresh)
   reset()
