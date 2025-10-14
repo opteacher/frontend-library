@@ -21,8 +21,8 @@
         @add-click="() => onNodeClick('add', node)"
         @del-click="() => onDelNdClick(node)"
       >
-        <template v-for="name in Object.keys($slots)" #[name]="params">
-          <slot :name="name" v-bind="params" />
+        <template #moreMuItms="params">
+          <slot name="nodeCard_moreMuItms" v-bind="params" />
         </template>
       </NodeCard>
     </template>
@@ -42,7 +42,11 @@
     :emitter="emitter"
     :newFun="() => newOne(Node)"
     @submit="onEdtNdSubmit"
-  />
+  >
+    <template v-for="key in edtNdSlots" #[key]="params">
+      <slot :name="`editNode_${key}`" v-bind="params" />
+    </template>
+  </FormDialog>
   <a-float-button-group
     trigger="click"
     type="primary"
@@ -69,9 +73,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, createVNode, onMounted, ref, toRef, type PropType } from 'vue'
+import { computed, createVNode, onMounted, ref, toRef, useSlots, type PropType } from 'vue'
 import Node from '../types/node'
-import { getProp, newOne, setProp, waitFor } from '../utils'
+import { getProp, newOne, setProp, waitFor, rmvStartsOf } from '../utils'
 import NodeCard from './NodeCard.vue'
 import NodeLine from './NodeLine.vue'
 import FormDialog from './FormDialog.vue'
@@ -192,6 +196,13 @@ const emptyAddBtn = computed(() => {
   }
 })
 const toolboxVsb = ref(false)
+const slots = useSlots()
+const edtNdSlots = computed(() => 
+  Object
+    .keys(slots)
+    .filter(k => k.startsWith('editNode_'))
+    .map(k => rmvStartsOf(k, 'editNode_'))
+)
 
 onMounted(() => refresh(true))
 props.emitter.on('refresh', () => refresh())

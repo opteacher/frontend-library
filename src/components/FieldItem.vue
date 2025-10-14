@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CloseCircleOutlined } from '@ant-design/icons-vue'
+import * as antdIcons from '@ant-design/icons-vue'
 import type { MapperType } from '../types/mapper'
 import { computed, type PropType } from 'vue'
 import { getProp, validConds } from '../utils'
@@ -195,7 +195,7 @@ function onTblRcdDeleted(key: any, val: any) {
   <a-tooltip v-else-if="mapper.type === 'Button'">
     <template #title>{{ mapper.placeholder || '请点击' }}</template>
     <a-button
-      class="w-full"
+      :class="{ 'w-full': mapper.fullWid }"
       :disabled="disabled"
       :danger="mapper.danger"
       :type="mapper.primary ? 'primary' : mapper.dashed ? 'dashed' : 'default'"
@@ -204,6 +204,11 @@ function onTblRcdDeleted(key: any, val: any) {
       :html-type="mapper.htmlType"
       @click="() => mapper.onClick(form)"
     >
+      <template v-if="mapper.icon" #icon>
+        <keep-alive>
+          <component :is="getProp(antdIcons, mapper.icon)" />
+        </keep-alive>
+      </template>
       {{ mapper.inner }}
     </a-button>
   </a-tooltip>
@@ -219,7 +224,7 @@ function onTblRcdDeleted(key: any, val: any) {
       <a-tooltip>
         <template #title>{{ btnMapper.placeholder || '请点击' }}</template>
         <a-button
-          class="flex-1"
+          :class="{ 'flex-1': btnMapper.fullWid }"
           :disabled="disabled"
           :danger="btnMapper.danger"
           :type="btnMapper.primary ? 'primary' : btnMapper.dashed ? 'dashed' : 'default'"
@@ -228,6 +233,11 @@ function onTblRcdDeleted(key: any, val: any) {
           :html-type="btnMapper.htmlType"
           @click="() => btnMapper.onClick(form)"
         >
+          <template v-if="btnMapper.icon" #icon>
+            <keep-alive>
+              <component :is="getProp(antdIcons, btnMapper.icon)" />
+            </keep-alive>
+          </template>
           {{ btnMapper.inner }}
         </a-button>
       </a-tooltip>
@@ -281,7 +291,7 @@ function onTblRcdDeleted(key: any, val: any) {
   />
   <a-space v-else-if="mapper.type === 'Delable'">
     {{ getProp(form, skey) || '-' }}
-    <CloseCircleOutlined @click="mapper.onDeleted(form.key)" />
+    <antdIcons.CloseCircleOutlined @click="mapper.onDeleted(form.key)" />
   </a-space>
   <SelOrIpt
     v-else-if="mapper.type === 'SelOrIpt'"

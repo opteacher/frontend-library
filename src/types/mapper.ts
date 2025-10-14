@@ -157,32 +157,38 @@ export class CheckboxMapper extends BaseMapper {
 
 export class ButtonMapper extends BaseMapper {
   inner: string
+  icon: string
   danger: boolean
   primary: boolean
   ghost: boolean
   dashed: boolean
   htmlType: 'button' | 'submit' | 'reset'
+  fullWid: boolean
   onClick: () => void
 
   constructor() {
     super()
     this.inner = ''
+    this.icon = ''
     this.danger = false
     this.primary = true
     this.ghost = true
     this.dashed = false
     this.htmlType = 'button'
+    this.fullWid = true
     this.onClick = () => undefined
   }
 
   reset() {
     super.reset()
     this.inner = ''
+    this.icon = ''
     this.danger = false
     this.primary = true
     this.ghost = true
     this.dashed = false
     this.htmlType = 'button'
+    this.fullWid = true
     this.onClick = () => undefined
   }
 }

@@ -6,11 +6,13 @@
   >
     <template v-if="curURL">
       <div class="flex-1 relative text-center">
-        <a-spin
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-          tip="页面元素收集中..."
-          :spinning="loading"
-        />
+        <div v-if="loading" class="absolute top-0 left-0 bottom-0 right-0 z-50 bg-[#ffffffe0]">
+          <a-spin
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            tip="页面元素收集中..."
+            :spinning="loading"
+          />
+        </div>
         <div class="h-full flex flex-col">
           <webview
             class="overflow-auto flex-1"
@@ -25,9 +27,20 @@
           />
           <a-space class="px-10 h-8" align="center">
             <AimOutlined />
-            <p class="m-0 font-bold">选中元素：</p>
+            <p class="m-0 font-bold">选中元素</p>
+            <a-select
+              class="w-20"
+              :options="[
+                { label: 'XPath', value: 'xpath' },
+                { label: '类', value: 'clazz' },
+                { label: '标签', value: 'tagName' }
+              ]"
+              size="small"
+              :value="eleTree.elIdType"
+              @change="onEleIdenChange"
+            />：
             <template v-if="selKeys.length">
-              <p class="mb-0 truncate">{{ selKeys[0] }}</p>
+              <p class="mb-0 truncate">{{ getProp(eleDict[selKeys[0]], eleTree.elIdType) }}</p>
               <a-tooltip>
                 <template #title>清空选择</template>
                 <a-button type="text" danger @click="onPageEleClear">
@@ -240,6 +253,13 @@
       <div v-if="eleTree.visible" class="h-full flex flex-col" :style="{ width: eleTree.width + 'px' }">
         <slot name="sideTop" />
         <div class="flex-1 relative">
+          <div v-if="loading" class="absolute top-0 left-0 bottom-0 right-0 z-50 bg-[#ffffffe0]">
+            <a-spin
+              class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              tip="页面元素收集中..."
+              :spinning="loading"
+            />
+          </div>
           <a-tree
             class="overflow-auto absolute top-0 bottom-0 left-0 right-0"
             :auto-expand-parent="true"
@@ -273,7 +293,7 @@ import { computed, reactive, ref, type PropType } from 'vue'
 import type { WebviewTag } from 'electron'
 import type { TreeProps } from 'ant-design-vue'
 import PageEle from '../types/pageEle'
-import { rmvStartsOf, swchBoolProp } from '../utils'
+import { rmvStartsOf, swchBoolProp, getProp } from '../utils'
 import {
   ToolOutlined,
   SelectOutlined,
@@ -304,7 +324,8 @@ const mskOffset = reactive({ top: 0, left: 0 })
 const eleTree = reactive({
   data: undefined as TreeProps['treeData'],
   width: props.sbarWid,
-  visible: true
+  visible: true,
+  elIdType: 'xpath'
 })
 const hoverEl = reactive(new PageEle())
 const selRect = computed(() => 
@@ -332,6 +353,7 @@ defineExpose({ webviewRef })
 props.emitter.on('reload', (force?: boolean) => 
   force ? webviewRef.value?.reload() : onPageLoaded()
 )
+props.emitter.on('sel-ele', () => (toolbox.selecting = true))
 
 async function onPageLoaded() {
   await new Promise(resolve => setTimeout(resolve, 2000))
@@ -509,6 +531,9 @@ function onPageEleClear() {
 }
 function onWvZoomChange(newVal: number) {
   webviewRef.value?.setZoomFactor((newVal << 1) / 100)
+}
+function onEleIdenChange(elIdType: 'xpath' | 'clazz' | 'tagName') {
+  eleTree.elIdType = elIdType
 }
 </script>
 
