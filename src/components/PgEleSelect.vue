@@ -32,7 +32,7 @@
               class="w-20"
               :options="[
                 { label: 'XPath', value: 'xpath' },
-                { label: '类', value: 'clazz' },
+                { label: 'ID或类', value: 'idCls' },
                 { label: '标签', value: 'tagName' }
               ]"
               size="small"
@@ -270,10 +270,7 @@
           >
             <template #title="{ dataRef }">
               {{ dataRef.element ? dataRef.element.tagName : dataRef.title }}&nbsp;
-              <template v-if="dataRef.element">
-                <span v-if="dataRef.element.id">#{{ dataRef.element.id }}</span>
-                <span v-else-if="dataRef.element.clazz">.{{ dataRef.element.clazz }}</span>
-              </template>
+              <span v-if="dataRef.element">{{ dataRef.element.idCls }}</span>
             </template>
           </a-tree>
         </div>
@@ -362,9 +359,15 @@ async function onPageLoaded() {
     await webviewRef.value?.executeJavaScript(`
       JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
         const tagName = el.tagName.toLowerCase()
+        let idCls = ''
+        if (el.id) {
+          idCls = '#' + el.id
+        } else if (el.className) {
+          idCls = '.' + el.className
+        }
         const ret = {
           tagName,
-          clazz: el.className,
+          idCls: el.id ? '#' + el.id : undefined,
           rectBox: el.getBoundingClientRect()
         }
         if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
@@ -532,7 +535,7 @@ function onPageEleClear() {
 function onWvZoomChange(newVal: number) {
   webviewRef.value?.setZoomFactor((newVal << 1) / 100)
 }
-function onEleIdenChange(elIdType: 'xpath' | 'clazz' | 'tagName') {
+function onEleIdenChange(elIdType: 'xpath' | 'idCls' | 'tagName') {
   eleTree.elIdType = elIdType
 }
 </script>
