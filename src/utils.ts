@@ -380,7 +380,7 @@ export async function until(
     if (await cdFun()) {
       return Promise.resolve()
     }
-    await new Promise(res => setTimeout(res, options.interval))
+    await new Promise(res => setTimeout(res, options?.interval))
   }
   return Promise.reject()
 }
@@ -447,6 +447,10 @@ export function fixEndsWith(text: string, suffix: string) {
 
 export function rmvStartsOf(text: string, prefix: string) {
   return text.substring(0, prefix.length) === prefix ? text.substring(prefix.length) : text
+}
+
+export function rmvEndsOf(text: string, suffix: string) {
+  return text.endsWith(suffix) ? text.slice(0, -suffix.length) : text
 }
 
 export function endsWith(text: string, suffix: string) {
