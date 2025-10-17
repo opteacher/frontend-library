@@ -1,7 +1,10 @@
 <template>
   <div class="h-full flex flex-col">
     <a-page-header :class="thdClass" v-if="showHeader">
-      <template v-if="icon" #avatar>
+      <template v-if="$slots.icon" #avatar>
+        <slot name="icon" />
+      </template>
+      <template v-else-if="icon" #avatar>
         <keep-alive>
           <component :is="icon" v-bind="{ class: 'text-xl mr-3' }" />
         </keep-alive>
@@ -623,7 +626,9 @@ async function onRecordSave(record: any, reset: Function) {
   if (editKey.value === '' || editKey.value === -1) {
     result = props.api.add ? await props.api.add(record) : undefined
   } else {
-    result = props.api.update ? await props.api.update({ ...record, key: editKey.value }) : undefined
+    result = props.api.update
+      ? await props.api.update({ ...record, key: editKey.value })
+      : undefined
   }
   emit('save', record, refresh)
   reset()
@@ -700,20 +705,10 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
       return
     }
   } else if (opera === 'export') {
-    const records = await props.api
-      .all({
-        axiosConfig: { params: { selCols: (info as BatExp).filterCols } }
-      })
-      .then(records =>
-        records.map(record =>
-          Object.fromEntries(
-            Object.entries(record).filter(([prop]) => (info as BatExp).filterCols.includes(prop))
-          )
-        )
-      )
+    const tables = (tableRef.value as any).$el.getElementsByTagName('table')
     const workbook = utils.book_new()
-    const worksheet = utils.json_to_sheet(records)
-    utils.sheet_add_aoa(worksheet, [props.columns.map(col => col.title)], { origin: 'A1' })
+    const worksheet = utils.table_to_sheet(tables[1])
+    utils.sheet_add_dom(worksheet, tables[0])
     utils.book_append_sheet(workbook, worksheet, 'Sheet1')
     const fileName = ((props.imExport as any)['expName'] || props.title || 'test') + '.xlsx'
     const data = write(workbook, { type: 'array', bookType: 'xlsx' })
