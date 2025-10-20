@@ -78,7 +78,7 @@ function onFpropUpdate(obj: any) {
             :skey="value.prefix ? [key, k].join('.') : k"
             :mapper="v as MapperType"
             :editable="editable"
-            :viewOnly="viewOnly"
+            :viewOnly="viewOnly || value.vwOnly"
             :lblWid="lblWid"
             :fldWid="fldWid"
             @update:fprop="onFpropUpdate"

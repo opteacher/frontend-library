@@ -31,6 +31,10 @@ export default class PageEle {
     this.idType = 'xpath'
   }
 
+  get iden(): string {
+    return this[this.idType]
+  }
+
   static copy(src: any, tgt?: PageEle, force = false) {
     return gnlCpy(PageEle, src, tgt, { force })
   }

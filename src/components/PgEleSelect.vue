@@ -36,6 +36,7 @@
                 { label: '标签', value: 'tagName' }
               ]"
               size="small"
+              :disabled="!selKeys.length"
               :value="eleTree.elIdType"
               @change="onEleIdenChange"
             />：
@@ -72,7 +73,7 @@
           <a-float-button
             tooltip="选择页面元素"
             :type="toolbox.selecting ? 'primary' : 'default'"
-            @click="onSelEleClick"
+            @click="onSelEleStart"
           >
             <template #icon><SelectOutlined /></template>
           </a-float-button>
@@ -264,9 +265,9 @@
             class="overflow-auto absolute top-0 bottom-0 left-0 right-0"
             :auto-expand-parent="true"
             :tree-data="eleTree.data"
-            v-model:expendedKeys="expKeys"
+            v-model:expandedKeys="expKeys"
             :selectedKeys="selKeys"
-            @select="(selKeys: string[]) => emit('update:selKeys', selKeys)"
+            @select="(selKeys: string[]) => onPageEleClick(selKeys[0])"
           >
             <template #title="{ dataRef }">
               {{ dataRef.element ? dataRef.element.tagName : dataRef.title }}&nbsp;
@@ -286,7 +287,7 @@
 </template>
 
 <script setup lang="ts" name="pgEleSelect">
-import { computed, reactive, ref, type PropType } from 'vue'
+import { computed, reactive, ref, toRef, type PropType } from 'vue'
 import type { WebviewTag } from 'electron'
 import type { TreeProps } from 'ant-design-vue'
 import PageEle from '../types/pageEle'
@@ -313,9 +314,9 @@ const props = defineProps({
   emitter: { type: Object as PropType<TinyEmitter>, default: () => new TinyEmitter() },
   sbarWid: { type: Number, default: 200 },
   loading: { type: Boolean, default: false },
-  selKeys: { type: Array as PropType<string[]>, required: true }
+  selKeys: { type: Array as PropType<string[]>, default: [] }
 })
-const emit = defineEmits(['update:selKeys', 'pageLoaded', 'update:loading'])
+const emit = defineEmits(['update:sel-ele', 'pageLoaded', 'update:loading', 'update:elIdType'])
 const webviewRef = ref<WebviewTag | null>(null)
 const mskOffset = reactive({ top: 0, left: 0 })
 const eleTree = reactive({
@@ -324,10 +325,11 @@ const eleTree = reactive({
   visible: true,
   elIdType: 'xpath'
 })
+const selKeys = toRef(props.selKeys)
 const hoverEl = reactive(new PageEle())
 const selRect = computed(() => 
-  props.selKeys.length
-    ? eleDict.value[props.selKeys[0]].rectBox
+  selKeys.value.length
+    ? eleDict.value[selKeys.value[0]].rectBox
     : PageEle.newRect()
 )
 const expKeys = ref<string[]>([])
@@ -345,12 +347,13 @@ const toolbox = reactive({
   sclVsb: false
 })
 const flxDivEmitter = new TinyEmitter()
-defineExpose({ webviewRef })
+defineExpose({ webviewRef, eleDict })
 
 props.emitter.on('reload', (force?: boolean) => 
   force ? webviewRef.value?.reload() : onPageLoaded()
 )
 props.emitter.on('sel-ele', () => (toolbox.selecting = true))
+props.emitter.on('clr-ele', onPageEleClear)
 
 async function onPageLoaded() {
   await new Promise(resolve => setTimeout(resolve, 2000))
@@ -367,7 +370,7 @@ async function onPageLoaded() {
         }
         const ret = {
           tagName,
-          idCls: el.id ? '#' + el.id : undefined,
+          idCls,
           rectBox: el.getBoundingClientRect()
         }
         if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
@@ -428,7 +431,7 @@ async function onPageLoaded() {
   }
   eleDict.value = Object.fromEntries(elements.map((el: any) => [el.xpath, el]))
   eleTree.data = treeData
-  emit('update:selKeys', [])
+  emit('update:sel-ele')
   emit('update:loading', false)
 }
 function onWvDomReady() {
@@ -518,25 +521,48 @@ function poiOnEle(x: number, y: number): PageEle | null {
   }
   return minRect.el
 }
-function onSelEleClick() {
+function onSelEleStart() {
   swchBoolProp(toolbox, 'selecting')
   if (!toolbox.selecting) {
-    emit('update:selKeys', [])
+    selKeys.value = []
+    emit('update:sel-ele')
   }
 }
 function onPageEleClick(elXpath = hoverEl.xpath) {
   toolbox.selecting = false
-  emit('update:selKeys', [elXpath])
+  selKeys.value = [elXpath]
+  emit('update:sel-ele', eleDict.value[elXpath])
+  expTreeEle()
 }
 function onPageEleClear() {
   hoverEl.reset()
-  emit('update:selKeys', [])
+  selKeys.value = []
+  emit('update:sel-ele')
 }
 function onWvZoomChange(newVal: number) {
   webviewRef.value?.setZoomFactor((newVal << 1) / 100)
 }
 function onEleIdenChange(elIdType: 'xpath' | 'idCls' | 'tagName') {
   eleTree.elIdType = elIdType
+  eleDict.value[selKeys.value[0]].idType = elIdType
+  emit('update:elIdType', elIdType)
+  // if (elIdType !== 'xpath') {
+  //   emit('update:selKeys', [
+  //     getProp(eleDict.value, `${props.selKeys[0]}.${elIdType}`)
+  //   ])
+  // }
+}
+function expTreeEle(nodes = eleTree.data) {
+  expKeys.value = []
+  for (const node of nodes || []) {
+    if (node.key === selKeys.value[0]) {
+      return true
+    } else if (expTreeEle(node.children)) {
+      expKeys.value.push(node.key as string)
+      return true
+    }
+  }
+  return false
 }
 </script>
 

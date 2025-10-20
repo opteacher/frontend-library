@@ -71,7 +71,7 @@
           <template v-else-if="mapper.type === 'Select' || mapper.type === 'Cascader'">
             {{ fmtDrpdwnValue(mapper.options, getProp(form, skey)) }}
           </template>
-          <template v-else-if="mapper.type === 'Checkbox'">
+          <template v-else-if="mapper.type === 'Checkbox' || mapper.type === 'Switch'">
             {{
               getProp(form, skey)
                 ? mapper.chkLabels
@@ -95,6 +95,9 @@
               :pagination="false"
               size="small"
             />
+          </template>
+          <template v-else-if="mapper.type === 'Button'">
+            {{ getProp(mapper, 'inner') }}
           </template>
           <template v-else>{{ getProp(form, skey) }}</template>
         </template>

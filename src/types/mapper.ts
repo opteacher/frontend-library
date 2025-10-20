@@ -370,6 +370,7 @@ export class GroupMapper extends BaseMapper {
    */
   canFold: boolean
   fold: boolean
+  vwOnly: boolean
   items: Mapper
 
   constructor() {
@@ -377,6 +378,7 @@ export class GroupMapper extends BaseMapper {
     this.prefix = false
     this.canFold = true
     this.fold = false
+    this.vwOnly = false
     this.items = new Mapper()
   }
 
@@ -385,6 +387,7 @@ export class GroupMapper extends BaseMapper {
     this.prefix = false
     this.canFold = true
     this.fold = false
+    this.vwOnly = false
     this.items = new Mapper()
   }
 }

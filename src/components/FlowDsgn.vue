@@ -156,7 +156,7 @@ const props = defineProps({
   emitter: { type: TinyEmitter, default: new TinyEmitter() },
   copy: { type: Function, default: Node.copy }
 })
-const emit = defineEmits(['update:nodes', 'add:node', 'edt:node', 'del:node'])
+const emit = defineEmits(['update:nodes', 'add:node', 'edt:node', 'del:node', 'click:node'])
 const direction = toRef(props.direction)
 const nodes = toRef(props.nodes)
 const mapper = toRef(props.mapper)
@@ -165,6 +165,7 @@ setProp(mapper.value, 'delBtn', {
   inner: '删除',
   danger: true,
   offset: 4,
+  fullWid: true,
   display: [Cond.create('key', '!=', '')],
   onClick: onDelNdClick
 })
@@ -264,6 +265,7 @@ function onNodeClick(oper: 'node' | 'add', node?: Node) {
     nexts: node ? node.nexts : [] // 预设为insert模式
   })
   props.emitter.emit('update:visible', { show: true, object } )
+  emit('click:node', object)
   if ('previous' in mapper.value) {
     setProp(mapper.value, 'previous.lblDict', Object.fromEntries(nodes.value.map(nd => [nd.key, nd.title])))
     setProp(
