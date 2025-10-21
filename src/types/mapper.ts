@@ -216,6 +216,7 @@ export class TableMapper extends BaseMapper {
   columns: Column[]
   emitter: Emitter
   newFun: () => any
+  genIdFun: (editing: any) => Promise<any>
   onEdit: (record: any) => void
   onSaved: (record: any, extra?: any) => void
   onDeleted: (key: any, extra?: any) => void
@@ -230,6 +231,7 @@ export class TableMapper extends BaseMapper {
     this.columns = []
     this.emitter = new Emitter()
     this.newFun = () => ({})
+    this.genIdFun = () => Promise.resolve()
     this.onEdit = () => undefined
     this.onSaved = () => undefined
     this.onDeleted = () => undefined
@@ -245,6 +247,7 @@ export class TableMapper extends BaseMapper {
     this.columns = []
     this.emitter = new Emitter()
     this.newFun = () => ({})
+    this.genIdFun = () => Promise.resolve()
     this.onEdit = () => undefined
     this.onSaved = () => undefined
     this.onDeleted = () => undefined

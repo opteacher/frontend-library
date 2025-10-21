@@ -1,44 +1,67 @@
 <template>
-  <a-space v-if="addable">
-    <a-button type="primary" @click="onAddClick" :disabled="mapper.disabled">
-      新增
-    </a-button>
-    <a-typography-text type="secondary">
-      <InfoCircleOutlined />
-      {{ mapper.placeholder || '点击添加' }}
-    </a-typography-text>
-  </a-space>
-  <slot name="FormDialog" />
   <a-table
-    class="mt-1.5"
-    v-if="valState && valState.length"
+    class="edit-table"
     :columns="fmtCols()"
-    :data-source="valState"
+    :data-source="edtRow && edtRow.key === ADD_ROW ? valState.concat([edtRow]) : valState"
     :pagination="false"
     size="small"
-    :custom-row="
-      (record: any) => ({
-        onClick: () => onRowClick(record)
-      })
-    "
   >
-    <template v-if="delable" #bodyCell="{ column, record }">
+    <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'opera'">
-        <a-popconfirm title="确定删除该字段" @confirm.stop="() => onDelClick(record)">
-          <a-button danger size="small" :disabled="mapper.disabled" @click.stop="() => {}">
-            删除
+        <template v-if="edtRow">
+          <a-button type="link" size="small" @click="onAddSubmit">
+            确定
           </a-button>
-        </a-popconfirm>
+          <a-button type="text" size="small" @click="() => (edtRow = null)">
+            取消
+          </a-button>
+        </template>
+        <template v-else>
+          <a-button
+            v-if="edtable"
+            size="small"
+            type="text"
+            :disabled="mapper.disabled"
+            @click="() => onRowClick(record)"
+          >
+            编辑
+          </a-button>
+          <a-popconfirm v-if="delable" title="确定删除该字段" @confirm="() => onDelSubmit(record)">
+            <a-button danger type="text" size="small" :disabled="mapper.disabled">
+              删除
+            </a-button>
+          </a-popconfirm>
+        </template>
       </template>
+      <DirectField
+        v-else-if="edtRow && record.key === edtRow.key"
+        :mapper="setProp(getProp(mapper.mapper, column.dataIndex), 'key', column.dataIndex)"
+        :form="record"
+        :emitter="mapper.emitter"
+        @update:form="onEditFormUpdate"
+      />
+    </template>
+    <template v-if="addable && !edtRow" #footer>
+      <a-button
+        class="w-full rounded-t-none"
+        type="text"
+        :disabled="mapper.disabled"
+        @click="() => onRowClick()"
+      >
+        <template #icon><PlusOutlined /></template>
+      </a-button>
     </template>
   </a-table>
 </template>
 
 <script setup lang="ts" name="FormTable">
-import { InfoCircleOutlined } from '@ant-design/icons-vue'
-
+import { PlusOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
-import { toRef } from 'vue'
+import { ref, toRef } from 'vue'
+import DirectField from './DirectField.vue'
+import { getProp, setProp } from '../utils'
+import { newObjByMapper } from '../types/mapper'
+import { cloneDeep } from 'lodash'
 
 const props = defineProps({
   value: { type: Array, required: true },
@@ -48,26 +71,49 @@ const props = defineProps({
   delable: { type: Boolean, default: true }
 })
 const emit = defineEmits(['update:value', 'edit', 'delete'])
-const valState = toRef(props.value)
+const valState = toRef<any[]>(props.value)
+const edtRow = ref<any>(null)
+const ADD_ROW = '^addRow$'
 
-function onAddClick() {
-  props.mapper.emitter.emit('update:visible', { show: true, viewOnly: false })
+function onRowClick(row?: any) {
+  edtRow.value = row || setProp(newObjByMapper(props.mapper.mapper), 'key', ADD_ROW)
   emit('edit')
 }
-function onRowClick(record: any) {
-  props.mapper.emitter.emit('update:visible', {
-    show: true,
-    object: record,
-    viewOnly: !props.edtable
-  })
-  emit('edit')
+async function onAddSubmit() {
+  if (edtRow.value.key === ADD_ROW) {
+    const newRow = cloneDeep(edtRow.value)
+    if (props.mapper.genIdFun) {
+      newRow.key = await props.mapper.genIdFun(newRow)
+    }
+    valState.value.push(newRow)
+  } else {
+    valState.value.splice(
+      valState.value.findIndex(item => item.key === edtRow.value.key),
+      1,
+      cloneDeep(edtRow.value)
+    )
+  }
+  emit('update:value', valState.value)
+  edtRow.value = null
 }
-function onDelClick(record: any) {
-  valState.value.splice(valState.value.findIndex((rcd: any) => rcd.key === record.key), 1)
-  props.mapper.emitter.emit('update:visible', false)
+function onDelSubmit(record: any) {
+  valState.value.splice(valState.value.findIndex((row: any) => row.key === record.key), 1)
   emit('delete', record.key, valState.value)
 }
 function fmtCols() {
-  return props.mapper.columns.concat(props.delable ? [new Column('操作', 'opera', { width: 80 })] : [])
+  return props.mapper.columns.concat(
+    props.delable || props.edtable ? [new Column('操作', 'opera', { width: 80 })] : []
+  )
+}
+function onEditFormUpdate(vals: any) {
+  if (edtRow.value) {
+    Object.entries(vals).map(([key, val]) => setProp(edtRow.value, key, val))
+  }
 }
 </script>
+
+<style>
+.edit-table .ant-table-footer {
+  padding: 0 !important;
+}
+</style>
