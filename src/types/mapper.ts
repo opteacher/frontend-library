@@ -21,7 +21,7 @@ export class BaseMapper {
   rules: RuleItem[]
   placeholder: string
   disabled: CondType
-  loading: boolean
+  loading: boolean | (() => boolean)
   display: CondType
   empty: boolean
   expable: boolean

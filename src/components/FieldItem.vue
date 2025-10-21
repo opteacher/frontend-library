@@ -200,7 +200,7 @@ function onTblRcdDeleted(key: any, val: any) {
       :danger="mapper.danger"
       :type="mapper.primary ? 'primary' : mapper.dashed ? 'dashed' : 'default'"
       :ghost="mapper.ghost"
-      :loading="mapper.loading"
+      :loading="typeof mapper.loading === 'function' ? mapper.loading() : mapper.loading"
       :html-type="mapper.htmlType"
       @click="() => mapper.onClick(form)"
     >
@@ -229,7 +229,9 @@ function onTblRcdDeleted(key: any, val: any) {
           :danger="btnMapper.danger"
           :type="btnMapper.primary ? 'primary' : btnMapper.dashed ? 'dashed' : 'default'"
           :ghost="btnMapper.ghost"
-          :loading="btnMapper.loading"
+          :loading="
+            typeof btnMapper.loading === 'function' ? btnMapper.loading() : btnMapper.loading
+          "
           :html-type="btnMapper.htmlType"
           @click="() => btnMapper.onClick(form)"
         >
