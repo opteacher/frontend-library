@@ -152,14 +152,14 @@
               @click="() => onPageEleClick()"
             >
               <rect
-                v-if="hoverEl.rectBox.width"
+                v-if="hovEle.rectBox.width"
                 class="cursor-pointer"
-                :x="hoverEl.rectBox.x - mskOffset.left"
-                :y="hoverEl.rectBox.y - mskOffset.top"
+                :x="hovEle.rectBox.x - mskOffset.left"
+                :y="hovEle.rectBox.y - mskOffset.top"
                 :rx="4"
                 :ry="4"
-                :width="hoverEl.rectBox.width"
-                :height="hoverEl.rectBox.height"
+                :width="hovEle.rectBox.width"
+                :height="hovEle.rectBox.height"
                 :style="{
                   'fill-opacity': 0,
                   'stroke-width': 3,
@@ -167,14 +167,14 @@
                 }"
               />
               <rect
-                v-else-if="selRect.width"
+                v-else-if="selEle"
                 class="cursor-pointer"
-                :x="selRect.x - mskOffset.left"
-                :y="selRect.y - mskOffset.top"
+                :x="selEle.rectBox.x - mskOffset.left"
+                :y="selEle.rectBox.y - mskOffset.top"
                 :rx="4"
                 :ry="4"
-                :width="selRect.width"
-                :height="selRect.height"
+                :width="selEle.rectBox.width"
+                :height="selEle.rectBox.height"
                 :style="{
                   'fill-opacity': 0,
                   'stroke-width': 3,
@@ -201,14 +201,14 @@
               />
             </svg>
             <a-button
-              v-if="selRect.width"
+              v-if="selEle"
               class="absolute"
               danger
               type="text"
               size="small"
               :style="{
-                top: selRect.y - mskOffset.top + 'px',
-                left: selRect.x - mskOffset.left + selRect.width + 5 + 'px'
+                top: selEle.rectBox.y - mskOffset.top + 'px',
+                left: selEle.rectBox.x - mskOffset.left + selEle.rectBox.width + 5 + 'px'
               }"
               @click="onPageEleClear"
             >
@@ -261,19 +261,21 @@
               :spinning="loading"
             />
           </div>
-          <a-tree
-            class="overflow-auto absolute top-0 bottom-0 left-0 right-0"
-            :auto-expand-parent="true"
-            :tree-data="eleTree.data"
-            v-model:expandedKeys="expKeys"
-            :selectedKeys="selKeys"
-            @select="(selKeys: string[]) => onPageEleClick(selKeys[0])"
-          >
-            <template #title="{ dataRef }">
-              {{ dataRef.element ? dataRef.element.tagName : dataRef.title }}&nbsp;
-              <span v-if="dataRef.element">{{ dataRef.element.idCls }}</span>
-            </template>
-          </a-tree>
+          <div class="overflow-auto absolute top-0 bottom-0 left-0 right-0">
+            <a-tree
+              :blockNode="false"
+              :auto-expand-parent="true"
+              :tree-data="eleTree.data"
+              v-model:expandedKeys="expKeys"
+              :selectedKeys="selKeys"
+              @select="(keys: string[]) => onPageEleClick(keys[0])"
+            >
+              <template #title="{ dataRef }">
+                {{ dataRef.element ? dataRef.element.tagName : dataRef.title }}&nbsp;
+                <span v-if="dataRef.element">{{ dataRef.element.idCls }}</span>
+              </template>
+            </a-tree>
+          </div>
         </div>
         <slot name="sideBottom" />
       </div>
@@ -317,7 +319,7 @@ const props = defineProps({
   selKeys: { type: Array as PropType<string[]>, default: [] }
 })
 const emit = defineEmits(['update:sel-ele', 'pageLoaded', 'update:loading', 'update:elIdType'])
-const webviewRef = ref<WebviewTag | null>(null)
+const webviewRef = ref<WebviewTag>()
 const mskOffset = reactive({ top: 0, left: 0 })
 const eleTree = reactive({
   data: undefined as TreeProps['treeData'],
@@ -326,11 +328,9 @@ const eleTree = reactive({
   elIdType: 'xpath'
 })
 const selKeys = toRef(props.selKeys)
-const hoverEl = reactive(new PageEle())
-const selRect = computed(() => 
-  selKeys.value.length
-    ? eleDict.value[selKeys.value[0]].rectBox
-    : PageEle.newRect()
+const hovEle = ref(new PageEle())
+const selEle = computed<PageEle | undefined>(() =>
+  selKeys.value.length ? eleDict.value[selKeys.value[0]] : undefined
 )
 const expKeys = ref<string[]>([])
 const eleDict = ref<Record<string, PageEle>>({})
@@ -347,12 +347,13 @@ const toolbox = reactive({
   sclVsb: false
 })
 const flxDivEmitter = new TinyEmitter()
-defineExpose({ webviewRef, eleDict })
+defineExpose({ webviewRef, eleDict, selEle })
 
 props.emitter.on('reload', (force?: boolean) => 
   force ? webviewRef.value?.reload() : onPageLoaded()
 )
 props.emitter.on('sel-ele', () => (toolbox.selecting = true))
+props.emitter.on('iden-ele', (key: string) => (selKeys.value = [key]))
 props.emitter.on('clr-ele', onPageEleClear)
 
 async function onPageLoaded() {
@@ -489,7 +490,7 @@ function onMskMouseMove(e: MouseEvent) {
   }
   const el = poiOnEle(e.offsetX + mskOffset.left, e.offsetY + mskOffset.top)
   if (el) {
-    PageEle.copy(el, hoverEl, true)
+    hovEle.value = el
   }
 }
 function onMskMouseUp(e: MouseEvent) {
@@ -497,7 +498,7 @@ function onMskMouseUp(e: MouseEvent) {
     e.preventDefault()
     const el = poiOnEle(e.offsetX, e.offsetY)
     if (el) {
-      PageEle.copy(el, hoverEl, true)
+      hovEle.value = el
     }
   }
 }
@@ -528,14 +529,14 @@ function onSelEleStart() {
     emit('update:sel-ele')
   }
 }
-function onPageEleClick(elXpath = hoverEl.xpath) {
+function onPageEleClick(elXpath = hovEle.value.xpath) {
   toolbox.selecting = false
   selKeys.value = [elXpath]
   emit('update:sel-ele', eleDict.value[elXpath])
   expTreeEle()
 }
 function onPageEleClear() {
-  hoverEl.reset()
+  hovEle.value.reset()
   selKeys.value = []
   emit('update:sel-ele')
 }
@@ -546,11 +547,6 @@ function onEleIdenChange(elIdType: 'xpath' | 'idCls' | 'tagName') {
   eleTree.elIdType = elIdType
   eleDict.value[selKeys.value[0]].idType = elIdType
   emit('update:elIdType', elIdType)
-  // if (elIdType !== 'xpath') {
-  //   emit('update:selKeys', [
-  //     getProp(eleDict.value, `${props.selKeys[0]}.${elIdType}`)
-  //   ])
-  // }
 }
 function expTreeEle(nodes = eleTree.data) {
   expKeys.value = []

@@ -682,7 +682,7 @@ export function getProp(obj: any, prop: string, dftVal: any = undefined) {
       return dftVal
     } else if (p.endsWith(']')) {
       if (p.endsWith('}]')) {
-        const result = /^(\w+)\[\{(\w+):("?\w+"?)\}\]$/.exec(p)
+        const result = /^(\w+)\[\{(\w+):("?(\w|-)+"?)\}\]$/.exec(p)
         if (!result || result.length < 4) {
           return dftVal
         }
