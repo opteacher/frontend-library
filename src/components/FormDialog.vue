@@ -227,7 +227,6 @@ async function onOkClick() {
     )
     emit('submit', formState.value, () => {
       okLoading.value = false
-      formRef.value.refer.resetFields()
       resetState()
       onDlgClose()
     })
@@ -236,7 +235,6 @@ async function onOkClick() {
   }
 }
 function onCclClick() {
-  formRef.value.refer.resetFields()
   resetState()
   onDlgClose()
 }
@@ -244,7 +242,7 @@ function resetState() {
   if (formState.value.reset) {
     formState.value.reset()
   } else {
-    formState.value = props.newFun()
+    formRef.value.refer.resetFields()
   }
 }
 function onDlgClose() {

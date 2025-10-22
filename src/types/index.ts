@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { fixEndsWith, fixStartsWith, getProp } from '../utils'
 
 export const compares = {
-  '=': '等于',
+  '==': '等于',
   '!=': '不等于',
   in: '包含',
   starts: '开头是',
@@ -23,7 +23,7 @@ export class Cond {
   constructor(params?: { key: string; cmp: CmpType; val: any }) {
     if (!params) {
       this.key = ''
-      this.cmp = '='
+      this.cmp = '=='
       this.val = undefined
     } else {
       this.key = params.key
@@ -44,7 +44,7 @@ export class Cond {
         } else {
           return getProp(object, this.key) !== this.val
         }
-      case '=':
+      case '==':
       default:
         if (this.val === 'undefined' || typeof this.val === 'undefined') {
           return typeof getProp(object, this.key) === 'undefined'

@@ -24,7 +24,7 @@
             v-if="expable"
             :upload-url="(imExport as any).uploadUrl"
             :columns="colsState.filter(col => col.dataIndex !== 'opera')"
-            :copyFun="genCpyFun(BatExp, () => ({ column: '', compare: '=' }))"
+            :copyFun="genCpyFun(BatExp, () => ({ column: '', compare: '==' }))"
             @submit="(info: any) => onBatchSubmit(info, 'export')"
           />
           <BatImpBox

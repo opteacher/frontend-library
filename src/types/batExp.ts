@@ -1,7 +1,7 @@
 import { gnlCpy } from '../utils'
 import Batch from './batch'
 
-export type CmpTyp = '=' | '!=' | '>' | '<' | '>=' | '<='
+export type CmpTyp = '==' | '!=' | '>' | '<' | '>=' | '<='
 
 export default class BatExp extends Batch {
   filterCols: string[]

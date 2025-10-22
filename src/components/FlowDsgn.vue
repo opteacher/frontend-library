@@ -122,7 +122,7 @@ const props = defineProps({
         type: 'Radio',
         label: '添加方式',
         display: [
-          Cond.create('key', '=', ''),
+          Cond.create('key', '==', ''),
           Cond.create('previous.length', '!=', 0),
           Cond.create('nexts.length', '!=', 0)
         ],
@@ -136,7 +136,7 @@ const props = defineProps({
         type: 'EditList',
         label: '父节点',
         display: [
-          Cond.create('key', '=', ''),
+          Cond.create('key', '==', ''),
           Cond.create('previous.length', '!=', 0)
         ],
         lblDict: {},
@@ -309,30 +309,32 @@ async function onEdtNdSubmit(node: Node, next: Function) {
   await refresh()
 }
 function onDelNdClick(node: Node) {
+  const delNode = props.copy(node) as Node
   Modal.confirm({
-    title: `确定删除该节点【${node.title}】吗？`,
+    title: `确定删除该节点【${delNode.title}】吗？`,
     icon: createVNode(ExclamationCircleOutlined),
     content: createVNode('div', { style: 'color: #ff4d4f' }, '该节点的所有子节点将归于其第一个父节点！'),
-    async onOk() {
-      if (node.previous.length) {
-        const preNxts = ndDict.value[node.previous[0]].nexts
-        preNxts.splice(preNxts.indexOf(node.key), 1)
-        node.nexts.map(key => {
+    onOk() {
+      if (delNode.previous.length) {
+        const preNxts = ndDict.value[delNode.previous[0]].nexts
+        preNxts.splice(preNxts.indexOf(delNode.key), 1)
+        delNode.nexts.map(key => {
           const nxtPres = ndDict.value[key].previous
           if (nxtPres.length > 1 && nxtPres.some(key => preNxts.includes(key))) {
             // 被删除的节点有个兄弟节点同样拥有该子节点，则该子节点与被删除节点的父节点（祖父节点）不做关联
             // 因为兄弟节点会代替被删除的节点关联其父子关系
-            nxtPres.splice(nxtPres.indexOf(node.key), 1)
+            nxtPres.splice(nxtPres.indexOf(delNode.key), 1)
           } else {
-            nxtPres.splice(nxtPres.indexOf(node.key), 1, node.previous[0])
+            nxtPres.splice(nxtPres.indexOf(delNode.key), 1, delNode.previous[0])
             preNxts.push(key)
           }
         })
       }
-      nodes.value.splice(nodes.value.findIndex(nd => nd.key === node.key), 1)
-      emit('del:node', props.copy(node))
-      emit('update:nodes', nodes.value)
-      await refresh()
+      nodes.value.splice(nodes.value.findIndex(nd => nd.key === delNode.key), 1)
+      emit('del:node', delNode, async () => {
+        emit('update:nodes', nodes.value)
+        await refresh()
+      })
     }
   })
   props.emitter.emit('update:visible', false)
