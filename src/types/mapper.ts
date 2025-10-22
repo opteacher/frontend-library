@@ -311,7 +311,8 @@ export class EdtLstMapper extends BaseMapper {
   // 不可删除的项索引
   disRmvIdxs: number[]
   newFun: () => any
-  onAdded: () => Promise<void>
+  onAddClick: (mapper: EdtLstMapper) => Promise<void>
+  onAddSubmit: (newAdd: any) => Promise<void>
   onSaved: (nItem: any, array?: any[]) => Promise<void>
 
   constructor() {
@@ -325,7 +326,8 @@ export class EdtLstMapper extends BaseMapper {
     this.emitter = new Emitter()
     this.disRmvIdxs = []
     this.newFun = () => ({})
-    this.onAdded = () => Promise.resolve()
+    this.onAddClick = () => Promise.resolve()
+    this.onAddSubmit = () => Promise.resolve()
     this.onSaved = () => Promise.resolve()
   }
 
@@ -340,7 +342,8 @@ export class EdtLstMapper extends BaseMapper {
     this.emitter = new Emitter()
     this.disRmvIdxs = []
     this.newFun = () => ({})
-    this.onAdded = () => Promise.resolve()
+    this.onAddClick = () => Promise.resolve()
+    this.onAddSubmit = () => Promise.resolve()
     this.onSaved = () => Promise.resolve()
   }
 }

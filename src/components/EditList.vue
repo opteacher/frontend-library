@@ -44,7 +44,7 @@ import { onMounted, reactive, ref, watch, type PropType } from 'vue'
 
 import LabelItem from './LabelItem.vue'
 
-const emit = defineEmits(['update:value', 'added'])
+const emit = defineEmits(['update:value', 'click:add', 'submit:add'])
 const props = defineProps({
   label: { type: String, default: '项' },
   value: { type: Array, default: () => [] },
@@ -76,6 +76,7 @@ function onEdtLstAdd() {
       newItm = newItm[0]
     }
   }
+  emit('submit:add', newItm)
   list.push(newItm)
   addMod.value = false
   emit('update:value', list)
@@ -85,7 +86,7 @@ function onEdtLstCcl() {
   addMod.value = false
 }
 async function onEdtLstShow() {
-  emit('added', props.mapper)
+  emit('click:add', props.mapper)
   resetState()
   addMod.value = true
 }

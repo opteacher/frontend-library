@@ -325,7 +325,8 @@ function onTblRcdDeleted(key: any, val: any) {
     :mapper="mapper.mapper"
     :disRmvIdxs="mapper.disRmvIdxs"
     :value="getProp(form, skey, fieldDftVal(mapper.type))"
-    @added="mapper.onAdded"
+    @click:add="mapper.onAddClick"
+    @submit:add="mapper.onAddSubmit"
     @update:value="onFieldChanged"
   >
     <template v-for="name in Object.keys($slots)" #[name]="params">
