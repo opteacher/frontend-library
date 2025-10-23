@@ -144,6 +144,7 @@
         </a-card>
         <a-dropdown :trigger="['contextmenu']">
           <div
+            id="pageMask"
             class="absolute top-0 left-0 bottom-14 right-5"
             :style="{ display: toolbox.maskVsb ? 'block' : 'none' }"
             @wheel="onMaskScroll"
@@ -200,7 +201,7 @@
                   'stroke-width': 3,
                   stroke: toolbox.stkColor
                 }"
-                @click="() => onPageEleClick(xpath)"
+                @click="() => !toolbox.selecting ? onPageEleClick(xpath) : undefined"
               />
             </svg>
             <a-button
@@ -211,7 +212,11 @@
               size="small"
               :style="{
                 top: selEle.rectBox.y - mskOffset.top + 'px',
-                left: selEle.rectBox.x - mskOffset.left + selEle.rectBox.width + 5 + 'px'
+                left:
+                  selEle.rectBox.x + selEle.rectBox.width -
+                  mskOffset.left +
+                  5 +
+                  'px'
               }"
               @click="onPageEleClear"
             >
@@ -225,9 +230,9 @@
               :style="{
                 top: eleDict[xpath].rectBox.y - mskOffset.top + 'px',
                 left:
-                  eleDict[xpath].rectBox.x -
+                  eleDict[xpath].rectBox.x +
+                  eleDict[xpath].rectBox.width -
                   mskOffset.left +
-                  eleDict[xpath].rectBox.width +
                   5 +
                   'px'
               }"
@@ -305,11 +310,11 @@
 </template>
 
 <script setup lang="ts" name="pgEleSelect">
-import { computed, reactive, ref, toRef, type PropType } from 'vue'
+import { computed, onMounted, reactive, ref, toRef, type PropType } from 'vue'
 import type { WebviewTag } from 'electron'
 import type { TreeProps } from 'ant-design-vue'
 import PageEle from '../types/pageEle'
-import { rmvStartsOf, swchBoolProp, getProp } from '../utils'
+import { rmvStartsOf, swchBoolProp, getProp, waitFor } from '../utils'
 import {
   ToolOutlined,
   SelectOutlined,
@@ -343,7 +348,7 @@ const eleTree = reactive({
   elIdType: 'xpath'
 })
 const selKeys = toRef(props.selKeys)
-const hovEle = ref(new PageEle())
+const hovEle = reactive(new PageEle())
 const selEle = computed<PageEle | undefined>(() =>
   selKeys.value.length ? eleDict.value[selKeys.value[0]] : undefined
 )
@@ -367,7 +372,11 @@ const flxDivs = reactive<Record<'sideTree' | 'sideBottom' | 'sideTop', FlxDiv>>(
   sideTop: FlxDiv.copy({ orientation: 'horizontal', widHgt: 500 }),
   sideBottom: FlxDiv.copy({ orientation: 'horizontal', widHgt: 500 })
 })
+const rszObs = new ResizeObserver(() => onPageLoaded(false))
 
+onMounted(async () => {
+  rszObs.observe((await waitFor('pageMask')) as HTMLElement)
+})
 props.emitter.on('reload', (force?: boolean) =>
   force ? webviewRef.value?.reload() : onPageLoaded()
 )
@@ -375,8 +384,10 @@ props.emitter.on('start-select', () => (toolbox.selecting = true))
 props.emitter.on('iden-ele', (key: string) => (selKeys.value = [key]))
 props.emitter.on('stop-select', onPageEleClear)
 
-async function onPageLoaded() {
-  await new Promise(resolve => setTimeout(resolve, 2000))
+async function onPageLoaded(waitLoading = true) {
+  if (waitLoading) {
+    await new Promise(resolve => setTimeout(resolve, 2000))
+  }
   toolbox.scale = (webviewRef.value?.getZoomFactor() || 1) * 50
   const elements: PageEle[] = JSON.parse(
     await webviewRef.value?.executeJavaScript(`
@@ -386,13 +397,10 @@ async function onPageLoaded() {
         if (el.id) {
           idCls = '#' + el.id
         } else if (el.className) {
-          idCls = '.' + el.className
+          idCls = '.' + el.className.split(' ').filter(v => v).join('.')
         }
-        const ret = {
-          tagName,
-          idCls,
-          rectBox: el.getBoundingClientRect()
-        }
+        const rectBox = el.getBoundingClientRect()
+        const ret = { tagName, idCls, rectBox }
         if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
           return
         }
@@ -507,7 +515,7 @@ function onMskMouseMove(e: MouseEvent) {
   }
   const el = poiOnEle(e.offsetX + mskOffset.left, e.offsetY + mskOffset.top)
   if (el) {
-    hovEle.value = el
+    PageEle.copy(el, hovEle, true)
   }
 }
 function onMskMouseUp(e: MouseEvent) {
@@ -515,7 +523,7 @@ function onMskMouseUp(e: MouseEvent) {
     e.preventDefault()
     const el = poiOnEle(e.offsetX, e.offsetY)
     if (el) {
-      hovEle.value = el
+      PageEle.copy(el, hovEle, true)
     }
   }
 }
@@ -545,20 +553,24 @@ function onSelEleStart() {
     onPageEleSelected()
   }
 }
-function onPageEleClick(elXpath = hovEle.value.xpath) {
-  toolbox.selecting = false
-  selKeys.value = [elXpath]
-  onPageEleSelected(eleDict.value[elXpath])
-  expTreeEle()
+function onPageEleClick(elXpath = hovEle.xpath) {
+  if (elXpath) {
+    toolbox.selecting = false
+    selKeys.value = [elXpath]
+    onPageEleSelected(eleDict.value[elXpath])
+    expTreeEle()
+  }
 }
 function onPageEleClear() {
-  hovEle.value.reset()
+  hovEle.reset()
   selKeys.value = []
   onPageEleSelected()
 }
 function onPageEleSelected(ele?: PageEle) {
   emit('update:sel-ele', ele)
-  props.emitter.emit('ele-selected', ele)
+  if (ele) {
+    props.emitter.emit('ele-selected', ele)
+  }
 }
 function onWvZoomChange(newVal: number) {
   webviewRef.value?.setZoomFactor((newVal << 1) / 100)

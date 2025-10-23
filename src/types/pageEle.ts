@@ -1,5 +1,7 @@
 import { gnlCpy } from "../utils"
 
+export type IdType = 'xpath' | 'idCls' | 'tagName'
+
 export default class PageEle {
   xpath: string
   idCls: string
@@ -10,7 +12,7 @@ export default class PageEle {
     width: number
     height: number
   }
-  idType: 'xpath' | 'idCls' | 'tagName'
+  idType: IdType
 
   constructor() {
     this.xpath = ''

@@ -4,7 +4,8 @@ import PageEle from './pageEle'
 export const otypes = {
   input: '输入',
   select: '选择',
-  click: '点击'
+  click: '点击',
+  scroll: '滚动'
 }
 
 export default class PgOper {

@@ -2,13 +2,15 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { cloneDeep } from 'lodash'
-import { TinyEmitter as Emitter } from 'tiny-emitter'
+import { TinyEmitter as Emitter, TinyEmitter } from 'tiny-emitter'
 
 import { type CompoType, Cond, type OpnType } from '.'
 import Column from './column'
 import Field, { fieldDftVal } from './field'
 import { Dayjs } from 'dayjs'
 import { type RuleItem } from 'async-validator'
+import type { IdType } from './pageEle'
+import type PageEle from './pageEle'
 
 export type CondType = boolean | ((...args: any) => boolean) | Cond[] | { [cmpRel: string]: Cond[] }
 
@@ -25,6 +27,7 @@ export class BaseMapper {
   display: CondType
   empty: boolean
   expable: boolean
+  vwOnly: boolean
   onChange: (record: any, to: any, from?: any, extra?: any) => void
 
   constructor() {
@@ -40,6 +43,7 @@ export class BaseMapper {
     this.display = true
     this.empty = false
     this.expable = false
+    this.vwOnly = false
     this.onChange = () => undefined
   }
 
@@ -56,6 +60,7 @@ export class BaseMapper {
     this.display = true
     this.empty = false
     this.expable = false
+    this.vwOnly = false
     this.onChange = () => undefined
   }
 }
@@ -376,7 +381,6 @@ export class GroupMapper extends BaseMapper {
    */
   canFold: boolean
   fold: boolean
-  vwOnly: boolean
   items: Mapper
 
   constructor() {
@@ -384,7 +388,6 @@ export class GroupMapper extends BaseMapper {
     this.prefix = false
     this.canFold = true
     this.fold = false
-    this.vwOnly = false
     this.items = new Mapper()
   }
 
@@ -393,7 +396,6 @@ export class GroupMapper extends BaseMapper {
     this.prefix = false
     this.canFold = true
     this.fold = false
-    this.vwOnly = false
     this.items = new Mapper()
   }
 }
@@ -533,6 +535,31 @@ export class ColSelMapper extends BaseMapper {
   }
 }
 
+export class EleSelMapper extends BaseMapper {
+  emitter: TinyEmitter
+  selEle?: PageEle
+  onSelEleClear: (prop: string) => void
+  onSelEleStart: (prop: string) => void
+  onEleIdenChange: (prop: string, key: IdType) => void
+
+  constructor() {
+    super()
+    this.emitter = new TinyEmitter()
+    this.onSelEleClear = () => undefined
+    this.onSelEleStart = () => undefined
+    this.onEleIdenChange = () => undefined
+  }
+
+  reset() {
+    super.reset()
+    this.emitter = new TinyEmitter()
+    this.selEle = undefined
+    this.onSelEleClear = () => undefined
+    this.onSelEleStart = () => undefined
+    this.onEleIdenChange = () => undefined
+  }
+}
+
 export const mapTypeTemps = {
   Unknown: () => new BaseMapper(),
   Input: () => new InputMapper(),
@@ -561,7 +588,8 @@ export const mapTypeTemps = {
   EditList: () => new EdtLstMapper(),
   IconField: () => new BaseMapper(),
   FormGroup: () => new GroupMapper(),
-  ColorSelect: () => new ColSelMapper()
+  ColorSelect: () => new ColSelMapper(),
+  PageEleSel: () => new EleSelMapper()
 } as { [mapType: string]: () => any }
 
 export type MapperType = BaseMapper & Record<string, any>

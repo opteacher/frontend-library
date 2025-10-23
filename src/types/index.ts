@@ -87,6 +87,7 @@ export const cmpNickDict = {
   EditList: '可编辑列表',
   Carousel: '滚动展示框',
   ColorSelect: '颜色选择框',
+  PageEleSel: '页面元素选择框',
   Row: '横向容器',
   Col: '纵向容器',
   Card: '卡片',

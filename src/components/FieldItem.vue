@@ -16,6 +16,7 @@ import IpAddrInput from './IpAddrInput.vue'
 import IconField from './IconField.vue'
 import CompactInput from './CompactInput.vue'
 import ColorSelect from './ColorSelect.vue'
+import EleSelField from './EleSelField.vue'
 
 const props = defineProps({
   form: { type: Object, required: true },
@@ -379,6 +380,17 @@ function onTblRcdDeleted(key: any, val: any) {
     :color="getProp(form, skey, fieldDftVal(mapper.type))"
     :preset="mapper.preset"
     @update:color="onFieldChanged"
+  />
+  <EleSelField
+    v-else-if="mapper.type === 'PageEleSel'"
+    :form="form"
+    :prop="skey"
+    :sel-ele="mapper.selEle"
+    :emitter="mapper.emitter"
+    @selEleClear="mapper.onSelEleClear"
+    @selEleStart="mapper.onSelEleStart"
+    @eleIdenChange="mapper.onEleIdenChange"
+    @eleSelected="(prop: string, form: any) => onFieldChanged(getProp(form, prop))"
   />
   <template v-else>
     {{ getProp(form, skey) }}

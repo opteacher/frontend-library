@@ -28,7 +28,7 @@
           'w-full': !chkInSlot('PFX') && !chkInSlot('SFX')
         }"
       >
-        <template v-if="viewOnly">
+        <template v-if="viewOnly || mapper.vwOnly">
           <slot v-if="chkInSlot('VW')" :name="skey + 'VW'" v-bind="{ formState: form }" />
           <template
             v-else-if="
@@ -98,6 +98,9 @@
           </template>
           <template v-else-if="mapper.type === 'Button'">
             {{ getProp(mapper, 'inner') }}
+          </template>
+          <template v-else-if="mapper.type === 'PageEleSel'">
+            {{ getProp(form, `${skey}.${getProp(form, `${skey}.idType`)}`) }}
           </template>
           <template v-else>{{ getProp(form, skey) }}</template>
         </template>
