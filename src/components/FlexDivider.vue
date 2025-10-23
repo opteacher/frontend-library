@@ -25,8 +25,8 @@ const props = defineProps({
   hbtnTxt: { type: String, default: '' }
 })
 const clsDict = {
-  horizontal: 'w-full py-0.5 hover:cursor-ns-resize',
-  vertical: 'h-full px-0.5 hover:cursor-ew-resize'
+  horizontal: 'w-full py-0.5 hover:cursor-ns-resize h-0',
+  vertical: 'h-full px-0.5 hover:cursor-ew-resize w-0'
 }
 const begPos = ref(-1)
 const orgWidHgt = reactive([props.widHgt, props.widHgt])
@@ -65,6 +65,7 @@ function onLytRszStart(e: MouseEvent) {
 <template>
   <div class="relative" :style="{ backgroundColor: bgColor }">
     <a-button
+      v-if="hideBtn"
       class="absolute z-[80] h-fit px-2"
       :class="{
         'border-s-0 rounded-s-none': ctrlSide === 'leftTop' && orientation === 'vertical',

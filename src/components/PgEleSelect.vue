@@ -1,8 +1,10 @@
 <template>
   <div
     class="h-full w-full flex overflow-hidden"
-    @mousemove="(e: MouseEvent) => flxDivEmitter.emit('mousemove', e)"
-    @mouseup="() => flxDivEmitter.emit('mouseup')"
+    @mousemove="
+      (e: MouseEvent) => Object.values(flxDivs).map(({ emitter }) => emitter.emit('mousemove', e))
+    "
+    @mouseup="() => Object.values(flxDivs).map(({ emitter }) => emitter.emit('mouseup'))"
   >
     <template v-if="curURL">
       <div class="flex-1 relative text-center">
@@ -39,7 +41,8 @@
               :disabled="!selKeys.length"
               :value="eleTree.elIdType"
               @change="onEleIdenChange"
-            />：
+            />
+            ：
             <template v-if="selKeys.length">
               <p class="mb-0 truncate">{{ getProp(eleDict[selKeys[0]], eleTree.elIdType) }}</p>
               <a-tooltip>
@@ -77,13 +80,13 @@
           >
             <template #icon><SelectOutlined /></template>
           </a-float-button>
-          <a-float-button tooltip="选择框颜色" >
+          <a-float-button tooltip="选择框颜色">
             <template #icon>
               <BorderOutlined :style="{ color: toolbox.selColor }" />
             </template>
           </a-float-button>
           <a-float-button
-            tooltip="关闭页面遮罩" 
+            tooltip="关闭页面遮罩"
             :type="toolbox.maskVsb ? 'primary' : 'default'"
             @click="() => swchBoolProp(toolbox, 'maskVsb')"
           >
@@ -111,7 +114,7 @@
               class="flex-1"
               v-model:value="toolbox.scale"
               :marks="{ 0: '缩小', 50: '100%', 100: '放大' }"
-              :tip-formatter="(val?: number) => val ? (val << 1) : 100"
+              :tip-formatter="(val?: number) => (val ? val << 1 : 100)"
               @change="onWvZoomChange"
             >
               <template #mark="{ point, label }: any">
@@ -244,16 +247,20 @@
       </div>
       <FlexDivider
         orientation="vertical"
-        v-model:wid-hgt="eleTree.width"
-        :is-hide="!eleTree.visible"
-        :emitter="flxDivEmitter"
+        v-model:wid-hgt="flxDivs.sideTree.widHgt"
+        :is-hide="!flxDivs.sideTree.visible"
+        :emitter="flxDivs.sideTree.emitter"
         :hbtnPos="{ bottom: '10px' }"
         hbtnTxt="元素树"
         @hbtn-click="() => swchBoolProp(eleTree, 'visible')"
       />
-      <div v-if="eleTree.visible" class="h-full flex flex-col" :style="{ width: eleTree.width + 'px' }">
+      <div
+        v-if="flxDivs.sideTree.visible"
+        class="h-full flex flex-col"
+        :style="{ width: flxDivs.sideTree.widHgt + 'px' }"
+      >
         <slot name="sideTop" />
-        <div class="flex-1 relative">
+        <div class="relative" :style="{ height: flxDivs.sideBottom.widHgt + 'px' }">
           <div v-if="loading" class="absolute top-0 left-0 bottom-0 right-0 z-50 bg-[#ffffffe0]">
             <a-spin
               class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
@@ -277,7 +284,16 @@
             </a-tree>
           </div>
         </div>
-        <slot name="sideBottom" />
+        <template v-if="$slots['sideBottom']">
+          <FlexDivider
+            orientation="horizontal"
+            v-model:wid-hgt="flxDivs.sideBottom.widHgt"
+            :emitter="flxDivs.sideBottom.emitter"
+            :hide-btn="false"
+            ctrl-side="leftTop"
+          />
+          <slot name="sideBottom" />
+        </template>
       </div>
     </template>
     <div v-else class="flex-1 relative">
@@ -309,6 +325,7 @@ import {
 } from '@ant-design/icons-vue'
 import { TinyEmitter } from 'tiny-emitter'
 import FlexDivider from './FlexDivider.vue'
+import FlxDiv from '../types/flxDiv'
 
 const props = defineProps({
   curURL: { type: String, required: true },
@@ -323,8 +340,6 @@ const webviewRef = ref<WebviewTag>()
 const mskOffset = reactive({ top: 0, left: 0 })
 const eleTree = reactive({
   data: undefined as TreeProps['treeData'],
-  width: props.sbarWid,
-  visible: true,
   elIdType: 'xpath'
 })
 const selKeys = toRef(props.selKeys)
@@ -346,15 +361,19 @@ const toolbox = reactive({
   scale: 50,
   sclVsb: false
 })
-const flxDivEmitter = new TinyEmitter()
-defineExpose({ webviewRef, eleDict, selEle })
+defineExpose({ webviewRef, eleDict, selEle, selecting: toolbox.selecting })
+const flxDivs = reactive<Record<'sideTree' | 'sideBottom' | 'sideTop', FlxDiv>>({
+  sideTree: FlxDiv.copy({ widHgt: props.sbarWid }),
+  sideTop: FlxDiv.copy({ orientation: 'horizontal', widHgt: 500 }),
+  sideBottom: FlxDiv.copy({ orientation: 'horizontal', widHgt: 500 })
+})
 
-props.emitter.on('reload', (force?: boolean) => 
+props.emitter.on('reload', (force?: boolean) =>
   force ? webviewRef.value?.reload() : onPageLoaded()
 )
-props.emitter.on('sel-ele', () => (toolbox.selecting = true))
+props.emitter.on('start-select', () => (toolbox.selecting = true))
 props.emitter.on('iden-ele', (key: string) => (selKeys.value = [key]))
-props.emitter.on('clr-ele', onPageEleClear)
+props.emitter.on('stop-select', onPageEleClear)
 
 async function onPageLoaded() {
   await new Promise(resolve => setTimeout(resolve, 2000))
@@ -432,7 +451,7 @@ async function onPageLoaded() {
   }
   eleDict.value = Object.fromEntries(elements.map((el: any) => [el.xpath, el]))
   eleTree.data = treeData
-  emit('update:sel-ele')
+  onPageEleSelected()
   emit('update:loading', false)
 }
 function onWvDomReady() {
@@ -450,7 +469,7 @@ function onCtnrScroll(e: { top: number; left: number }) {
   mskOffset.left = e.left
 }
 function onWvCslMsg(e: { message: string }) {
-  switch(true) {
+  switch (true) {
     case e.message.startsWith('[scroll]:'):
       onCtnrScroll(JSON.parse(rmvStartsOf(e.message, '[scroll]:').trim()))
   }
@@ -471,9 +490,7 @@ function onTboxMouseUp() {
   toolbox.mosPos = { x: -1, y: -1 }
   toolbox.expand = false
 }
-function onRgtMnuClick() {
-
-}
+function onRgtMnuClick() {}
 async function onMaskScroll(e: WheelEvent) {
   await webviewRef.value?.executeJavaScript(`
     window.scroll({
@@ -515,8 +532,7 @@ function poiOnEle(x: number, y: number): PageEle | null {
     el: null as PageEle | null
   }
   for (const el of els) {
-    if (el.rectBox.width < minRect.width
-    && el.rectBox.height < minRect.height) {
+    if (el.rectBox.width < minRect.width && el.rectBox.height < minRect.height) {
       minRect.el = el
     }
   }
@@ -526,19 +542,23 @@ function onSelEleStart() {
   swchBoolProp(toolbox, 'selecting')
   if (!toolbox.selecting) {
     selKeys.value = []
-    emit('update:sel-ele')
+    onPageEleSelected()
   }
 }
 function onPageEleClick(elXpath = hovEle.value.xpath) {
   toolbox.selecting = false
   selKeys.value = [elXpath]
-  emit('update:sel-ele', eleDict.value[elXpath])
+  onPageEleSelected(eleDict.value[elXpath])
   expTreeEle()
 }
 function onPageEleClear() {
   hovEle.value.reset()
   selKeys.value = []
-  emit('update:sel-ele')
+  onPageEleSelected()
+}
+function onPageEleSelected(ele?: PageEle) {
+  emit('update:sel-ele', ele)
+  props.emitter.emit('ele-selected', ele)
 }
 function onWvZoomChange(newVal: number) {
   webviewRef.value?.setZoomFactor((newVal << 1) / 100)
