@@ -538,6 +538,7 @@ export class ColSelMapper extends BaseMapper {
 export class EleSelMapper extends BaseMapper {
   emitter: TinyEmitter
   selEle?: PageEle
+  seledStop: boolean
   onSelEleClear: (prop: string) => void
   onSelEleStart: (prop: string) => void
   onEleIdenChange: (prop: string, key: IdType) => void
@@ -545,6 +546,7 @@ export class EleSelMapper extends BaseMapper {
   constructor() {
     super()
     this.emitter = new TinyEmitter()
+    this.seledStop = true
     this.onSelEleClear = () => undefined
     this.onSelEleStart = () => undefined
     this.onEleIdenChange = () => undefined
@@ -554,6 +556,7 @@ export class EleSelMapper extends BaseMapper {
     super.reset()
     this.emitter = new TinyEmitter()
     this.selEle = undefined
+    this.seledStop = true
     this.onSelEleClear = () => undefined
     this.onSelEleStart = () => undefined
     this.onEleIdenChange = () => undefined
@@ -605,9 +608,9 @@ export default class Mapper {
           value.type = 'Unknown'
         }
         this[key] = Object.assign(mapTypeTemps[value.type](), cloneDeep(value))
-        // 不复制Emitter对象
+        // 不复制Emitter对象和Mapper对象
         for (const [k, v] of Object.entries(value)) {
-          if (v instanceof Emitter) {
+          if (v instanceof Emitter || v instanceof Mapper) {
             this[key][k] = v
           }
         }

@@ -1,4 +1,5 @@
 <script lang="ts" setup name="LabelItem">
+import { getProp } from '../utils'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -14,15 +15,11 @@ const desc = computed(() => props.subPrp ? pickText(props.subPrp) : '')
 function pickText(prop: string): string {
   let val: string
   if (typeof props.value === 'object') {
-    if (prop && prop in props.value) {
-      val = props.value[prop]
-    } else {
-      return ''
-    }
+    val = getProp(props.value, prop, '')
   } else {
     val = props.value as string
   }
-  return val in props.dict ? props.dict[val] : val
+  return val in props.dict ? getProp(props.dict, val) : val
 }
 </script>
 
@@ -30,8 +27,8 @@ function pickText(prop: string): string {
   <a-tooltip>
     <template v-if="tip" #title>{{ tip }}</template>
     <a-space>
-      <a-typography-text strong>{{ title }}</a-typography-text>
-      <a-typography-text type="secondary">{{ desc }}</a-typography-text>
+      <a-typography-text strong class="truncate">{{ title }}</a-typography-text>
+      <a-typography-text type="secondary" class="truncate">{{ desc }}</a-typography-text>
     </a-space>
   </a-tooltip>
 </template>

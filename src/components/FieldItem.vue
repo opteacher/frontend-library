@@ -387,6 +387,7 @@ function onTblRcdDeleted(key: any, val: any) {
     :prop="skey"
     :sel-ele="mapper.selEle"
     :emitter="mapper.emitter"
+    :seled-stop="mapper.seledStop"
     @selEleClear="mapper.onSelEleClear"
     @selEleStart="mapper.onSelEleStart"
     @eleIdenChange="mapper.onEleIdenChange"

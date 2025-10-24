@@ -186,6 +186,7 @@
                 }"
               />
               <rect
+                v-if="!toolbox.selecting"
                 v-for="xpath in hlEles.filter(xpath => xpath in eleDict)"
                 :key="xpath"
                 class="cursor-pointer"
@@ -201,7 +202,7 @@
                   'stroke-width': 3,
                   stroke: toolbox.stkColor
                 }"
-                @click="() => !toolbox.selecting ? onPageEleClick(xpath) : undefined"
+                @click="() => onPageEleClick(xpath)"
               />
             </svg>
             <a-button
@@ -223,6 +224,7 @@
               <template #icon><CloseOutlined /></template>
             </a-button>
             <a-tag
+              v-if="!toolbox.selecting"
               v-for="(xpath, index) in hlEles.filter(xpath => xpath in eleDict)"
               :key="xpath"
               class="absolute cursor-pointer"
@@ -331,6 +333,7 @@ import {
 import { TinyEmitter } from 'tiny-emitter'
 import FlexDivider from './FlexDivider.vue'
 import FlxDiv from '../types/flxDiv'
+import type PgOper from '../types/pgOper'
 
 const props = defineProps({
   curURL: { type: String, required: true },
@@ -383,6 +386,7 @@ props.emitter.on('reload', (force?: boolean) =>
 props.emitter.on('start-select', () => (toolbox.selecting = true))
 props.emitter.on('iden-ele', (key: string) => (selKeys.value = [key]))
 props.emitter.on('stop-select', onPageEleClear)
+props.emitter.on('exec-opers', onExecOpersEmit)
 
 async function onPageLoaded(waitLoading = true) {
   if (waitLoading) {
@@ -591,6 +595,9 @@ function expTreeEle(nodes = eleTree.data) {
     }
   }
   return false
+}
+function onExecOpersEmit(opers: PgOper[]) {
+  console.log(opers)
 }
 </script>
 

@@ -22,13 +22,13 @@ export default class PgOper {
   }
 
   reset() {
-    this.element = new PageEle()
+    this.element.reset()
     this.otype = 'input'
     this.value = ''
     this.encrypt = false
   }
   
   static copy(src: any, tgt?: PgOper, force = false) {
-    return gnlCpy(PgOper, src, tgt, { force })
+    return gnlCpy(PgOper, src, tgt, { force, cpyMapper: { element: PageEle.copy } })
   }
 }

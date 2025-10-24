@@ -40,7 +40,8 @@ const props = defineProps({
   form: { type: Object, required: true },
   prop: { type: String, required: true },
   emitter: { type: TinyEmitter, required: true },
-  selEle: { type: Object as PropType<PageEle>, default: null }
+  selEle: { type: Object as PropType<PageEle>, default: null },
+  seledStop: { type: Boolean, default: true }
 })
 const emit = defineEmits(['selEleClear', 'selEleStart', 'eleIdenChange', 'eleSelected'])
 const form = toRef(props.form)
@@ -51,7 +52,9 @@ props.emitter.on('ele-selected', (ele?: PageEle) => {
   if (selecting.value && ele) {
     setProp(form.value, props.prop, PageEle.copy(ele))
     emit('eleSelected', props.prop, form.value)
-    props.emitter.emit('stop-select')
+    if (props.seledStop) {
+      props.emitter.emit('stop-select')
+    }
     selecting.value = false
   }
 })
@@ -59,6 +62,9 @@ props.emitter.on('ele-selected', (ele?: PageEle) => {
 function onSelEleStart() {
   if (props.selEle) {
     setProp(form.value, props.prop, PageEle.copy(props.selEle))
+  } else if (selecting.value) {
+    selecting.value = false
+    props.emitter.emit('stop-select')
   } else {
     selecting.value = true
     props.emitter.emit('start-select')
