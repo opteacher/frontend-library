@@ -6,7 +6,7 @@
     "
     @mouseup="() => Object.values(flxDivs).map(({ emitter }) => emitter.emit('mouseup'))"
   >
-    <template v-if="curURL">
+    <template v-if="url">
       <div class="flex-1 relative text-center">
         <div v-if="loading" class="absolute top-0 left-0 bottom-0 right-0 z-50 bg-[#ffffffe0]">
           <a-spin
@@ -16,10 +16,35 @@
           />
         </div>
         <div class="h-full flex flex-col">
+          <div class="flex space-x-3 px-5">
+            <a-input-group class="w-16" compact>
+              <a-button
+                class="w-1/2"
+                :disabled="loading || (isDomReady && !webviewRef?.canGoBack())"
+                @click="webviewRef?.goBack()"
+              >
+                <template #icon><LeftOutlined /></template>
+              </a-button>
+              <a-button
+                class="w-1/2"
+                :disabled="loading || (isDomReady && !webviewRef?.canGoForward())"
+                @click="webviewRef?.goForward()"
+              >
+                <template #icon><RightOutlined /></template>
+              </a-button>
+            </a-input-group>
+            <a-input-group class="flex-1 flex" compact>
+              <a-input class="flex-1 text-left" :disabled="loading" :value="url">
+                <template #prefix><SendOutlined /></template>
+              </a-input>
+              <a-button type="primary" :loading="loading">跳转</a-button>
+            </a-input-group>
+          </div>
           <webview
             class="overflow-auto flex-1"
-            :src="curURL"
+            :src="url"
             ref="webviewRef"
+            allowpopups
             disablewebsecurity
             nodeintegrationinsubframes
             webpreferences="allowRunningInsecureContent"
@@ -43,7 +68,7 @@
               @change="onEleIdenChange"
             />
             ：
-            <template v-if="selKeys.length">
+            <template v-if="selKeys.length && selKeys[0] in eleDict">
               <p class="mb-0 truncate">{{ getProp(eleDict[selKeys[0]], eleTree.elIdType) }}</p>
               <a-tooltip>
                 <template #title>清空选择</template>
@@ -145,7 +170,7 @@
         <a-dropdown :trigger="['contextmenu']">
           <div
             id="pageMask"
-            class="absolute top-0 left-0 bottom-14 right-5"
+            class="absolute top-8 left-0 bottom-14 right-5"
             :style="{ display: toolbox.maskVsb ? 'block' : 'none' }"
             @wheel="onMaskScroll"
           >
@@ -186,8 +211,8 @@
                 }"
               />
               <rect
-                v-if="!toolbox.selecting"
-                v-for="xpath in hlEles.filter(xpath => xpath in eleDict)"
+                v-if="!toolbox.selecting && !loading"
+                v-for="xpath in Object.values(hlEles).filter(xpath => xpath in eleDict)"
                 :key="xpath"
                 class="cursor-pointer"
                 :class="{ invisible: selKeys.includes(xpath) }"
@@ -224,8 +249,8 @@
               <template #icon><CloseOutlined /></template>
             </a-button>
             <a-tag
-              v-if="!toolbox.selecting"
-              v-for="(xpath, index) in hlEles.filter(xpath => xpath in eleDict)"
+              v-if="!toolbox.selecting && !loading"
+              v-for="[index, xpath] of Object.entries(hlEles).filter(([_i, xpath]) => xpath in eleDict)"
               :key="xpath"
               class="absolute cursor-pointer"
               :class="{ invisible: selKeys.includes(xpath) }"
@@ -241,7 +266,7 @@
               :color="toolbox.stkColor"
               @click="() => onPageEleClick(xpath)"
             >
-              {{ index + 1 }}
+              {{ typeof index === 'number' ? index + 1 : index }}
             </a-tag>
           </div>
           <template #overlay>
@@ -312,11 +337,11 @@
 </template>
 
 <script setup lang="ts" name="pgEleSelect">
-import { computed, onMounted, reactive, ref, toRef, type PropType } from 'vue'
+import { computed, onMounted, reactive, ref, toRef, watch, type PropType } from 'vue'
 import type { WebviewTag } from 'electron'
 import type { TreeProps } from 'ant-design-vue'
 import PageEle from '../types/pageEle'
-import { rmvStartsOf, swchBoolProp, getProp, waitFor } from '../utils'
+import { rmvStartsOf, swchBoolProp, getProp, waitFor, until } from '../utils'
 import {
   ToolOutlined,
   SelectOutlined,
@@ -328,7 +353,10 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
   ScanOutlined,
-  AimOutlined
+  AimOutlined,
+  LeftOutlined,
+  RightOutlined,
+  SendOutlined
 } from '@ant-design/icons-vue'
 import { TinyEmitter } from 'tiny-emitter'
 import FlexDivider from './FlexDivider.vue'
@@ -336,8 +364,11 @@ import FlxDiv from '../types/flxDiv'
 import type PgOper from '../types/pgOper'
 
 const props = defineProps({
-  curURL: { type: String, required: true },
-  hlEles: { type: Array as PropType<string[]>, default: [] },
+  url: { type: String, required: true },
+  hlEles: {
+    type: [Array, Object] as PropType<string[] | Record<string, string>>,
+    default: []
+  },
   emitter: { type: Object as PropType<TinyEmitter>, default: () => new TinyEmitter() },
   sbarWid: { type: Number, default: 200 },
   loading: { type: Boolean, default: false },
@@ -376,10 +407,14 @@ const flxDivs = reactive<Record<'sideTree' | 'sideBottom' | 'sideTop', FlxDiv>>(
   sideBottom: FlxDiv.copy({ orientation: 'horizontal', widHgt: 500 })
 })
 const rszObs = new ResizeObserver(() => onPageLoaded(false))
+const loading = toRef(props.loading)
+const url = toRef<string | undefined>(props.url)
+const isDomReady = ref(false)
 
 onMounted(async () => {
   rszObs.observe((await waitFor('pageMask')) as HTMLElement)
 })
+watch(() => props.url, (u: string) => (url.value = u))
 props.emitter.on('reload', (force?: boolean) =>
   force ? webviewRef.value?.reload() : onPageLoaded()
 )
@@ -432,7 +467,7 @@ async function onPageLoaded(waitLoading = true) {
           }
         }
       }).filter(el => el))
-    `)
+    `).then(ret => ret === 'undefined' ? '{}' : ret)
   ).map((el: any) => PageEle.copy(el))
 
   let treeData: TreeProps['treeData'] = []
@@ -464,7 +499,7 @@ async function onPageLoaded(waitLoading = true) {
   eleDict.value = Object.fromEntries(elements.map((el: any) => [el.xpath, el]))
   eleTree.data = treeData
   onPageEleSelected()
-  emit('update:loading', false)
+  doLoad(false)
 }
 function onWvDomReady() {
   webviewRef.value?.executeJavaScript(`
@@ -475,6 +510,7 @@ function onWvDomReady() {
       }))
     })
   `)
+  isDomReady.value = true
 }
 function onCtnrScroll(e: { top: number; left: number }) {
   mskOffset.top = e.top
@@ -566,6 +602,7 @@ function onPageEleClick(elXpath = hovEle.xpath) {
   }
 }
 function onPageEleClear() {
+  toolbox.selecting = false
   hovEle.reset()
   selKeys.value = []
   onPageEleSelected()
@@ -596,8 +633,50 @@ function expTreeEle(nodes = eleTree.data) {
   }
   return false
 }
-function onExecOpersEmit(opers: PgOper[]) {
-  console.log(opers)
+async function onExecOpersEmit(opers: PgOper[], callback = () => undefined) {
+  for (const oper of opers) {
+    let ele = ''
+    switch (oper.element.idType) {
+      case 'idCls':
+        if (oper.element.idCls.startsWith('.')) {
+          const clazz = oper.element.idCls.substring(1).split('.').join(' ')
+          ele = `Array.from(document.getElementsByClassName('${clazz}')).shift()`
+        } else if (oper.element.idCls.startsWith('#')) {
+          ele = `document.getElementById('${oper.element.idCls.substring(1)}')`
+        } else {
+          throw new Error('位置的元素标记！')
+        }
+        break
+      case 'xpath':
+        ele = `document.evaluate('${oper.element.xpath}', document).iterateNext()`
+        break
+      case 'tagName':
+        ele = `Array.from(document.getElementsByTagName('${oper.element.tagName}')).shift()`
+        break
+    }
+    doLoad(true)
+    switch (oper.otype) {
+      case 'input':
+        await webviewRef.value?.executeJavaScript(`${ele}.value = '${oper.value}'`)
+        break
+      case 'click':
+        await Promise.all([
+          webviewRef.value?.executeJavaScript(`${ele}.click()`),
+          until(async () => !webviewRef.value?.isLoading())
+        ])
+        url.value = webviewRef.value?.getURL()
+        break
+    }
+    doLoad(false)
+    callback()
+  }
+}
+function doLoad(toLoad = true) {
+  if (toLoad) {
+    isDomReady.value = false
+  }
+  loading.value = toLoad
+  emit('update:loading', toLoad)
 }
 </script>
 

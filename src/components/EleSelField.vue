@@ -8,19 +8,22 @@
     选择元素
   </a-button>
   <a-input-group v-else compact class="flex">
-    <a-dropdown class="flex-1 truncate" :trigger="['click']">
-      <template #overlay>
-        <a-menu @click="onElIdChange">
-          <a-menu-item key="xpath">xpath</a-menu-item>
-          <a-menu-item key="idCls">ID或类</a-menu-item>
-          <a-menu-item key="tagName">标签</a-menu-item>
-        </a-menu>
-      </template>
-      <a-button type="primary" ghost>
-        {{ getProp(form, `${prop}.${idType}`) }}
-        <DownOutlined />
-      </a-button>
-    </a-dropdown>
+    <a-tooltip>
+      <template #title>{{ label }}</template>
+      <a-dropdown class="flex-1 truncate" :trigger="['click']">
+        <template #overlay>
+          <a-menu @click="onElIdChange">
+            <a-menu-item key="xpath">xpath</a-menu-item>
+            <a-menu-item key="idCls">ID或类</a-menu-item>
+            <a-menu-item key="tagName">标签</a-menu-item>
+          </a-menu>
+        </template>
+        <a-button type="primary" ghost>
+          {{ label }}
+          <DownOutlined />
+        </a-button>
+      </a-dropdown>
+    </a-tooltip>
     <a-popconfirm title="确定解绑该元素吗？" @confirm="onSelEleClear">
       <a-button type="primary" ghost danger>
         <template #icon><CloseOutlined /></template>
@@ -46,6 +49,7 @@ const props = defineProps({
 const emit = defineEmits(['selEleClear', 'selEleStart', 'eleIdenChange', 'eleSelected'])
 const form = toRef(props.form)
 const idType = computed(() => getProp(form.value, `${props.prop}.idType`))
+const label = computed(() => getProp(form.value, `${props.prop}.${idType.value}`))
 const selecting = ref(false)
 
 props.emitter.on('ele-selected', (ele?: PageEle) => {

@@ -16,14 +16,14 @@ export default class PgOper {
 
   constructor() {
     this.element = new PageEle()
-    this.otype = 'input'
+    this.otype = 'click'
     this.value = ''
     this.encrypt = false
   }
 
   reset() {
     this.element.reset()
-    this.otype = 'input'
+    this.otype = 'click'
     this.value = ''
     this.encrypt = false
   }
