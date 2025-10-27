@@ -241,7 +241,7 @@ function onCclClick() {
 function resetState() {
   if (formState.value.reset) {
     formState.value.reset()
-  } else {
+  } else if (formRef.value) {
     formRef.value.refer.resetFields()
   }
 }

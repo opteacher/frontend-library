@@ -16,7 +16,7 @@
           />
         </div>
         <div class="h-full flex flex-col">
-          <div class="flex space-x-3 px-5">
+          <div v-if="addrBar" class="flex space-x-3 px-5">
             <a-input-group class="w-16" compact>
               <a-button
                 class="w-1/2"
@@ -170,7 +170,8 @@
         <a-dropdown :trigger="['contextmenu']">
           <div
             id="pageMask"
-            class="absolute top-8 left-0 bottom-14 right-5"
+            class="absolute left-0 bottom-14 right-5"
+            :class="{ 'top-8': addrBar, 'top-0': !addrBar }"
             :style="{ display: toolbox.maskVsb ? 'block' : 'none' }"
             @wheel="onMaskScroll"
           >
@@ -238,11 +239,7 @@
               size="small"
               :style="{
                 top: selEle.rectBox.y - mskOffset.top + 'px',
-                left:
-                  selEle.rectBox.x + selEle.rectBox.width -
-                  mskOffset.left +
-                  5 +
-                  'px'
+                left: selEle.rectBox.x + selEle.rectBox.width - mskOffset.left + 5 + 'px'
               }"
               @click="onPageEleClear"
             >
@@ -250,7 +247,9 @@
             </a-button>
             <a-tag
               v-if="!toolbox.selecting && !loading"
-              v-for="[index, xpath] of Object.entries(hlEles).filter(([_i, xpath]) => xpath in eleDict)"
+              v-for="[index, xpath] of Object.entries(hlEles).filter(
+                ([_i, xpath]) => xpath in eleDict
+              )"
               :key="xpath"
               class="absolute cursor-pointer"
               :class="{ invisible: selKeys.includes(xpath) }"
@@ -372,9 +371,16 @@ const props = defineProps({
   emitter: { type: Object as PropType<TinyEmitter>, default: () => new TinyEmitter() },
   sbarWid: { type: Number, default: 200 },
   loading: { type: Boolean, default: false },
-  selKeys: { type: Array as PropType<string[]>, default: [] }
+  selKeys: { type: Array as PropType<string[]>, default: [] },
+  addrBar: { type: Boolean, default: true }
 })
-const emit = defineEmits(['update:sel-ele', 'pageLoaded', 'update:loading', 'update:elIdType'])
+const emit = defineEmits([
+  'update:sel-ele',
+  'pageLoaded',
+  'update:loading',
+  'update:elIdType',
+  'update:url'
+])
 const webviewRef = ref<WebviewTag>()
 const mskOffset = reactive({ top: 0, left: 0 })
 const eleTree = reactive({
@@ -414,10 +420,18 @@ const isDomReady = ref(false)
 onMounted(async () => {
   rszObs.observe((await waitFor('pageMask')) as HTMLElement)
 })
-watch(() => props.url, (u: string) => (url.value = u))
-props.emitter.on('reload', (force?: boolean) =>
-  force ? webviewRef.value?.reload() : onPageLoaded()
+watch(
+  () => props.url,
+  (u: string) => {
+    url.value = u
+    doLoad(true)
+  }
 )
+props.emitter.on('reload', (force?: boolean) => {
+  loading.value = true
+  emit('update:loading', true)
+  force ? webviewRef.value?.reload() : onPageLoaded()
+})
 props.emitter.on('start-select', () => (toolbox.selecting = true))
 props.emitter.on('iden-ele', (key: string) => (selKeys.value = [key]))
 props.emitter.on('stop-select', onPageEleClear)
@@ -429,7 +443,9 @@ async function onPageLoaded(waitLoading = true) {
   }
   toolbox.scale = (webviewRef.value?.getZoomFactor() || 1) * 50
   const elements: PageEle[] = JSON.parse(
-    await webviewRef.value?.executeJavaScript(`
+    await webviewRef.value
+      ?.executeJavaScript(
+        `
       JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
         const tagName = el.tagName.toLowerCase()
         let idCls = ''
@@ -467,7 +483,9 @@ async function onPageLoaded(waitLoading = true) {
           }
         }
       }).filter(el => el))
-    `).then(ret => ret === 'undefined' ? '{}' : ret)
+    `
+      )
+      .then(ret => (ret === 'undefined' ? '{}' : ret))
   ).map((el: any) => PageEle.copy(el))
 
   let treeData: TreeProps['treeData'] = []
@@ -662,12 +680,12 @@ async function onExecOpersEmit(opers: PgOper[], callback = () => undefined) {
       case 'click':
         await Promise.all([
           webviewRef.value?.executeJavaScript(`${ele}.click()`),
-          until(async () => !webviewRef.value?.isLoading())
+          until(async () => loading.value)
         ])
         url.value = webviewRef.value?.getURL()
+        emit('update:url', url.value)
         break
     }
-    doLoad(false)
     callback()
   }
 }

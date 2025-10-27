@@ -537,7 +537,6 @@ export class ColSelMapper extends BaseMapper {
 
 export class EleSelMapper extends BaseMapper {
   emitter: TinyEmitter
-  selEle?: PageEle
   seledStop: boolean
   onSelEleClear: (prop: string) => void
   onSelEleStart: (prop: string) => void
@@ -555,7 +554,6 @@ export class EleSelMapper extends BaseMapper {
   reset() {
     super.reset()
     this.emitter = new TinyEmitter()
-    this.selEle = undefined
     this.seledStop = true
     this.onSelEleClear = () => undefined
     this.onSelEleStart = () => undefined

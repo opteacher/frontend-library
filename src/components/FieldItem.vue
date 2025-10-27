@@ -385,7 +385,6 @@ function onTblRcdDeleted(key: any, val: any) {
     v-else-if="mapper.type === 'PageEleSel'"
     :form="form"
     :prop="skey"
-    :sel-ele="mapper.selEle"
     :emitter="mapper.emitter"
     :seled-stop="mapper.seledStop"
     @selEleClear="mapper.onSelEleClear"
