@@ -340,7 +340,7 @@ import { computed, onMounted, reactive, ref, toRef, watch, type PropType } from 
 import type { WebviewTag } from 'electron'
 import type { TreeProps } from 'ant-design-vue'
 import PageEle from '../types/pageEle'
-import { rmvStartsOf, swchBoolProp, getProp, waitFor, until } from '../utils'
+import { rmvStartsOf, swchBoolProp, getProp, waitFor, until, getEleByJS } from '../utils'
 import {
   ToolOutlined,
   SelectOutlined,
@@ -436,6 +436,7 @@ props.emitter.on('start-select', () => (toolbox.selecting = true))
 props.emitter.on('iden-ele', (key: string) => (selKeys.value = [key]))
 props.emitter.on('stop-select', onPageEleClear)
 props.emitter.on('exec-opers', onExecOpersEmit)
+props.emitter.on('goto-history', gotoHisIdx)
 
 async function onPageLoaded(waitLoading = true) {
   if (waitLoading) {
@@ -446,44 +447,44 @@ async function onPageLoaded(waitLoading = true) {
     await webviewRef.value
       ?.executeJavaScript(
         `
-      JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
-        const tagName = el.tagName.toLowerCase()
-        let idCls = ''
-        if (el.id) {
-          idCls = '#' + el.id
-        } else if (el.className) {
-          idCls = '.' + el.className.split(' ').filter(v => v).join('.')
-        }
-        const rectBox = el.getBoundingClientRect()
-        const ret = { tagName, idCls, rectBox }
-        if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
-          return
-        }
-        if (el === document.body) {
-          return { xpath: '/html/body', ...ret }
-        }
-        if (el.id !== '') {
-          return { xpath: '//*[@id="' + el.id + '"]', id: el.id, ...ret }
-        }
-        let index = 1
-        const siblings = el.parentElement && el.parentElement.children
-          ? el.parentElement.children : []
-        for (const sibling of siblings) {
-          if (sibling === el) {
-            const prtEl = arguments.callee(el.parentElement)
-            return prtEl
-              ? {
-                  xpath: prtEl.xpath + '/' + tagName + '[' + index + ']',
-                  ...ret
-                }
-              : undefined
+        JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
+          const tagName = el.tagName.toLowerCase()
+          let idCls = ''
+          if (el.id) {
+            idCls = '#' + el.id
+          } else if (el.className) {
+            idCls = '.' + el.className.split(' ').filter(v => v).join('.')
           }
-          if (sibling.nodeType === 1 && sibling.tagName === el.tagName) {
-            index++
+          const rectBox = el.getBoundingClientRect()
+          const ret = { tagName, idCls, rectBox }
+          if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
+            return
           }
-        }
-      }).filter(el => el))
-    `
+          if (el === document.body) {
+            return { xpath: '/html/body', ...ret }
+          }
+          if (el.id !== '') {
+            return { xpath: '//*[@id="' + el.id + '"]', id: el.id, ...ret }
+          }
+          let index = 1
+          const siblings = el.parentElement && el.parentElement.children
+            ? el.parentElement.children : []
+          for (const sibling of siblings) {
+            if (sibling === el) {
+              const prtEl = arguments.callee(el.parentElement)
+              return prtEl
+                ? {
+                    xpath: prtEl.xpath + '/' + tagName + '[' + index + ']',
+                    ...ret
+                  }
+                : undefined
+            }
+            if (sibling.nodeType === 1 && sibling.tagName === el.tagName) {
+              index++
+            }
+          }
+        }).filter(el => el))
+      `
       )
       .then(ret => (ret === 'undefined' ? '{}' : ret))
   ).map((el: any) => PageEle.copy(el))
@@ -627,9 +628,7 @@ function onPageEleClear() {
 }
 function onPageEleSelected(ele?: PageEle) {
   emit('update:sel-ele', ele)
-  if (ele) {
-    props.emitter.emit('ele-selected', ele)
-  }
+  props.emitter.emit('ele-selected', ele)
 }
 function onWvZoomChange(newVal: number) {
   webviewRef.value?.setZoomFactor((newVal << 1) / 100)
@@ -653,25 +652,7 @@ function expTreeEle(nodes = eleTree.data) {
 }
 async function onExecOpersEmit(opers: PgOper[], callback = () => undefined) {
   for (const oper of opers) {
-    let ele = ''
-    switch (oper.element.idType) {
-      case 'idCls':
-        if (oper.element.idCls.startsWith('.')) {
-          const clazz = oper.element.idCls.substring(1).split('.').join(' ')
-          ele = `Array.from(document.getElementsByClassName('${clazz}')).shift()`
-        } else if (oper.element.idCls.startsWith('#')) {
-          ele = `document.getElementById('${oper.element.idCls.substring(1)}')`
-        } else {
-          throw new Error('位置的元素标记！')
-        }
-        break
-      case 'xpath':
-        ele = `document.evaluate('${oper.element.xpath}', document).iterateNext()`
-        break
-      case 'tagName':
-        ele = `Array.from(document.getElementsByTagName('${oper.element.tagName}')).shift()`
-        break
-    }
+    const ele = getEleByJS(oper.element)
     doLoad(true)
     switch (oper.otype) {
       case 'input':
@@ -686,8 +667,8 @@ async function onExecOpersEmit(opers: PgOper[], callback = () => undefined) {
         emit('update:url', url.value)
         break
     }
-    callback()
   }
+  callback()
 }
 function doLoad(toLoad = true) {
   if (toLoad) {
@@ -695,6 +676,10 @@ function doLoad(toLoad = true) {
   }
   loading.value = toLoad
   emit('update:loading', toLoad)
+}
+function gotoHisIdx(index: number) {
+  doLoad()
+  webviewRef.value?.goToIndex(index)
 }
 </script>
 

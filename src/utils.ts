@@ -8,6 +8,7 @@ import { Cond } from './types'
 import Batch from './types/batch'
 import Column from './types/column'
 import type { CondType } from './types/mapper'
+import type PageEle from './types/pageEle'
 
 export interface RequestOptions {
   project?: string
@@ -959,4 +960,29 @@ export function json2Object(json: object, params?: Record<string, any>) {
 
 export function replaceObjProps(obj: object, vals: any) {
   return { ...pickOrIgnore(obj, Object.keys(vals)), ...vals }
+}
+
+export function getEleByJS(pgEl: PageEle, parent = 'document', first = true) {
+  let ele = ''
+  switch (pgEl.idType) {
+    case 'idCls':
+      if (pgEl.idCls.startsWith('.')) {
+        const clazz = pgEl.idCls.substring(1).split('.').join(' ')
+        ele = `Array.from(${parent}.getElementsByClassName('${clazz}'))`
+        ele += first ? '[0]' : ''
+      } else if (pgEl.idCls.startsWith('#')) {
+        ele = `${parent}.getElementById('${pgEl.idCls.substring(1)}')`
+      } else {
+        throw new Error('位置的元素标记！')
+      }
+      break
+    case 'xpath':
+      ele = `${parent}.evaluate('${pgEl.xpath}', ${parent}).iterateNext()`
+      break
+    case 'tagName':
+      ele = `Array.from(${parent}.getElementsByTagName('${pgEl.tagName}'))`
+      ele += first ? '[0]' : ''
+      break
+  }
+  return ele
 }
