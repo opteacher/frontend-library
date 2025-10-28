@@ -650,15 +650,23 @@ function expTreeEle(nodes = eleTree.data) {
   }
   return false
 }
-async function onExecOpersEmit(opers: PgOper[], callback = () => undefined) {
+async function onExecOpersEmit(opers: PgOper[], callback = () => undefined, parent = undefined) {
   for (const oper of opers) {
-    const ele = getEleByJS(oper.element)
-    doLoad(true)
+    const ele = getEleByJS(oper.element, parent)
+    await until(async () => {
+      try {
+        const res = await webviewRef.value?.executeJavaScript(ele + '.outerHTML')
+        return res !== ''
+      } catch(e) {
+        return false
+      }
+    })
     switch (oper.otype) {
       case 'input':
         await webviewRef.value?.executeJavaScript(`${ele}.value = '${oper.value}'`)
         break
       case 'click':
+        doLoad(true)
         await Promise.all([
           webviewRef.value?.executeJavaScript(`${ele}.click()`),
           until(async () => loading.value)
