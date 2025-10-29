@@ -2,10 +2,10 @@ import { gnlCpy } from '../utils'
 import PageEle from './pageEle'
 
 export const otypes = {
-  input: '输入',
-  select: '选择',
-  click: '点击',
-  scroll: '滚动'
+  input: { label: '输入', color: 'blue' },
+  select: { label: '选择', color: 'orange' },
+  click: { label: '点击', color: 'green' },
+  scroll: { label: '滚动', color: 'pink' }
 }
 
 export default class PgOper {

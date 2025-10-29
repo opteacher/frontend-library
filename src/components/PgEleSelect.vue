@@ -443,51 +443,48 @@ async function onPageLoaded(waitLoading = true) {
     await new Promise(resolve => setTimeout(resolve, 2000))
   }
   toolbox.scale = (webviewRef.value?.getZoomFactor() || 1) * 50
-  const elements: PageEle[] = JSON.parse(
-    await webviewRef.value
-      ?.executeJavaScript(
-        `
-        JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
-          const tagName = el.tagName.toLowerCase()
-          let idCls = ''
-          if (el.id) {
-            idCls = '#' + el.id
-          } else if (el.className) {
-            idCls = '.' + el.className.split(' ').filter(v => v).join('.')
+  let elements: PageEle[] = await webviewRef.value?.executeJavaScript(`
+      JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
+        const tagName = el.tagName.toLowerCase()
+        let idCls = ''
+        if (el.id) {
+          idCls = '#' + el.id
+        } else if (el.className) {
+          idCls = '.' + el.className.split(' ').filter(v => v).join('.')
+        }
+        const rectBox = el.getBoundingClientRect()
+        const ret = { tagName, idCls, rectBox }
+        if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
+          return
+        }
+        if (el === document.body) {
+          return { xpath: '/html/body', ...ret }
+        }
+        if (el.id !== '') {
+          return { xpath: '//*[@id="' + el.id + '"]', id: el.id, ...ret }
+        }
+        let index = 1
+        const siblings = el.parentElement && el.parentElement.children
+          ? el.parentElement.children : []
+        for (const sibling of siblings) {
+          if (sibling === el) {
+            const prtEl = arguments.callee(el.parentElement)
+            return prtEl
+              ? {
+                  xpath: prtEl.xpath + '/' + tagName + '[' + index + ']',
+                  ...ret
+                }
+              : undefined
           }
-          const rectBox = el.getBoundingClientRect()
-          const ret = { tagName, idCls, rectBox }
-          if (['style', 'script', 'link', 'meta', 'head', 'header', 'title'].includes(tagName)) {
-            return
+          if (sibling.nodeType === 1 && sibling.tagName === el.tagName) {
+            index++
           }
-          if (el === document.body) {
-            return { xpath: '/html/body', ...ret }
-          }
-          if (el.id !== '') {
-            return { xpath: '//*[@id="' + el.id + '"]', id: el.id, ...ret }
-          }
-          let index = 1
-          const siblings = el.parentElement && el.parentElement.children
-            ? el.parentElement.children : []
-          for (const sibling of siblings) {
-            if (sibling === el) {
-              const prtEl = arguments.callee(el.parentElement)
-              return prtEl
-                ? {
-                    xpath: prtEl.xpath + '/' + tagName + '[' + index + ']',
-                    ...ret
-                  }
-                : undefined
-            }
-            if (sibling.nodeType === 1 && sibling.tagName === el.tagName) {
-              index++
-            }
-          }
-        }).filter(el => el))
-      `
-      )
-      .then(ret => (ret === 'undefined' ? '{}' : ret))
-  ).map((el: any) => PageEle.copy(el))
+        }
+      }).filter(el => el))
+    `)
+    .then(ret => ret === 'undefined' ? [] : JSON.parse(ret))
+    .then(els => els.map((el: any) => PageEle.copy(el)))
+  elements = elements || []
 
   let treeData: TreeProps['treeData'] = []
   for (const element of elements) {

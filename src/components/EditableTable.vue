@@ -527,7 +527,7 @@ async function refresh(data?: any[], params?: any) {
         params: Object.assign(pickOrIgnore(records, Array.from(ignPams)), records.filters)
       }
     })
-    orgData = orgData.filter((record: any) => {
+    orgData = (orgData || []).filter((record: any) => {
       for (const [prop, content] of Object.entries(searchState).map(([prop, value]) => [
         prop,
         value.content
