@@ -1,5 +1,5 @@
 import { message, notification } from 'ant-design-vue'
-import axios, { type AxiosRequestConfig } from 'axios'
+import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 import dayjs from 'dayjs'
 import qs from 'qs'
 import { cloneDeep } from 'lodash'
@@ -49,7 +49,23 @@ export async function makeRequest<T = any>(
   if (!options.messages.notShow) {
     message.loading(options.messages.loading || '加载中……')
   }
-  const resp = await pms
+  let resp = null
+  try {
+    resp = await pms
+  } catch (e) {
+    if (e instanceof AxiosError) {
+      const axiosErr = e as AxiosError
+      if (!options.messages.notShow) {
+        notification.error({
+          message: `请求失败！${axiosErr.message}`,
+          description: [
+            options.messages.failed || '', JSON.stringify(axiosErr.response?.data)
+          ].join('  ')
+        })
+      }
+    }
+    console.log(e)
+  }
   const resData = resp.data
   if (!options.messages.notShow) {
     message.destroy()
