@@ -978,14 +978,14 @@ export function replaceObjProps(obj: object, vals: any) {
   return { ...pickOrIgnore(obj, Object.keys(vals)), ...vals }
 }
 
-export function getEleByJS(pgEl: PageEle, parent = 'document', first = true) {
+export function getEleByJS(pgEl: PageEle, parent = 'document', all = false) {
   let ele = ''
   switch (pgEl.idType) {
     case 'idCls':
       if (pgEl.idCls.startsWith('.')) {
         const clazz = pgEl.idCls.substring(1).split('.').join(' ')
         ele = `Array.from(${parent}.getElementsByClassName('${clazz}'))`
-        ele += first ? '[0]' : ''
+        ele += all ? '' : (pgEl.index !== -1 ? `[${pgEl.index}]` : '[0]')
       } else if (pgEl.idCls.startsWith('#')) {
         ele = `${parent}.getElementById('${pgEl.idCls.substring(1)}')`
       } else {
@@ -997,7 +997,7 @@ export function getEleByJS(pgEl: PageEle, parent = 'document', first = true) {
       break
     case 'tagName':
       ele = `Array.from(${parent}.getElementsByTagName('${pgEl.tagName}'))`
-      ele += first ? '[0]' : ''
+      ele += all ? '' : (pgEl.index !== -1 ? `[${pgEl.index}]` : '[0]')
       break
   }
   return ele

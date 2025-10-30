@@ -36,7 +36,7 @@
 import { getProp, setProp } from '../utils'
 import { CloseOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { computed, ref, toRef } from 'vue'
-import PageEle from '../types/pageEle'
+import PageEle, { type IdType } from '../types/pageEle'
 import { TinyEmitter } from 'tiny-emitter'
 
 const props = defineProps({
@@ -47,8 +47,12 @@ const props = defineProps({
 })
 const emit = defineEmits(['selEleClear', 'selEleStart', 'eleIdenChange', 'eleSelected'])
 const form = toRef(props.form)
-const idType = computed(() => getProp(form.value, `${props.prop}.idType`))
-const label = computed(() => getProp(form.value, `${props.prop}.${idType.value}`))
+const idType = computed<IdType>(() => getProp(form.value, `${props.prop}.idType`))
+const idxLbl = computed<number>(() => getProp(form.value, `${props.prop}.index`))
+const label = computed<string>(() =>
+  getProp(form.value, `${props.prop}.${idType.value}`)
+  + (idxLbl.value !== -1 || idType.value === 'tagName' ? `[${idxLbl.value}]` : '')
+)
 const selecting = ref(false)
 const selEle = ref<PageEle>()
 
@@ -67,6 +71,7 @@ props.emitter.on('ele-selected', (ele?: PageEle) => {
 function onSelEleStart() {
   if (selEle.value) {
     setProp(form.value, props.prop, PageEle.copy(selEle.value))
+    emit('eleSelected', props.prop, form.value)
   } else if (selecting.value) {
     selecting.value = false
     props.emitter.emit('stop-select')
