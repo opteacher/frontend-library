@@ -14,6 +14,7 @@ export default class PageEle {
   }
   idType: IdType
   index: number
+  idAll: boolean
 
   constructor() {
     this.xpath = ''
@@ -22,6 +23,7 @@ export default class PageEle {
     this.rectBox = PageEle.newRect()
     this.idType = 'xpath'
     this.index = -1
+    this.idAll = false
   }
 
   reset() {
@@ -34,6 +36,7 @@ export default class PageEle {
     this.rectBox.height = 0
     this.idType = 'xpath'
     this.index = -1
+    this.idAll = false
   }
 
   get iden(): string {

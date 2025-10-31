@@ -42,16 +42,18 @@ import { TinyEmitter } from 'tiny-emitter'
 const props = defineProps({
   form: { type: Object, required: true },
   prop: { type: String, required: true },
+  idAll: { type: Boolean, default: false },
   emitter: { type: TinyEmitter, required: true },
   seledStop: { type: Boolean, default: true }
 })
 const emit = defineEmits(['selEleClear', 'selEleStart', 'eleIdenChange', 'eleSelected'])
 const form = toRef(props.form)
-const idType = computed<IdType>(() => getProp(form.value, `${props.prop}.idType`))
-const idxLbl = computed<number>(() => getProp(form.value, `${props.prop}.index`))
+const element = computed<PageEle>(() => getProp(form.value, props.prop))
+const idType = computed<IdType>(() => getProp(element.value, 'idType'))
+const idxLbl = computed<number>(() => getProp(element.value, 'index'))
 const label = computed<string>(() =>
-  getProp(form.value, `${props.prop}.${idType.value}`)
-  + (idxLbl.value !== -1 || idType.value === 'tagName' ? `[${idxLbl.value}]` : '')
+  getProp(element.value, idType.value)
+  + (!element.value.idAll && idxLbl.value !== -1 && idType.value !== 'xpath' ? `[${idxLbl.value}]` : '')
 )
 const selecting = ref(false)
 const selEle = ref<PageEle>()
@@ -59,8 +61,7 @@ const selEle = ref<PageEle>()
 props.emitter.on('ele-selected', (ele?: PageEle) => {
   selEle.value = ele
   if (selecting.value && ele) {
-    setProp(form.value, props.prop, PageEle.copy(ele))
-    emit('eleSelected', props.prop, form.value)
+    onEleSelected(ele)
     if (props.seledStop) {
       props.emitter.emit('stop-select')
     }
@@ -70,8 +71,7 @@ props.emitter.on('ele-selected', (ele?: PageEle) => {
 
 function onSelEleStart() {
   if (selEle.value) {
-    setProp(form.value, props.prop, PageEle.copy(selEle.value))
-    emit('eleSelected', props.prop, form.value)
+    onEleSelected(selEle.value)
   } else if (selecting.value) {
     selecting.value = false
     props.emitter.emit('stop-select')
@@ -80,6 +80,12 @@ function onSelEleStart() {
     props.emitter.emit('start-select')
     emit('selEleStart', props.prop)
   }
+}
+function onEleSelected(ele: PageEle) {
+  const cpEle = PageEle.copy(selEle.value)
+  cpEle.idAll = props.idAll
+  setProp(form.value, props.prop, cpEle)
+  emit('eleSelected', props.prop, form.value)
 }
 function onElIdChange({ key }: any) {
   setProp(form.value, props.prop + '.idType', key)
