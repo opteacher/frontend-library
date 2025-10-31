@@ -1,11 +1,17 @@
+import {
+  ColumnHeightOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  SelectOutlined
+} from '@ant-design/icons-vue'
 import { gnlCpy } from '../utils'
 import PageEle from './pageEle'
 
 export const otypes = {
-  input: { label: '输入', color: 'blue' },
-  select: { label: '选择', color: 'orange' },
-  click: { label: '点击', color: 'green' },
-  scroll: { label: '滚动', color: 'pink' }
+  input: { label: '输入', color: 'blue', icon: EditOutlined },
+  select: { label: '选择', color: 'orange', icon: SelectOutlined },
+  click: { label: '点击', color: 'green', icon: DownloadOutlined },
+  scroll: { label: '滚动', color: 'pink', icon: ColumnHeightOutlined }
 }
 
 export default class PgOper {

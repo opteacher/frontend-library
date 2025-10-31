@@ -283,7 +283,7 @@
         :emitter="flxDivs.sideTree.emitter"
         :hbtnPos="{ bottom: '10px' }"
         hbtnTxt="元素树"
-        @hbtn-click="() => swchBoolProp(eleTree, 'visible')"
+        @hbtn-click="() => swchBoolProp(flxDivs, 'sideTree.visible')"
       />
       <div
         v-if="flxDivs.sideTree.visible"
@@ -418,7 +418,10 @@ const url = toRef<string | undefined>(props.url)
 const isDomReady = ref(false)
 
 onMounted(async () => {
-  rszObs.observe((await waitFor('pageMask')) as HTMLElement)
+  const mask = await waitFor('pageMask')
+  if (mask) {
+    rszObs.observe(mask as HTMLElement)
+  }
 })
 watch(
   () => props.url,
@@ -514,7 +517,7 @@ async function onPageLoaded(waitLoading = true) {
   }
   eleDict.value = Object.fromEntries(elements.map((el: any) => [el.xpath, el]))
   eleTree.data = treeData
-  onPageEleSelected()
+  onPageEleSelected(selKeys.value.length ? eleDict.value[selKeys.value[0]] : undefined)
   doLoad(false)
 }
 function onWvDomReady() {

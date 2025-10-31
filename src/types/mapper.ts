@@ -10,7 +10,6 @@ import Field, { fieldDftVal } from './field'
 import { Dayjs } from 'dayjs'
 import { type RuleItem } from 'async-validator'
 import type { IdType } from './pageEle'
-import type PageEle from './pageEle'
 
 export type CondType = boolean | ((...args: any) => boolean) | Cond[] | { [cmpRel: string]: Cond[] }
 
