@@ -166,7 +166,10 @@ setProp(mapper.value, 'delBtn', {
   danger: true,
   offset: 4,
   fullWid: true,
-  display: [Cond.create('key', '!=', '')],
+  display: [
+    Cond.create('key', '!=', ''),
+    Cond.create('delable', '!=', false)
+  ],
   onClick: onDelNdClick
 })
 const size = toRef(props.size)
@@ -176,7 +179,10 @@ const ndDict = computed<Record<string, Node>>(() =>
 const width = ref(300)
 const gutter = ref(100)
 const rsxObs = new ResizeObserver(() => refresh())
-const dirDict = { vertical: 'width', horizontal: 'height' } as Record<'vertical' | 'horizontal', 'width' | 'height'>
+const dirDict = {
+  vertical: 'width',
+  horizontal: 'height'
+} as Record<'vertical' | 'horizontal', 'width' | 'height'>
 const pnlRect = ref<DOMRect>()
 const emptyAddBtn = computed(() => {
   if (direction.value === 'vertical') {
@@ -207,6 +213,10 @@ const edtNdSlots = computed(() =>
 
 onMounted(() => refresh(true))
 props.emitter.on('refresh', () => refresh())
+props.emitter.on('del:node', async (key: string, callback: Function) => {
+  await onDelNdSubmit(ndDict.value[key], false)
+  callback()
+})
 
 async function refresh(force = false) {
   const panel = await waitFor('dsgnPanel')
@@ -224,6 +234,9 @@ async function refresh(force = false) {
     const qlen = queue.length
     for (let i = 0; i < qlen; ++i) {
       const node = ndDict.value[queue.shift() as string]
+      if (!node) {
+        continue
+      }
       const ele = await waitFor(node.key) as HTMLElement
       node.rect.w = ele.clientWidth
       node.rect.h = ele.clientHeight
@@ -302,7 +315,7 @@ async function onEdtNdSubmit(node: Node, next: Function) {
       }
       preNodes.map((nd: any) => nd.nexts.push(edtNode.key))
     }
-    emit('add:node', edtNode)
+    await new Promise(resolve => emit('add:node', edtNode, resolve))
   }
   emit('update:nodes', nodes.value)
   next()
@@ -314,30 +327,32 @@ function onDelNdClick(node: Node) {
     title: `确定删除该节点【${delNode.title}】吗？`,
     icon: createVNode(ExclamationCircleOutlined),
     content: createVNode('div', { style: 'color: #ff4d4f' }, '该节点的所有子节点将归于其第一个父节点！'),
-    onOk() {
-      if (delNode.previous.length) {
-        const preNxts = ndDict.value[delNode.previous[0]].nexts
-        preNxts.splice(preNxts.indexOf(delNode.key), 1)
-        delNode.nexts.map(key => {
-          const nxtPres = ndDict.value[key].previous
-          if (nxtPres.length > 1 && nxtPres.some(key => preNxts.includes(key))) {
-            // 被删除的节点有个兄弟节点同样拥有该子节点，则该子节点与被删除节点的父节点（祖父节点）不做关联
-            // 因为兄弟节点会代替被删除的节点关联其父子关系
-            nxtPres.splice(nxtPres.indexOf(delNode.key), 1)
-          } else {
-            nxtPres.splice(nxtPres.indexOf(delNode.key), 1, delNode.previous[0])
-            preNxts.push(key)
-          }
-        })
-      }
-      nodes.value.splice(nodes.value.findIndex(nd => nd.key === delNode.key), 1)
-      emit('del:node', delNode, async () => {
-        emit('update:nodes', nodes.value)
-        await refresh()
-      })
-    }
+    onOk: () => onDelNdSubmit(delNode)
   })
   props.emitter.emit('update:visible', false)
+}
+async function onDelNdSubmit(node: Node, doRfsh = true) {
+  if (node.previous.length) {
+    const preNxts = ndDict.value[node.previous[0]].nexts
+    preNxts.splice(preNxts.indexOf(node.key), 1)
+    node.nexts.map(key => {
+      const nxtPres = ndDict.value[key].previous
+      if (nxtPres.length > 1 && nxtPres.some(key => preNxts.includes(key))) {
+        // 被删除的节点有个兄弟节点同样拥有该子节点，则该子节点与被删除节点的父节点（祖父节点）不做关联
+        // 因为兄弟节点会代替被删除的节点关联其父子关系
+        nxtPres.splice(nxtPres.indexOf(node.key), 1)
+      } else {
+        nxtPres.splice(nxtPres.indexOf(node.key), 1, node.previous[0])
+        preNxts.push(key)
+      }
+    })
+  }
+  await new Promise(resolve => emit('del:node', node, resolve))
+  nodes.value.splice(nodes.value.findIndex(nd => nd.key === node.key), 1)
+  emit('update:nodes', nodes.value)
+  if (doRfsh) {
+    await refresh()
+  }
 }
 async function onDirSwchClick() {
   direction.value = direction.value === 'vertical' ? 'horizontal' : 'vertical'

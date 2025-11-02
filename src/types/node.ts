@@ -22,7 +22,9 @@ export default class Node {
   addMode: 'insert' | 'append'
   previous: string[]
   nexts: string[]
-  relative: string
+  display: boolean
+  addable: boolean
+  delable: boolean
 
   constructor() {
     this.key = ''
@@ -45,7 +47,9 @@ export default class Node {
     this.addMode = 'insert'
     this.previous = []
     this.nexts = []
-    this.relative = ''
+    this.display = true
+    this.addable = true
+    this.delable = true
   }
 
   reset() {
@@ -67,7 +71,9 @@ export default class Node {
     this.addMode = 'insert'
     this.previous = []
     this.nexts = []
-    this.relative = ''
+    this.display = true
+    this.addable = true
+    this.delable = true
   }
 
   static copy(src: any, tgt?: Node, force = false) {

@@ -9,6 +9,7 @@ import Batch from './types/batch'
 import Column from './types/column'
 import type { CondType } from './types/mapper'
 import type PageEle from './types/pageEle'
+import Node from './types/node'
 
 export interface RequestOptions {
   project?: string
@@ -1001,4 +1002,22 @@ export function getEleByJS(pgEl: PageEle, parent = 'document') {
       break
   }
   return ele
+}
+
+export function getFlowRngKeys(
+  ndDict: Record<string, Node>,
+  start: string,
+  end: string
+): string[] {
+  const ret = []
+  const startNode = ndDict[start]
+  if (start === end) {
+    return [end]
+  } else {
+    ret.push(start, ...startNode.nexts)
+  }
+  for (const nxtKey of startNode.nexts) {
+    ret.push(...getFlowRngKeys(ndDict, nxtKey, end))
+  }
+  return ret
 }

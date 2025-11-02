@@ -68,10 +68,10 @@ const props = defineProps({
 })
 const hlfGutter = computed(() => props.gutter >> 1)
 const lineData = computed(() => {
-  const ncxs = props.node.nexts.map(key => props.ndDict[key].rect.cx)
-  const ncys = props.node.nexts.map(key => props.ndDict[key].rect.cy)
-  const pcxs = props.node.previous.map(key => props.ndDict[key].rect.cx)
-  const pcys = props.node.previous.map(key => props.ndDict[key].rect.cy)
+  const ncxs = props.node.nexts.map(key => key in props.ndDict ? props.ndDict[key].rect.cx : -1)
+  const ncys = props.node.nexts.map(key => key in props.ndDict ? props.ndDict[key].rect.cy : -1)
+  const pcxs = props.node.previous.map(key => key in props.ndDict ? props.ndDict[key].rect.cx : -1)
+  const pcys = props.node.previous.map(key => key in props.ndDict ? props.ndDict[key].rect.cy : -1)
   if (props.direction === 'vertical') {
     return {
       tx1: props.node.rect.cx,
@@ -123,11 +123,11 @@ const untchNodes = computed(() => {
   switch (props.direction) {
     case 'vertical':
       return props.node.previous.filter(key => 
-        props.node.rect.y - props.ndDict[key].rect.b > (props.gutter << 1)
+        key in props.ndDict ? (props.node.rect.y - props.ndDict[key].rect.b > (props.gutter << 1)) : false
       )
     case 'horizontal':
       return props.node.previous.filter(key => 
-        props.node.rect.x - props.ndDict[key].rect.r > (props.gutter << 1)
+        key in props.ndDict ? (props.node.rect.x - props.ndDict[key].rect.r > (props.gutter << 1)) : false
       )
   }
 })

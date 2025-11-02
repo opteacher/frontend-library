@@ -1,5 +1,6 @@
 <template>
   <a-card
+    v-show="node.display"
     :id="node.key"
     class="absolute"
     :headStyle="{
@@ -23,14 +24,19 @@
       </a-typography-title>
     </template>
     <template #extra>
-      <a-dropdown>
+      <a-dropdown v-if="node.delable || $slots['moreMuItms']">
         <a class="ant-dropdown-link text-white text-xl rounded border hover:border-solid border-white" @click.prevent>
           <antdIcon.MoreOutlined />
         </a>
         <template #overlay>
           <a-menu>
             <slot name="moreMuItms" v-bind="{ node }" />
-            <a-menu-item key="delete" class="text-[#ff4d4f]" @click="() => emit('del-click', node)">
+            <a-menu-item
+              v-if="node.delable"
+              key="delete"
+              class="text-[#ff4d4f]"
+              @click="() => emit('del-click', node)"
+            >
               <template #icon><antdIcon.DeleteOutlined /></template>
               删除
             </a-menu-item>
@@ -42,6 +48,7 @@
     <a-typography-text v-else type="secondary">输入描述</a-typography-text>
   </a-card>
   <a-button
+    v-if="node.addable"
     class="absolute"
     type="primary"
     shape="circle"

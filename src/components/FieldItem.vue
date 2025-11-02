@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import * as antdIcons from '@ant-design/icons-vue'
 import type { MapperType } from '../types/mapper'
-import { computed, type PropType } from 'vue'
+import { computed, type PropType, h } from 'vue'
 import { getProp, validConds } from '../utils'
 import { fieldDftVal } from '../types/field'
 import CodeEditor from './CodeEditor.vue'
@@ -392,6 +392,21 @@ function onTblRcdDeleted(key: any, val: any) {
     @selEleStart="mapper.onSelEleStart"
     @eleIdenChange="mapper.onEleIdenChange"
     @eleSelected="(prop: string, form: any) => onFieldChanged(getProp(form, prop))"
+  />
+  <a-steps
+    v-else-if="mapper.type === 'Steps'"
+    :current="-1"
+    :direction="mapper.direction"
+    :items="[
+      ...mapper.items,
+      mapper.addable ? {
+        title: '添加新步骤',
+        icon: h(antdIcons.PlusCircleOutlined),
+        onClick: () => {
+          console.log('add new step')
+        }
+      } : undefined
+    ].filter(i => i)"
   />
   <template v-else>
     {{ getProp(form, skey) }}

@@ -75,6 +75,7 @@ export const cmpNickDict = {
   Checkbox: '多选框',
   Switch: '开关',
   Table: '可编辑表',
+  Steps: '步骤条',
   Textarea: '多行输入框',
   Delable: '可删除',
   SelOrIpt: '可选可输入',

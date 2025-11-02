@@ -563,6 +563,33 @@ export class EleSelMapper extends BaseMapper {
   }
 }
 
+export class StepsMapper extends BaseMapper {
+  direction: 'horizontal' | 'vertical'
+  items: {
+    description: string
+    disabled: CompoType
+    icon: string
+    status: 'wait' | 'process' | 'finish' | 'error'
+    subTitle: string
+    title: string
+  }[]
+  addable: boolean
+
+  constructor() {
+    super()
+    this.direction = 'horizontal'
+    this.items = []
+    this.addable = true
+  }
+  
+  reset() {
+    super.reset()
+    this.direction = 'horizontal'
+    this.items = []
+    this.addable = true
+  }
+}
+
 export const mapTypeTemps = {
   Unknown: () => new BaseMapper(),
   Input: () => new InputMapper(),
@@ -580,6 +607,7 @@ export const mapTypeTemps = {
   Buttons: () => new ButtonsMapper(),
   Table: () => new TableMapper(),
   Text: () => new BaseMapper(),
+  Steps: () => new StepsMapper(),
   Delable: () => new TableMapper(),
   SelOrIpt: () => new SelOrIptMapper(),
   UploadFile: () => new UploadMapper(),
