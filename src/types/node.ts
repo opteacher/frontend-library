@@ -25,21 +25,15 @@ export default class Node {
   display: boolean
   addable: boolean
   delable: boolean
+  circle?: {
+    node: string
+    start: boolean
+    side: 'left' | 'right'
+  }
 
   constructor() {
     this.key = ''
-    this.rect = {
-      x: 0,
-      y: 0,
-      w: 0,
-      h: 0,
-      r: 0,
-      b: 0,
-      cx: 0,
-      cy: 0,
-      sxy: 0,
-      swh: 0
-    }
+    this.rect = genNewRect()
     this.title = ''
     this.desc = ''
     this.icon = 'NumberOutlined'
@@ -74,9 +68,25 @@ export default class Node {
     this.display = true
     this.addable = true
     this.delable = true
+    this.circle = undefined
   }
 
   static copy(src: any, tgt?: Node, force = false) {
     return gnlCpy(Node, src, tgt, { force })
+  }
+}
+
+export function genNewRect() {
+  return {
+    x: 0,
+    y: 0,
+    w: 0,
+    h: 0,
+    r: 0,
+    b: 0,
+    cx: 0,
+    cy: 0,
+    sxy: 0,
+    swh: 0
   }
 }

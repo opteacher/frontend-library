@@ -217,6 +217,9 @@ props.emitter.on('del:node', async (key: string, callback: Function) => {
   await onDelNdSubmit(ndDict.value[key], false)
   callback()
 })
+props.emitter.on('add:node', async (node: any, callback: Function) => {
+  callback(await onEdtNdSubmit(node, () => {}))
+})
 
 async function refresh(force = false) {
   const panel = await waitFor('dsgnPanel')
@@ -311,7 +314,7 @@ async function onEdtNdSubmit(node: Node, next: Function) {
         preNode.nexts = []
       } else {
         // 在append模式下，TODO: 应可选择与那个兄弟节点共享子节点
-        edtNode.nexts = []
+        // edtNode.nexts = []
       }
       preNodes.map((nd: any) => nd.nexts.push(edtNode.key))
     }
@@ -320,6 +323,7 @@ async function onEdtNdSubmit(node: Node, next: Function) {
   emit('update:nodes', nodes.value)
   next()
   await refresh()
+  return edtNode
 }
 function onDelNdClick(node: Node) {
   const delNode = props.copy(node) as Node
