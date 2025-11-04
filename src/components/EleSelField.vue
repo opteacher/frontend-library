@@ -61,7 +61,7 @@ const selEle = ref<PageEle>()
 props.emitter.on('ele-selected', (ele?: PageEle) => {
   selEle.value = ele
   if (selecting.value && ele) {
-    onEleSelected(ele)
+    onEleSelected()
     if (props.seledStop) {
       props.emitter.emit('stop-select')
     }
@@ -71,7 +71,7 @@ props.emitter.on('ele-selected', (ele?: PageEle) => {
 
 function onSelEleStart() {
   if (selEle.value) {
-    onEleSelected(selEle.value)
+    onEleSelected()
   } else if (selecting.value) {
     selecting.value = false
     props.emitter.emit('stop-select')
@@ -81,7 +81,7 @@ function onSelEleStart() {
     emit('selEleStart', props.prop)
   }
 }
-function onEleSelected(ele: PageEle) {
+function onEleSelected() {
   const cpEle = PageEle.copy(selEle.value)
   cpEle.idAll = props.idAll
   setProp(form.value, props.prop, cpEle)
