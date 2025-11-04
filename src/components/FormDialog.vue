@@ -7,7 +7,9 @@
     :maskClosable="closable"
     :confirmLoading="!editable || okLoading"
     :footer="viewOnly ? null : undefined"
+    :okButtonProps="{ htmlType: 'submit' }"
     @cancel="onCclClick"
+    @ok="onOkClick"
   >
     <template #title>
       <a-space align="baseline">
@@ -23,14 +25,8 @@
         </a-button>
       </a-space>
     </template>
-    <template #footer>
-      <template v-if="$slots['footer']">
-        <slot name="footer" v-bind="formState" />
-      </template>
-      <template v-else>
-        <a-button v-if="closable" type="default" @click="onCclClick">取消</a-button>
-        <a-button type="primary" html-type="submit" @click="onOkClick">确定</a-button>
-      </template>
+    <template v-if="$slots['footer']" #footer>
+      <slot name="footer" v-bind="formState" />
     </template>
     <div class="mb-5">
       <slot name="top" />
@@ -44,7 +40,7 @@
       :viewOnly="viewOnly"
       :lblWid="lblWid"
       :lblAlgn="lblAlgn"
-      @update:fprop="values => Object.entries(values).map(([k, v]) => setProp(formState, k, v))"
+      @update:fprop="onFpropUpdate"
     >
       <template #FormDialog="{ value, key }">
         <FormDialog
@@ -268,6 +264,9 @@ async function onSubFormSubmit(
   mapper.emitter.emit('update:visible', false)
   value.onSaved && await value.onSaved(form, value)
   next()
+}
+function onFpropUpdate(values: any) {
+  Object.entries(values).map(([k, v]) => setProp(formState.value, k, v))
 }
 </script>
 

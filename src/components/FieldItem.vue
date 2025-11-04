@@ -25,7 +25,11 @@ const props = defineProps({
   mapper: { type: Object as PropType<MapperType>, required: true }
 })
 const emit = defineEmits(['update:fprop'])
-const disabled = computed(() => validConds(props.form, props.mapper.disabled) || !props.editable)
+const disabled = computed(() =>
+  props.mapper.loading ||
+  validConds(props.form, props.mapper.disabled) ||
+  !props.editable
+)
 
 function onFieldChanged(newVal: any) {
   if (props.mapper.onChange) {
@@ -101,13 +105,10 @@ function onTblRcdDeleted(key: any, val: any) {
     :allowClear="mapper.allowClear"
     :show-search="mapper.searchable"
     :filter-option="filterOption"
+    :loading="mapper.loading"
     @dropdownVisibleChange="mapper.onDropdown"
     @change="onFieldChanged"
-  >
-    <template v-if="mapper.loading" #notFoundContent>
-      <a-spin size="small" />
-    </template>
-  </a-select>
+  />
   <template v-else-if="mapper.type === 'Checkbox'">
     <a-checkbox-group
       v-if="mapper.options && mapper.options.length"
@@ -191,6 +192,7 @@ function onTblRcdDeleted(key: any, val: any) {
     :value="getProp(form, skey, fieldDftVal(mapper.type))"
     change-on-select
     :disabled="disabled"
+    :loading="mapper.loading"
     @change="onFieldChanged"
   />
   <a-tooltip v-else-if="mapper.type === 'Button'">
@@ -201,7 +203,7 @@ function onTblRcdDeleted(key: any, val: any) {
       :danger="mapper.danger"
       :type="mapper.primary ? 'primary' : mapper.dashed ? 'dashed' : 'default'"
       :ghost="mapper.ghost"
-      :loading="typeof mapper.loading === 'function' ? mapper.loading() : mapper.loading"
+      :loading="mapper.loading"
       :html-type="mapper.htmlType"
       @click="() => mapper.onClick(form)"
     >
