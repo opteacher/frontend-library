@@ -1,47 +1,23 @@
 <template>
   <template v-if="node.previous.length">
-    <polyline
-      v-if="node.circle && !node.circle.start && false"
-      :points="lineData.ePos"
-      fill="none"
-      stroke="#f0f0f0"
+    <line
       stroke-width="2"
+      stroke="#f0f0f0"
+      :x1="lineData.thx1"
+      :y1="lineData.thy1"
+      :x2="lineData.thx2"
+      :y2="lineData.thy2"
     />
-    <template v-else>
-      <line
-        stroke-width="2"
-        stroke="#f0f0f0"
-        :x1="lineData.thx1"
-        :y1="lineData.thy1"
-        :x2="lineData.thx2"
-        :y2="lineData.thy2"
-      />
-      <line
-        stroke-width="2"
-        stroke="#f0f0f0"
-        :x1="lineData.tx1"
-        :y1="lineData.ty1"
-        :x2="lineData.tx2"
-        :y2="lineData.ty2"
-      />
-    </template>
-  </template>
-  <template v-if="node.circle && node.circle.start && false">
-    <polyline
-      :points="lineData.stPos"
-      fill="none"
-      stroke="#f0f0f0"
+    <line
       stroke-width="2"
-    />
-    <polyline
-      :points="lineData.sbPos"
-      fill="none"
       stroke="#f0f0f0"
-      stroke-width="2"
+      :x1="lineData.tx1"
+      :y1="lineData.ty1"
+      :x2="lineData.tx2"
+      :y2="lineData.ty2"
     />
   </template>
   <line
-    v-else
     stroke-width="2"
     stroke="#f0f0f0"
     :x1="lineData.bx1"
@@ -82,7 +58,7 @@
 
 <script setup lang="ts">
 import { computed, type PropType } from 'vue'
-import Node, { genNewRect } from '../types/node'
+import Node from '../types/node'
 
 const props = defineProps({
   direction: { type: String as PropType<'vertical' | 'horizontal'>, default: 'horizontal' },
@@ -91,7 +67,6 @@ const props = defineProps({
   ndDict: { type: Object as PropType<Record<string, Node>>, required: true }
 })
 const hlfGutter = computed(() => props.gutter >> 1)
-const cclNode = computed(() => props.node.circle ? props.ndDict[props.node.circle.node] : ({ rect: genNewRect() }))
 const lineData = computed(() => {
   const ncxs = props.node.nexts.map(key => key in props.ndDict ? props.ndDict[key].rect.cx : -1)
   const ncys = props.node.nexts.map(key => key in props.ndDict ? props.ndDict[key].rect.cy : -1)
@@ -114,23 +89,7 @@ const lineData = computed(() => {
       bhx1: props.node.nexts.length ? Math.min(...ncxs) : 0,
       bhx2: props.node.nexts.length ? Math.max(...ncxs) : 0,
       bhy1: props.node.rect.b + hlfGutter.value,
-      bhy2: props.node.rect.b + hlfGutter.value,
-      stPos: [
-        props.node.rect.r, props.node.rect.cy,
-        props.node.rect.r + props.gutter, props.node.rect.cy,
-        props.node.rect.r + props.gutter, props.node.rect.b + hlfGutter.value
-      ].join(','),
-      sbPos: [
-        cclNode.value.rect.r, cclNode.value.rect.cy,
-        cclNode.value.rect.r + props.gutter, cclNode.value.rect.cy,
-        cclNode.value.rect.r + props.gutter, cclNode.value.rect.y - hlfGutter.value
-      ].join(','),
-      ePos: [
-        props.node.rect.x, props.node.rect.cy,
-        props.node.rect.x - props.gutter, props.node.rect.cy,
-        cclNode.value.rect.x - props.gutter, cclNode.value.rect.cy,
-        cclNode.value.rect.x, cclNode.value.rect.cy
-      ].join(',')
+      bhy2: props.node.rect.b + hlfGutter.value
     }
   } else if (props.direction === 'horizontal') {
     return {

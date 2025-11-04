@@ -1,6 +1,5 @@
 <template>
   <a-card
-    v-show="node.display"
     :id="node.key"
     class="absolute"
     :headStyle="{

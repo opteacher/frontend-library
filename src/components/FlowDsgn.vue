@@ -218,7 +218,7 @@ props.emitter.on('del:node', async (key: string, callback: Function) => {
   callback()
 })
 props.emitter.on('add:node', async (node: any, callback: Function) => {
-  callback(await onEdtNdSubmit(node, () => {}))
+  await onEdtNdSubmit(node, callback)
 })
 
 async function refresh(force = false) {
@@ -300,30 +300,30 @@ async function onEdtNdSubmit(node: Node, next: Function) {
     emit('edt:node', edtNode)
   } else {
     nodes.value.push(setProp(edtNode, 'key', await props.keygenFun(edtNode)))
-    // 关联父子节点
-    if (edtNode.previous.length) {
-      const preNodes = edtNode.previous.map((key: any) => ndDict.value[key])
+    // 关联父节点
+    for (const pvsKey of edtNode.previous) {
+      const pvsNode = ndDict.value[pvsKey]
+      // 斩断连接
       if (edtNode.addMode === 'insert') {
-        // 多个父节点不能做insert模式添加节点
-        const preNode = preNodes[0]
-        // 只有在insert模式新增节点，父节点的子节点才可以作为新节点的子节点
-        for (const key of preNode.nexts) {
-          const nxtNode = ndDict.value[key]
-          nxtNode.previous.splice(nxtNode.previous.indexOf(preNode.key), 1, edtNode.key)
-        }
-        preNode.nexts = []
-      } else {
-        // 在append模式下，TODO: 应可选择与那个兄弟节点共享子节点
-        // edtNode.nexts = []
+        pvsNode.nexts = pvsNode.nexts.filter((key: string) => !edtNode.nexts.includes(key))
       }
-      preNodes.map((nd: any) => nd.nexts.push(edtNode.key))
+      // 填入新子节点
+      pvsNode.nexts.push(edtNode.key)
+    }
+    // 关联子节点
+    for (const nxtKey of edtNode.nexts) {
+      const nxtNode = ndDict.value[nxtKey]
+      if (edtNode.addMode === 'insert') {
+        nxtNode.previous = nxtNode.previous.filter((key: string) => !edtNode.previous.includes(key))
+      }
+      nxtNode.previous.push(edtNode.key)
     }
     await new Promise(resolve => emit('add:node', edtNode, resolve))
   }
-  emit('update:nodes', nodes.value)
-  next()
-  await refresh()
-  return edtNode
+  emit('update:nodes', nodes.value, async () => {
+    await refresh()
+    next(edtNode)
+  })
 }
 function onDelNdClick(node: Node) {
   const delNode = props.copy(node) as Node
