@@ -73,7 +73,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, createVNode, onMounted, reactive, ref, toRef, useSlots, type PropType } from 'vue'
+import {
+  computed,
+  createVNode,
+  onMounted,
+  reactive,
+  ref,
+  toRef,
+  useSlots,
+  nextTick,
+  type PropType
+} from 'vue'
 import Node from '../types/node'
 import { getProp, newOne, setProp, waitFor, rmvStartsOf, until } from '../utils'
 import NodeCard from './NodeCard.vue'
@@ -230,8 +240,6 @@ async function refresh(force = false) {
     rsxObs.observe(panel)
   }
   pnlRect.value = panel?.getBoundingClientRect() as DOMRect
-  pnlSclWH.width = panel.scrollWidth + 'px'
-  pnlSclWH.height = panel.scrollHeight + 'px'
   if (!nodes.value.length) {
     return
   }
@@ -259,18 +267,44 @@ async function refresh(force = false) {
       }
       node.rect.r = node.rect.x + node.rect.w
       node.rect.b = node.rect.y + node.rect.h
+      if (!node.display) {
+        const ele = await waitFor(node.key)
+        setProp(ele, 'style.display', 'none')
+      }
       queue.push(...node.nexts)
     }
   }
+  nextTick(() => {
+    pnlSclWH.width = dsgnPanel.value?.scrollWidth + 'px'
+    pnlSclWH.height = dsgnPanel.value?.scrollHeight + 'px'
+  })
 }
 function getNodeCenPos(node: Node) {
-  if (node.previous.length) {
-    // 遍历所有父节点，并得出每个父节点给予该节点的空间数据，利用空间数据计算出节点的中心，最后对所有中心求平均值
+  const pos = getProp(dirDict, direction.value + '.position')
+  if ((node.previous || []).some(pvsKey => ndDict.value[pvsKey].nexts.length > 1)) {
+    // 有兄弟节点，则位置由兄弟节点算出
+    // 兄弟节点的中心点 + 一个可用空间
+    const pvsNode = ndDict.value[
+      (node.previous || []).find(pvsKey => ndDict.value[pvsKey].nexts.length > 1) as string
+    ]
+    node.rect.s = pvsNode.rect.s / pvsNode.nexts.length
+    const ndIdx = pvsNode.nexts.indexOf(node.key)
+    if (ndIdx === 0) {
+      // 这是第一个多子节点的第一个节点，位置由父节点和自身空间算出
+      return getProp(pvsNode.rect, `c${pos}`) - (pvsNode.rect.s >> 1) + (node.rect.s >> 1)
+    }
+    const sblNode = ndDict.value[pvsNode.nexts[ndIdx - 1]]
+    return getProp(sblNode.rect, `c${pos}`) + sblNode.rect.s
+  } else if (node.previous.length) {
+    // 如没有兄弟节点，则位置由父节点们算出
+    // 所有父节点的中心点求平均值
+    node.rect.s = node.previous.map(pvsKey => ndDict.value[pvsKey].rect.s).reduce((sum, s) => sum + s, 0)
     return node.previous
-      .map(key => getProp(ndDict.value, `${key}.rect.c${getProp(dirDict, `${direction.value}.position`)}`))
+      .map(key => getProp(ndDict.value, `${key}.rect.c${pos}`))
       .reduce((sum, cs) => sum + cs, 0) / node.previous.length
   } else {
-    return getProp(pnlRect.value, getProp(dirDict, `${direction.value}.space`)) >> 1
+    node.rect.s = getProp(pnlRect.value, getProp(dirDict, `${direction.value}.space`))
+    return node.rect.s >> 1
   }
 }
 function onNodeClick(oper: 'node' | 'add', node?: Node) {

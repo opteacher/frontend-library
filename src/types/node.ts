@@ -12,6 +12,7 @@ export default class Node {
     b: number
     cx: number
     cy: number
+    s: number
   }
   title: string
   desc: string
@@ -54,6 +55,7 @@ export default class Node {
     this.rect.b = 0
     this.rect.cx = 0
     this.rect.cy = 0
+    this.rect.s = 0
     this.title = ''
     this.desc = ''
     this.icon = 'NumberOutlined'
@@ -81,6 +83,7 @@ export function genNewRect() {
     r: 0,
     b: 0,
     cx: 0,
-    cy: 0
+    cy: 0,
+    s: 0
   }
 }

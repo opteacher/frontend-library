@@ -19,12 +19,14 @@ export default class PgOper {
   otype: keyof typeof otypes
   value: string
   encrypt: boolean
+  timeout: number
 
   constructor() {
     this.element = new PageEle()
     this.otype = 'click'
     this.value = ''
     this.encrypt = false
+    this.timeout = 0
   }
 
   reset() {
@@ -32,6 +34,7 @@ export default class PgOper {
     this.otype = 'click'
     this.value = ''
     this.encrypt = false
+    this.timeout = 0
   }
   
   static copy(src: any, tgt?: PgOper, force = false) {

@@ -18,6 +18,15 @@
     />
   </template>
   <line
+    v-if="!node.display"
+    stroke-width="2"
+    stroke="#f0f0f0"
+    :x1="node.rect.cx"
+    :y1="node.rect.y"
+    :x2="node.rect.cx"
+    :y2="node.rect.b"
+  />
+  <line
     stroke-width="2"
     stroke="#f0f0f0"
     :x1="lineData.bx1"
