@@ -1,5 +1,5 @@
 <template>
-  <div id="dsgnPanel" class="flex-1 relative overflow-auto m-5">
+  <div ref="dsgnPanel" class="overflow-auto">
     <a-button
       v-if="!nodes.length"
       class="absolute"
@@ -26,7 +26,7 @@
         </template>
       </NodeCard>
     </template>
-    <svg class="absolute top-0 left-0 bottom-0 right-0 z-[-1]" width="100%" height="100%">
+    <svg class="z-[-1]" :width="pnlSclWH.width" :height="pnlSclWH.height">
       <NodeLine
         v-for="node in nodes"
         :direction="direction"
@@ -35,47 +35,47 @@
         :gutter="gutter"
       />
     </svg>
+    <FormDialog
+      title="编辑节点"
+      :mapper="mapper"
+      :emitter="emitter"
+      :newFun="() => newOne(Node)"
+      @submit="onEdtNdSubmit"
+    >
+      <template v-for="key in edtNdSlots" #[key]="params">
+        <slot :name="`editNode_${key}`" v-bind="params" />
+      </template>
+    </FormDialog>
+    <a-float-button-group
+      trigger="click"
+      type="primary"
+      :style="{ right: '24px' }"
+      v-model:open="toolboxVsb"
+    >
+      <template #icon>
+        <ToolOutlined />
+      </template>
+      <a-float-button :tooltip="direction === 'vertical' ? '纵向' : '横向'" @click="onDirSwchClick">
+        <template #icon>
+          <ApartmentOutlined v-if="direction === 'vertical'" />
+          <PartitionOutlined v-else-if="direction === 'horizontal'" />
+        </template>
+      </a-float-button>
+      <a-float-button :tooltip="size === 'small' ? '放大' : '缩小'" @click="onSzSwchClick">
+        <template #icon>
+          <ZoomInOutlined v-if="size === 'small'" />
+          <ZoomOutOutlined v-else />
+        </template>
+      </a-float-button>
+      <slot name="extToolBtns" />
+    </a-float-button-group>
   </div>
-  <FormDialog
-    title="编辑节点"
-    :mapper="mapper"
-    :emitter="emitter"
-    :newFun="() => newOne(Node)"
-    @submit="onEdtNdSubmit"
-  >
-    <template v-for="key in edtNdSlots" #[key]="params">
-      <slot :name="`editNode_${key}`" v-bind="params" />
-    </template>
-  </FormDialog>
-  <a-float-button-group
-    trigger="click"
-    type="primary"
-    :style="{ right: '24px' }"
-    v-model:open="toolboxVsb"
-  >
-    <template #icon>
-      <ToolOutlined />
-    </template>
-    <a-float-button :tooltip="direction === 'vertical' ? '纵向' : '横向'" @click="onDirSwchClick">
-      <template #icon>
-        <ApartmentOutlined v-if="direction === 'vertical'" />
-        <PartitionOutlined v-else-if="direction === 'horizontal'" />
-      </template>
-    </a-float-button>
-    <a-float-button :tooltip="size === 'small' ? '放大' : '缩小'" @click="onSzSwchClick">
-      <template #icon>
-        <ZoomInOutlined v-if="size === 'small'" />
-        <ZoomOutOutlined v-else />
-      </template>
-    </a-float-button>
-    <slot name="extToolBtns" />
-  </a-float-button-group>
 </template>
 
 <script setup lang="ts">
-import { computed, createVNode, onMounted, ref, toRef, useSlots, type PropType } from 'vue'
+import { computed, createVNode, onMounted, reactive, ref, toRef, useSlots, type PropType } from 'vue'
 import Node from '../types/node'
-import { getProp, newOne, setProp, waitFor, rmvStartsOf } from '../utils'
+import { getProp, newOne, setProp, waitFor, rmvStartsOf, until } from '../utils'
 import NodeCard from './NodeCard.vue'
 import NodeLine from './NodeLine.vue'
 import FormDialog from './FormDialog.vue'
@@ -157,6 +157,7 @@ const props = defineProps({
   copy: { type: Function, default: Node.copy }
 })
 const emit = defineEmits(['update:nodes', 'add:node', 'edt:node', 'del:node', 'click:node'])
+const dsgnPanel = ref<HTMLElement>()
 const direction = toRef(props.direction)
 const nodes = toRef(props.nodes)
 const mapper = toRef(props.mapper)
@@ -180,10 +181,11 @@ const width = ref(300)
 const gutter = ref(100)
 const rsxObs = new ResizeObserver(() => refresh())
 const dirDict = {
-  vertical: 'width',
-  horizontal: 'height'
-} as Record<'vertical' | 'horizontal', 'width' | 'height'>
+  vertical: { space: 'width', position: 'x' },
+  horizontal: { space: 'height', position: 'y' }
+}
 const pnlRect = ref<DOMRect>()
+const pnlSclWH = reactive({ width: '', height: '' })
 const emptyAddBtn = computed(() => {
   if (direction.value === 'vertical') {
     return {
@@ -222,17 +224,18 @@ props.emitter.on('add:node', async (node: any, callback: Function) => {
 })
 
 async function refresh(force = false) {
-  const panel = await waitFor('dsgnPanel')
+  await until(async () => typeof dsgnPanel.value !== 'undefined')
+  const panel = dsgnPanel.value as HTMLElement
   if (force) {
-    rsxObs.observe(panel as HTMLElement)
+    rsxObs.observe(panel)
   }
   pnlRect.value = panel?.getBoundingClientRect() as DOMRect
+  pnlSclWH.width = panel.scrollWidth + 'px'
+  pnlSclWH.height = panel.scrollHeight + 'px'
   if (!nodes.value.length) {
     return
   }
   const root = nodes.value[0]
-  root.rect.sxy = 0
-  root.rect.swh = getProp(pnlRect.value, dirDict[direction.value])
   for (let queue = [root.key], level = 0; queue.length; ++level) {
     const qlen = queue.length
     for (let i = 0; i < qlen; ++i) {
@@ -264,15 +267,10 @@ function getNodeCenPos(node: Node) {
   if (node.previous.length) {
     // 遍历所有父节点，并得出每个父节点给予该节点的空间数据，利用空间数据计算出节点的中心，最后对所有中心求平均值
     return node.previous
-      .map(key => {
-        const preNode = ndDict.value[key]
-        node.rect.swh = preNode.rect.swh / preNode.nexts.length
-        node.rect.sxy = preNode.rect.sxy + node.rect.swh * preNode.nexts.indexOf(node.key)
-        return node.rect.sxy + (node.rect.swh >> 1)
-      })
+      .map(key => getProp(ndDict.value, `${key}.rect.c${getProp(dirDict, `${direction.value}.position`)}`))
       .reduce((sum, cs) => sum + cs, 0) / node.previous.length
   } else {
-    return node.rect.swh >> 1
+    return getProp(pnlRect.value, getProp(dirDict, `${direction.value}.space`)) >> 1
   }
 }
 function onNodeClick(oper: 'node' | 'add', node?: Node) {
