@@ -120,7 +120,7 @@
           <a-float-button tooltip="缩放页面" @click="() => (toolbox.sclVsb = true)">
             <template #icon><ExpandAltOutlined /></template>
           </a-float-button>
-          <a-float-button tooltip="扫描页面元素" @click="onPageLoaded">
+          <a-float-button tooltip="扫描页面元素" @click="onScanElesClick">
             <template #icon><ScanOutlined /></template>
           </a-float-button>
         </a-float-button-group>
@@ -446,14 +446,16 @@ async function onPageLoaded(waitLoading = true) {
     await new Promise(resolve => setTimeout(resolve, 2000))
   }
   toolbox.scale = (webviewRef.value?.getZoomFactor() || 1) * 50
-  let elements: PageEle[] = await webviewRef.value?.executeJavaScript(`
+  let elements: PageEle[] = []
+  try {
+    elements = await webviewRef.value?.executeJavaScript(`
       JSON.stringify(Array.from(document.getElementsByTagName('*')).map(function(el) {
         const tagName = el.tagName.toLowerCase()
         let idCls = ''
         if (el.id) {
           idCls = '#' + el.id
         } else if (el.className) {
-          idCls = '.' + el.className.split(' ').filter(v => v).join('.')
+          idCls = '.' + (typeof el.className === 'string' ? el.className : '').split(' ').filter(v => v).join('.')
         }
         const rectBox = el.getBoundingClientRect()
         const ret = { tagName, idCls, rectBox }
@@ -487,7 +489,9 @@ async function onPageLoaded(waitLoading = true) {
     `)
     .then(ret => ret === 'undefined' ? [] : JSON.parse(ret))
     .then(els => els.map((el: any) => PageEle.copy(el)))
-  elements = elements || []
+  } catch (e) {
+    console.error('获取页面元素失败：', e)
+  }
 
   let treeData: TreeProps['treeData'] = []
   for (const element of elements) {
@@ -688,6 +692,10 @@ function doLoad(toLoad = true) {
 function gotoHisIdx(index: number) {
   doLoad()
   webviewRef.value?.goToIndex(index)
+}
+async function onScanElesClick() {
+  doLoad()
+  await onPageLoaded(false)
 }
 </script>
 
