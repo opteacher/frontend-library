@@ -20,11 +20,7 @@
         @card-click="() => onNodeClick('node', node)"
         @add-click="() => onNodeClick('add', node)"
         @del-click="() => onDelNdClick(node)"
-      >
-        <template #moreMuItms="params">
-          <slot name="nodeCard_moreMuItms" v-bind="params" />
-        </template>
-      </NodeCard>
+      />
     </template>
     <svg class="z-[-1]" :width="pnlSclWH.width" :height="pnlSclWH.height">
       <NodeLine
@@ -37,6 +33,7 @@
     </svg>
     <FormDialog
       title="编辑节点"
+      v-model:visible="visible"
       :mapper="mapper"
       :emitter="emitter"
       :newFun="() => newOne(Node)"
@@ -170,6 +167,7 @@ const emit = defineEmits(['update:nodes', 'add:node', 'edt:node', 'del:node', 'c
 const dsgnPanel = ref<HTMLElement>()
 const direction = toRef(props.direction)
 const nodes = toRef(props.nodes)
+const visible = ref(false)
 const mapper = toRef(props.mapper)
 setProp(mapper.value, 'delBtn', {
   type: 'Button',
@@ -252,6 +250,8 @@ async function refresh(force = false) {
         continue
       }
       const ele = await waitFor(node.key) as HTMLElement
+      setProp(ele, 'style.display', 'block')
+      await until(async () => ele.style.display === 'block')
       node.rect.w = ele.clientWidth
       node.rect.h = ele.clientHeight
       if (direction.value === 'vertical') {
@@ -365,7 +365,9 @@ function onDelNdClick(node: Node) {
     content: createVNode('div', { style: 'color: #ff4d4f' }, '该节点的所有子节点将归于其第一个父节点！'),
     onOk: () => onDelNdSubmit(delNode)
   })
-  props.emitter.emit('update:visible', false)
+  if (visible.value) {
+    props.emitter.emit('update:visible', false)
+  }
 }
 async function onDelNdSubmit(node: Node, doRfsh = true) {
   if (node.previous.length) {

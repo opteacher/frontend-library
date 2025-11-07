@@ -1,5 +1,7 @@
 import { gnlCpy } from '../utils'
 import * as antdIcon from '@ant-design/icons-vue'
+import { cloneDeep } from 'lodash'
+import type { VueNode } from 'ant-design-vue/es/_util/type'
 
 export default class Node {
   key: string
@@ -24,11 +26,12 @@ export default class Node {
   display: boolean
   addable: boolean
   delable: boolean
-  circle?: {
-    node: string
-    start: boolean
-    side: 'left' | 'right'
-  }
+  extMnuItms: {
+    key: string | number
+    title: string
+    icon: VueNode
+    onClick: (node: any) => void
+  }[]
 
   constructor() {
     this.key = ''
@@ -43,6 +46,7 @@ export default class Node {
     this.display = true
     this.addable = true
     this.delable = true
+    this.extMnuItms = []
   }
 
   reset() {
@@ -66,11 +70,19 @@ export default class Node {
     this.display = true
     this.addable = true
     this.delable = true
-    this.circle = undefined
+    this.extMnuItms = []
   }
 
   static copy(src: any, tgt?: Node, force = false) {
-    return gnlCpy(Node, src, tgt, { force })
+    return gnlCpy(Node, src, tgt, {
+      force,
+      cpyMapper: {
+        extMnuItms: (src: any, tgt?: any) => {
+          tgt = cloneDeep(src)
+          return tgt
+        }
+      }
+    })
   }
 }
 

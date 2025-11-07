@@ -23,13 +23,20 @@
       </a-typography-title>
     </template>
     <template #extra>
-      <a-dropdown v-if="node.delable || $slots['moreMuItms']">
+      <a-dropdown v-if="node.delable || node.extMnuItms.length">
         <a class="ant-dropdown-link text-white text-xl rounded border hover:border-solid border-white" @click.prevent>
           <antdIcon.MoreOutlined />
         </a>
         <template #overlay>
           <a-menu>
-            <slot name="moreMuItms" v-bind="{ node }" />
+            <a-menu-item
+              v-for="muItm in node.extMnuItms"
+              :key="muItm.key"
+              :icon="muItm.icon"
+              @click="() => muItm.onClick(node)"
+            >
+              {{ muItm.title }}
+            </a-menu-item>
             <a-menu-item
               v-if="node.delable"
               key="delete"

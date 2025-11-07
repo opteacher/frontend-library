@@ -11,7 +11,8 @@ export const otypes = {
   input: { label: '输入', color: 'blue', icon: EditOutlined },
   select: { label: '选择', color: 'orange', icon: SelectOutlined },
   click: { label: '点击', color: 'green', icon: DownloadOutlined },
-  scroll: { label: '滚动', color: 'pink', icon: ColumnHeightOutlined }
+  scroll: { label: '滚动', color: 'pink', icon: ColumnHeightOutlined },
+  pick: { label: '提取', color: 'purple', icon: SelectOutlined }
 }
 
 export default class PgOper {

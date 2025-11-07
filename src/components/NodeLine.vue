@@ -21,10 +21,10 @@
     v-if="!node.display"
     stroke-width="2"
     stroke="#f0f0f0"
-    :x1="node.rect.cx"
-    :y1="node.rect.y"
-    :x2="node.rect.cx"
-    :y2="node.rect.b"
+    :x1="lineData.hidx1"
+    :y1="lineData.hidy1"
+    :x2="lineData.hidx2"
+    :y2="lineData.hidy2"
   />
   <line
     stroke-width="2"
@@ -54,7 +54,7 @@
       :y2="node.rect.y - hlfGutter"
     />
     <line
-      v-if="direction === 'horizontal'"
+      v-else-if="direction === 'horizontal'"
       stroke-width="2"
       stroke="#f0f0f0"
       :x1="ndDict[key].rect.r + hlfGutter"
@@ -98,7 +98,11 @@ const lineData = computed(() => {
       bhx1: props.node.nexts.length ? Math.min(...ncxs) : 0,
       bhx2: props.node.nexts.length ? Math.max(...ncxs) : 0,
       bhy1: props.node.rect.b + hlfGutter.value,
-      bhy2: props.node.rect.b + hlfGutter.value
+      bhy2: props.node.rect.b + hlfGutter.value,
+      hidx1: props.node.rect.cx,
+      hidx2: props.node.rect.cx,
+      hidy1: props.node.rect.y,
+      hidy2: props.node.rect.b
     }
   } else if (props.direction === 'horizontal') {
     return {
@@ -117,14 +121,19 @@ const lineData = computed(() => {
       bhx1: props.node.rect.r + hlfGutter.value,
       bhx2: props.node.rect.r + hlfGutter.value,
       bhy1: props.node.nexts.length ? Math.min(...ncys) : 0,
-      bhy2: props.node.nexts.length ? Math.max(...ncys) : 0
+      bhy2: props.node.nexts.length ? Math.max(...ncys) : 0,
+      hidx1: props.node.rect.x,
+      hidx2: props.node.rect.r,
+      hidy1: props.node.rect.cy,
+      hidy2: props.node.rect.cy
     }
   } else {
     return {
       tx1: 0, tx2: 0, ty1: 0, ty2: 0,
       bx1: 0, bx2: 0, by1: 0, by2: 0,
       thx1: 0, thx2: 0, thy1: 0, thy2: 0,
-      bhx1: 0, bhx2: 0, bhy1: 0, bhy2: 0
+      bhx1: 0, bhx2: 0, bhy1: 0, bhy2: 0,
+      hidx1: 0, hidx2: 0, hidy1: 0, hidy2: 0
     }
   }
 })

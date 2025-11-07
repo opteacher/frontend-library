@@ -665,6 +665,7 @@ async function onExecOpersEmit(opers: PgOper[], callback = () => undefined, pare
         return false
       }
     })
+    await new Promise(resolve => setTimeout(resolve, oper.timeout))
     switch (oper.otype) {
       case 'input':
         await webviewRef.value?.executeJavaScript(`${ele}.value = '${oper.value}'`)
