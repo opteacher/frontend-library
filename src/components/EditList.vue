@@ -23,7 +23,7 @@
           <template v-if="!disRmvIdxs.includes(index)" #actions>
             <a-button danger size="small" @click="onEdtLstDel(index)">删除</a-button>
           </template>
-          <slot v-if="$slots['itemLabel']" name="itemLabel" v-bind="{ item, index }" />
+          <slot v-if="slots['itemLabel']" name="itemLabel" v-bind="{ item, index }" />
           <LabelItem
             v-else
             :value="item"
@@ -58,6 +58,7 @@ const props = defineProps({
   inline: { type: Boolean, default: true },
   disRmvIdxs: { type: Array, default: [] }
 })
+const slots = defineSlots()
 const addMod = ref(false)
 const addState = ref(props.newFun())
 const list = reactive([] as any[])

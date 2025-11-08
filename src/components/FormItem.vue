@@ -18,7 +18,7 @@
       <arrow-left-outlined />
       点击展开
     </a-divider>
-    <div v-else class="flex">
+    <div v-else class="flex items-center">
       <slot v-if="chkInSlot('PFX')" :name="skey + 'PFX'" v-bind="{ formState: form }" />
       <div
         class="flex-1"

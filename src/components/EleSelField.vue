@@ -18,26 +18,35 @@
             <a-menu-item key="tagName">标签</a-menu-item>
           </a-menu>
         </template>
-        <a-button type="primary" ghost>
-          {{ label }}
-          <DownOutlined />
-        </a-button>
+        <a-button>{{ label }}<DownOutlined /></a-button>
       </a-dropdown>
     </a-tooltip>
-    <a-popconfirm title="确定解绑该元素吗？" @confirm="onSelEleClear">
-      <a-button type="primary" ghost danger>
-        <template #icon><CloseOutlined /></template>
+    <a-popover title="更多选项" :trigger="['click']">
+      <template #content>
+        <FormGroup :mapper="moreMapper" :form="element" @update:fprop="onUpdateFprop">
+          <template #indexSFX="{ formState }">
+            <a-form-item-rest>
+              或&nbsp;<a-checkbox v-model:checked="formState.idAll">所有元素</a-checkbox>
+            </a-form-item-rest>
+          </template>
+        </FormGroup>
+      </template>
+      <a-button>
+        <template #icon><MoreOutlined /></template>
       </a-button>
-    </a-popconfirm>
+    </a-popover>
   </a-input-group>
 </template>
 
 <script setup lang="ts" name="EleSelField">
 import { getProp, setProp } from '../utils'
-import { CloseOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { DownOutlined, MoreOutlined } from '@ant-design/icons-vue'
 import { computed, ref, toRef } from 'vue'
 import PageEle, { type IdType } from '../types/pageEle'
 import { TinyEmitter } from 'tiny-emitter'
+import Mapper from '../types/mapper'
+import { Cond } from '../types'
+import FormGroup from './FormGroup.vue'
 
 const props = defineProps({
   form: { type: Object, required: true },
@@ -57,6 +66,23 @@ const label = computed<string>(() =>
 )
 const selecting = ref(false)
 const selEle = ref<PageEle>()
+const moreMapper = new Mapper({
+  index: {
+    type: 'Number',
+    label: '指定第',
+    desc: '小于等于0都会指向第一个元素',
+    disabled: [Cond.create('idAll', '==', true)],
+    suffix: '个元素',
+    onChange: (_form: any, to: number) => setProp(form.value, 'element.index', to)
+  },
+  unbind: {
+    type: 'Button',
+    danger: true,
+    inner: '解绑',
+    offset: 4,
+    onClick: onSelEleClear
+  }
+})
 
 props.emitter.on('ele-selected', (ele?: PageEle) => {
   selEle.value = ele
@@ -95,5 +121,8 @@ function onSelEleClear() {
   selecting.value = false
   setProp(form.value, props.prop, undefined)
   emit('selEleClear', props.prop)
+}
+function onUpdateFprop(values: any) {
+  Object.entries(values).map(([k, v]) => setProp(form.value, `${props.prop}.${k}`, v))
 }
 </script>

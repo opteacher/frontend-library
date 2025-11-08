@@ -125,8 +125,8 @@ function onFpropUpdate(obj: any) {
         <template #FormDialog>
           <slot name="FormDialog" v-bind="{ value, key }" />
         </template>
-        <template v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')" #[name]>
-          <slot :name="name" v-bind="{ formState: form }" />
+        <template v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')" #[name]="params">
+          <slot :name="name" v-bind="params" />
         </template>
       </FormItem>
     </template>

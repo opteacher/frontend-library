@@ -494,7 +494,7 @@ async function onPageLoaded(waitLoading = true) {
   }
 
   let treeData: TreeProps['treeData'] = []
-  for (const element of elements) {
+  for (const element of elements || []) {
     const xpaths = element.xpath.split('/').filter(sec => sec)
     let subNodes = treeData
     let lastNode = null
@@ -657,28 +657,42 @@ function expTreeEle(nodes = eleTree.data) {
 async function onExecOpersEmit(opers: PgOper[], callback = () => undefined, parent = undefined) {
   for (const oper of opers) {
     const ele = getEleByJS(oper.element, parent)
-    await until(async () => {
-      try {
-        const res = await webviewRef.value?.executeJavaScript(ele + '.outerHTML')
-        return res !== ''
-      } catch(e) {
-        return false
-      }
-    })
+    try {
+      await until(
+        async () => {
+          try {
+            const res = await webviewRef.value?.executeJavaScript(ele + '.outerHTML')
+            return res !== ''
+          } catch(e) {
+            return false
+          }
+        },
+        { loop: 10 }
+      )
+    } catch(e) {
+      console.error('未找到指定元素', JSON.stringify(e))
+      continue
+    }
     await new Promise(resolve => setTimeout(resolve, oper.timeout))
-    switch (oper.otype) {
-      case 'input':
-        await webviewRef.value?.executeJavaScript(`${ele}.value = '${oper.value}'`)
-        break
-      case 'click':
-        doLoad(true)
-        await Promise.all([
-          webviewRef.value?.executeJavaScript(`${ele}.click()`),
-          until(async () => loading.value)
-        ])
-        url.value = webviewRef.value?.getURL()
-        emit('update:url', url.value)
-        break
+    try {
+      switch (oper.otype) {
+        case 'input':
+          await webviewRef.value?.executeJavaScript(`${ele}.value = '${oper.value}'`)
+          break
+        case 'click':
+          doLoad(true)
+          await webviewRef.value?.executeJavaScript(`${ele}.click()`)
+          if (url.value !== webviewRef.value?.getURL()) {
+            url.value = webviewRef.value?.getURL()
+            await until(async () => loading.value)
+          } else {
+            doLoad(false)
+          }
+          emit('update:url', url.value)
+          break
+      }
+    } catch(e) {
+      console.error(`操作指定元素【${ele}】失败！`, JSON.stringify(e))
     }
   }
   callback()
