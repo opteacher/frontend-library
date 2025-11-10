@@ -20,6 +20,7 @@
         @card-click="() => onNodeClick('node', node)"
         @add-click="() => onNodeClick('add', node)"
         @del-click="() => onDelNdClick(node)"
+        @intf-click="(intf: NdIntf) => emit('node-intf-click', node, intf)"
       />
     </template>
     <svg class="z-[-1]" :width="pnlSclWH.width" :height="pnlSclWH.height">
@@ -81,7 +82,7 @@ import {
   nextTick,
   type PropType
 } from 'vue'
-import Node from '../types/node'
+import Node, { NdIntf } from '../types/node'
 import { getProp, newOne, setProp, waitFor, rmvStartsOf, until } from '../utils'
 import NodeCard from './NodeCard.vue'
 import NodeLine from './NodeLine.vue'
@@ -163,7 +164,7 @@ const props = defineProps({
   emitter: { type: TinyEmitter, default: new TinyEmitter() },
   copy: { type: Function, default: Node.copy }
 })
-const emit = defineEmits(['update:nodes', 'add:node', 'edt:node', 'del:node', 'click:node'])
+const emit = defineEmits(['update:nodes', 'node-add', 'node-edt', 'node-del', 'node-click', 'node-intf-click'])
 const dsgnPanel = ref<HTMLElement>()
 const direction = toRef(props.direction)
 const nodes = toRef(props.nodes)
@@ -313,7 +314,7 @@ function onNodeClick(oper: 'node' | 'add', node?: Node) {
     nexts: node ? node.nexts : [] // 预设为insert模式
   })
   props.emitter.emit('update:visible', { show: true, object } )
-  emit('click:node', object)
+  emit('node-click', object)
   if ('previous' in mapper.value) {
     setProp(mapper.value, 'previous.lblDict', Object.fromEntries(nodes.value.map(nd => [nd.key, nd.title])))
     setProp(
@@ -329,7 +330,7 @@ async function onEdtNdSubmit(node: Node, next: Function) {
   const edtNode = props.copy(node)
   if (edtNode.key) {
     nodes.value.splice(nodes.value.findIndex(nd => nd.key === edtNode.key), 1, edtNode)
-    emit('edt:node', edtNode)
+    emit('node-edt', edtNode)
   } else {
     nodes.value.push(setProp(edtNode, 'key', await props.keygenFun(edtNode)))
     // 关联父节点
@@ -350,7 +351,7 @@ async function onEdtNdSubmit(node: Node, next: Function) {
       }
       nxtNode.previous.push(edtNode.key)
     }
-    await new Promise(resolve => emit('add:node', edtNode, resolve))
+    await new Promise(resolve => emit('node-add', edtNode, resolve))
   }
   emit('update:nodes', nodes.value, async () => {
     await refresh()
@@ -385,7 +386,7 @@ async function onDelNdSubmit(node: Node, doRfsh = true) {
       }
     })
   }
-  await new Promise(resolve => emit('del:node', node, resolve))
+  await new Promise(resolve => emit('node-del', node, resolve))
   nodes.value.splice(nodes.value.findIndex(nd => nd.key === node.key), 1)
   emit('update:nodes', nodes.value)
   if (doRfsh) {

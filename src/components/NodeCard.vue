@@ -8,32 +8,35 @@
       left: node.rect.x + 'px'
     }"
   >
-    <div
+    <a-tooltip
       v-for="intf in node.intfs"
       class="absolute top-1/2 flex items-center hover:cursor-pointer"
       :class="{
         'left-full': intf.side === 'right',
         'right-full': intf.side === 'left'
       }"
-      @mouseover="() => (hovIkey = intf.key)"
-      @mouseout="() => (hovIkey = '')"
+      @click="() => emit('intf-click', intf)"
     >
+      <template #title>{{ intf.desc }}</template>
       <div
         v-if="intf.side === 'left'"
         class="w-0 h-0"
         :style="{
-          'border-top': '10px solid transparent',
-          'border-bottom': '10px solid transparent',
-          'border-right': `5px solid ${getIntfColor(intf)}`
+          'border-top': `11px solid ${getIntfColor(intf)}`,
+          'border-bottom': `11px solid ${getIntfColor(intf)}`,
+          'border-left': `5px solid ${getIntfColor(intf, 'import')}`
         }"
       />
       <a-tag
         :class="{
+          'rounded-none': intf.niType === 'import',
           'rounded-s-none border-r-0 mr-[-1px]': intf.side === 'right',
-          'rounded-e-none border-l-0 ml-[-1px]': intf.side === 'left'
+          'rounded-e-none border-l-0 mr-0': intf.side === 'left'
         }"
         :bordered="false"
         :color="getIntfColor(intf)"
+        @mouseover="() => (hovering = true)"
+        @mouseout="() => (hovering = false)"
       >
         {{ intf.label }}
       </a-tag>
@@ -41,12 +44,12 @@
         v-if="intf.side === 'right'"
         class="w-0 h-0"
         :style="{
-          'border-top': '10px solid transparent',
-          'border-bottom': '10px solid transparent',
-          'border-left': `5px solid ${getIntfColor(intf)}`
+          'border-top': `11px solid ${getIntfColor(intf, 'output')}`,
+          'border-bottom': `11px solid ${getIntfColor(intf, 'output')}`,
+          'border-left': `5px solid ${getIntfColor(intf, 'import')}`
         }"
       />
-    </div>
+    </a-tooltip>
     <a-card
       :headStyle="{
         backgroundColor: node.color
@@ -116,7 +119,7 @@ import Node, { NdIntf } from '../types/node'
 import * as antdIcon from '@ant-design/icons-vue'
 import { getProp } from '../utils'
 
-const emit = defineEmits(['card-click', 'add-click', 'del-click'])
+const emit = defineEmits(['card-click', 'add-click', 'del-click', 'intf-click'])
 const props = defineProps({
   direction: { type: String as PropType<'vertical' | 'horizontal'>, default: 'horizontal' },
   size: { type: String  as PropType<'default' | 'small'>, default: 'default' },
@@ -134,10 +137,11 @@ const addBtnDict = computed(() => ({
     l: props.node.rect.r + (props.gutter >> 1)
   }
 }))
-const hovIkey = ref('')
+const hovering = ref(false)
 
-function getIntfColor(intf: NdIntf) {
-  console.log(hovIkey.value)
-  return hovIkey.value === intf.key ? intf.hovClr : intf.color
+function getIntfColor(intf: NdIntf, transparent?: 'import' | 'output') {
+  return transparent && transparent === intf.niType
+    ? 'transparent'
+    : (hovering.value ? intf.hovClr : intf.color)
 }
 </script>
