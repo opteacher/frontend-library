@@ -1021,3 +1021,57 @@ export function getFlowRngKeys(
   }
   return ret
 }
+
+export function adjColorDepth(color: string, depth: number) {
+  let nRed = -1, nGreen = -1, nBlue = -1, suffix = ''
+  if (color.startsWith('#')) {
+    const [prefix, hRed, hGreen, hBlue] =
+      /^\#([\d|a-f]{2})([\d|a-f]{2})([\d|a-f]{2})/i.exec(color) as RegExpExecArray
+    nRed = parseInt(hRed, 16)
+    nGreen = parseInt(hGreen, 16)
+    nBlue = parseInt(hBlue, 16)
+    suffix = color.substring(prefix.length)
+  } else if (color.startsWith('rgb')) {
+    const [prefix, dRed, dGreen, dBlue] =
+      /^rgba?\((\d{1,3})\,\s*(\d{1,3})\,\s*(\d{1,3})/.exec(color) as RegExpExecArray
+    nRed = parseInt(dRed)
+    nGreen = parseInt(dGreen)
+    nBlue = parseInt(dBlue)
+    suffix = color.substring(prefix.length)
+  } else {
+    throw new Error('非颜色字符串')
+  }
+  nRed += depth
+  if (nRed > 255) {
+    nRed = 255
+  } else if (nRed < 0) {
+    nRed = 0
+  }
+  nGreen += depth
+  if (nGreen > 255) {
+    nGreen = 255
+  } else if (nGreen < 0) {
+    nGreen = 0
+  }
+  nBlue += depth
+  if (nBlue > 255) {
+    nBlue = 255
+  } else if (nBlue < 0) {
+    nBlue = 0
+  }
+  if (color.startsWith('#')) {
+    return [
+      '#',
+      nRed.toString(16).padStart(2, '0'),
+      nGreen.toString(16).padStart(2, '0'),
+      nBlue.toString(16).padStart(2, '0'),
+    ].join('') + suffix
+  } else if (color.startsWith('rgb')) {
+    return [
+      (/^rgba?\(/.exec(color) as RegExpExecArray)[0],
+      [nRed, nGreen, nBlue].join(',')
+    ].join('') + suffix
+  } else {
+    return color
+  }
+}

@@ -1,7 +1,43 @@
-import { gnlCpy } from '../utils'
+import { adjColorDepth, gnlCpy } from '../utils'
 import * as antdIcon from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import type { VueNode } from 'ant-design-vue/es/_util/type'
+
+export class NdIntf {
+  key: string
+  side: 'left' | 'right'
+  niType: 'import' | 'output'
+  label: string
+  desc: string
+  color: string
+  hovClr: string
+
+  constructor() {
+    this.key = ''
+    this.side = 'right'
+    this.niType = 'output'
+    this.label = ''
+    this.desc = ''
+    this.color = '#ff0000'
+    this.hovClr = adjColorDepth(this.color, 80)
+  }
+
+  reset() {
+    this.key = ''
+    this.side = 'right'
+    this.niType = 'output'
+    this.label = ''
+    this.desc = ''
+    this.color = '#ff0000'
+    this.hovClr = adjColorDepth(this.color, 80)
+  }
+
+  static copy(src: any, tgt?: NdIntf, force = false) {
+    tgt = gnlCpy(NdIntf, src, tgt, { force, ignProps: ['hovClr'] })
+    tgt.hovClr = tgt.color ? adjColorDepth(tgt.color, 80) : ''
+    return tgt
+  }
+}
 
 export default class Node {
   key: string
@@ -32,6 +68,7 @@ export default class Node {
     icon: VueNode
     onClick: (node: any) => void
   }[]
+  intfs: NdIntf[]
 
   constructor() {
     this.key = ''
@@ -47,6 +84,7 @@ export default class Node {
     this.addable = true
     this.delable = true
     this.extMnuItms = []
+    this.intfs = []
   }
 
   reset() {
@@ -71,6 +109,7 @@ export default class Node {
     this.addable = true
     this.delable = true
     this.extMnuItms = []
+    this.intfs = []
   }
 
   static copy(src: any, tgt?: Node, force = false) {
@@ -80,7 +119,8 @@ export default class Node {
         extMnuItms: (src: any, tgt?: any) => {
           tgt = cloneDeep(src)
           return tgt
-        }
+        },
+        intfs: NdIntf.copy
       }
     })
   }
