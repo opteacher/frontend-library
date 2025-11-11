@@ -76,7 +76,16 @@ const edtRow = ref<any>(null)
 const ADD_ROW = '^addRow$'
 
 function onRowClick(row?: any) {
-  edtRow.value = row || setProp(newObjByMapper(props.mapper.mapper), 'key', ADD_ROW)
+  if (row) {
+    edtRow.value = row
+  } else {
+    if (props.mapper.newFun) {
+      edtRow.value = props.mapper.newFun()
+    } else {
+      edtRow.value = newObjByMapper(props.mapper.mapper)
+    }
+    setProp(edtRow.value, 'key', ADD_ROW)
+  }
   emit('edit')
 }
 async function onAddSubmit() {

@@ -3,10 +3,16 @@
 import dayjs from 'dayjs'
 import { fixEndsWith, fixStartsWith, getProp } from '../utils'
 
+export const relatives = {
+  'AND': '与',
+  'OR': '或',
+  'NOT': '非'
+}
+
 export const compares = {
   '==': '等于',
   '!=': '不等于',
-  in: '包含',
+  includes: '包含',
   starts: '开头是',
   ends: '结尾是'
 }
@@ -16,40 +22,46 @@ export const cmpOpns = Object.entries(compares).map(([value, label]) => ({ label
 export type CmpType = keyof typeof compares
 
 export class Cond {
-  key: string
-  cmp: CmpType
-  val: any
+  prop: string
+  compare: CmpType
+  value: any
 
-  constructor(params?: { key: string; cmp: CmpType; val: any }) {
+  constructor(params?: { prop: string; compare: CmpType; value: any }) {
     if (!params) {
-      this.key = ''
-      this.cmp = '=='
-      this.val = undefined
+      this.prop = ''
+      this.compare = '=='
+      this.value = undefined
     } else {
-      this.key = params.key
-      this.cmp = params.cmp
-      this.val = params.val
+      this.prop = params.prop
+      this.compare = params.compare
+      this.value = params.value
     }
   }
 
-  static create(key: string, cmp: CmpType, val: any): Cond {
-    return new Cond({ key, cmp, val })
+  static create(prop: string, compare: CmpType, value: any): Cond {
+    return new Cond({ prop, compare, value })
   }
 
   isValid(object: Record<string, any>) {
-    switch (this.cmp) {
+    switch (this.compare) {
       case '!=':
-        if (this.val === 'undefined' || typeof this.val === 'undefined') {
-          return typeof getProp(object, this.key) !== 'undefined'
+        if (this.value === 'undefined' || typeof this.value === 'undefined') {
+          return typeof getProp(object, this.prop) !== 'undefined'
         } else {
-          return getProp(object, this.key) !== this.val
+          return getProp(object, this.prop) !== this.value
         }
+      case 'includes':
+        return Array.from(getProp(object, this.prop)).includes(this.value)
+      case 'starts':
+        return getProp(object, this.prop).toString().startsWith(this.value)
+      case 'ends':
+        return getProp(object, this.prop).toString().endsWith(this.value)
       case '==':
       default:
-        if (this.val === 'undefined' || typeof this.val === 'undefined') {
-          return typeof getProp(object, this.key) === 'undefined'
+        if (this.value === 'undefined' || typeof this.value === 'undefined') {
+          return typeof getProp(object, this.prop) === 'undefined'
         } else {
-          return getProp(object, this.key) === this.val
+          return getProp(object, this.prop) === this.value
         }
     }
   }

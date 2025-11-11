@@ -28,6 +28,7 @@
         }"
       />
       <a-tag
+        class="max-w-20 truncate hover:max-w-fit"
         :class="{
           'rounded-none': intf.niType === 'import',
           'rounded-s-none border-r-0 mr-[-1px]': intf.side === 'right',
