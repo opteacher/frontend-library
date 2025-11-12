@@ -6,11 +6,12 @@ import type { VueNode } from 'ant-design-vue/es/_util/type'
 export class NdIntf {
   key: string
   side: 'left' | 'right'
-  niType: 'import' | 'output'
+  niType: 'input' | 'output'
   label: string
   desc: string
   color: string
   hovClr: string
+  extra: any
 
   constructor() {
     this.key = ''
@@ -30,6 +31,7 @@ export class NdIntf {
     this.desc = ''
     this.color = '#ff0000'
     this.hovClr = adjColorDepth(this.color, 80)
+    this.extra = undefined
   }
 
   static copy(src: any, tgt?: NdIntf, force = false) {

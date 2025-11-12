@@ -24,13 +24,13 @@
         :style="{
           'border-top': `11px solid ${getIntfColor(intf)}`,
           'border-bottom': `11px solid ${getIntfColor(intf)}`,
-          'border-left': `5px solid ${getIntfColor(intf, 'import')}`
+          'border-left': `5px solid ${getIntfColor(intf, 'input')}`
         }"
       />
       <a-tag
         class="max-w-20 truncate hover:max-w-fit"
         :class="{
-          'rounded-none': intf.niType === 'import',
+          'rounded-none': intf.niType === 'input',
           'rounded-s-none border-r-0 mr-[-1px]': intf.side === 'right',
           'rounded-e-none border-l-0 mr-0': intf.side === 'left'
         }"
@@ -47,7 +47,7 @@
         :style="{
           'border-top': `11px solid ${getIntfColor(intf, 'output')}`,
           'border-bottom': `11px solid ${getIntfColor(intf, 'output')}`,
-          'border-left': `5px solid ${getIntfColor(intf, 'import')}`
+          'border-left': `5px solid ${getIntfColor(intf, 'input')}`
         }"
       />
     </a-tooltip>
@@ -140,7 +140,7 @@ const addBtnDict = computed(() => ({
 }))
 const hovering = ref(false)
 
-function getIntfColor(intf: NdIntf, transparent?: 'import' | 'output') {
+function getIntfColor(intf: NdIntf, transparent?: 'input' | 'output') {
   return transparent && transparent === intf.niType
     ? 'transparent'
     : (hovering.value ? intf.hovClr : intf.color)
