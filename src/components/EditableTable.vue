@@ -75,7 +75,7 @@
         v-model:expandedRowKeys="expRowKeys"
         :loading="loading"
         :bordered="bordered"
-        :scroll="{ x: 'max-content', y: tbodyHgt + 'px' }"
+        :scroll="scrollable ? { x: 'max-content', y: tbodyHgt + 'px' } : undefined"
         :custom-row="
           (record: any) => ({
             onClick: clkable ? () => onRowClick(record) : undefined
@@ -83,7 +83,9 @@
         "
         @resize-column="onColWidRsz"
         @change="(pagination: any, filters: any) => refresh(undefined, { pagination, filters })"
-        @expand="(expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)"
+        @expand="
+          (expanded: boolean, record: any) => (expanded ? emit('expand', record) : undefined)
+        "
       >
         <template #customFilterIcon="{ column, filtered }">
           <AntdIcons.SearchOutlined
@@ -357,7 +359,8 @@ const props = defineProps({
   bordered: { type: Boolean, default: true },
   rounded: { type: Boolean, default: true },
   needFmDlg: { type: Boolean, default: true },
-  thdClass: { type: String, default: '' }
+  thdClass: { type: String, default: '' },
+  scrollable: { type: Boolean, default: false }
 })
 const colsState = reactive<Column[]>([])
 const records = reactive({
