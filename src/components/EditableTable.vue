@@ -22,14 +22,12 @@
         <a-space>
           <BatExpBox
             v-if="expable"
-            :upload-url="(imExport as any).uploadUrl"
             :columns="colsState.filter(col => col.dataIndex !== 'opera')"
             :copyFun="genCpyFun(BatExp, () => ({ column: '', compare: '==' }))"
             @submit="(info: any) => onBatchSubmit(info, 'export')"
           />
           <BatImpBox
             v-if="addable && impable"
-            :upload-url="(imExport as any).uploadUrl"
             :columns="colsState.filter(col => col.dataIndex !== 'opera')"
             :ignCols="fmtIeIgnCols"
             :copyFun="genCpyFun(BatImp, () => '')"
@@ -266,7 +264,13 @@
 
 <script lang="ts" setup name="EditableTable">
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Table as ATable, type TourProps, Tour as ATour, notification } from 'ant-design-vue'
+import {
+  Table as ATable,
+  Button as AButton,
+  type TourProps,
+  Tour as ATour,
+  notification
+} from 'ant-design-vue'
 import * as AntdIcons from '@ant-design/icons-vue'
 import { cloneDeep } from 'lodash'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
@@ -385,9 +389,9 @@ const fmDlg = reactive({
   addForm: false
 })
 const slots = useSlots()
-const addBtnRef = ref<HTMLElement | null>(null)
-const tableRef = ref<HTMLElement | null>(null)
-const fmDlgRef = ref<HTMLElement | null>(null)
+const addBtnRef = ref<InstanceType<typeof AButton>>()
+const tableRef = ref<InstanceType<typeof ATable>>()
+const fmDlgRef = ref<InstanceType<typeof FormDialog>>()
 defineExpose({ addBtnRef, fmDlgRef, tableRef, records })
 const tourOpns = reactive({
   current: 0,
@@ -565,12 +569,12 @@ async function refresh(data?: any[], params?: any) {
   }
   fmtColumns()
   // 计算表体的高度
-  const edtTbl = await waitFor('edit-table', { getBy: 'class' })
+  const edtTbl = tableRef.value?.$el
   if (edtTbl) {
     const theader = edtTbl.getElementsByClassName('ant-table-header')[0]
     const tfooter = edtTbl.getElementsByClassName('ant-table-footer')[0]
     tbodyHgt.value =
-      edtTbl?.clientHeight - (theader?.clientHeight || 0) - (tfooter?.clientHeight || 0)
+      edtTbl.clientHeight - (theader?.clientHeight || 0) - (tfooter?.clientHeight || 0)
     if (props.pagable) {
       const pag = await waitFor('ant-pagination', { getBy: 'class' })
       tbodyHgt.value -= pag?.clientHeight || 0
@@ -708,7 +712,7 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
       return
     }
   } else if (opera === 'export') {
-    const tables = (tableRef.value as any).$el.getElementsByTagName('table')
+    const tables = tableRef.value?.$el.getElementsByTagName('table')
     const workbook = utils.book_new()
     const worksheet = utils.table_to_sheet(tables[1])
     utils.sheet_add_dom(worksheet, tables[0])

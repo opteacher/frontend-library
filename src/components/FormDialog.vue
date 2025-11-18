@@ -105,7 +105,7 @@ const iconState = ref<Raw<AntdIcons>>('')
 const editable = ref(true)
 const viewOnly = ref(false)
 const okLoading = ref(false)
-const formRef = ref()
+const formRef = ref<InstanceType<typeof FormGroup>>()
 const formMapper = toRef(props.mapper)
 const formState = ref(updateState())
 const formRules = computed(() => 
@@ -127,14 +127,12 @@ if (props.emitter) {
       if (typeof args === 'boolean') {
         vsbState.value = args
         if (!args) {
-          formRef.value?.refer.resetFields()
           resetState()
         }
         return
       }
       if (!args.show) {
         vsbState.value = false
-        formRef.value?.refer.resetFields()
         resetState()
         return
       }
@@ -218,13 +216,12 @@ watch(
 async function onOkClick() {
   try {
     okLoading.value = true
-    await formRef.value.refer.validateFields(
+    await formRef.value?.refer?.validateFields(
       Object.keys(props.mapper).filter(key => !props.ignProps.includes(key))
     )
     emit('submit', formState.value, () => {
       okLoading.value = false
-      resetState()
-      onDlgClose()
+      onCclClick()
     })
   } catch (e) {
     console.log(e)
@@ -237,8 +234,8 @@ function onCclClick() {
 function resetState() {
   if (formState.value.reset) {
     formState.value.reset()
-  } else if (formRef.value) {
-    formRef.value.refer.resetFields()
+  } else {
+    formRef.value?.refer?.resetFields([''])
   }
 }
 function onDlgClose() {

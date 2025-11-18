@@ -1,13 +1,7 @@
 <template>
-  <a-upload
-    name="file"
-    :action="uploadUrl"
-    :showUploadList="false"
-    :headers="headers"
-    @change="onExcelUpload"
-  >
+  <a-upload name="file" :showUploadList="false" :headers="headers" @change="onExcelUpload">
     <slot v-if="$slots['button']" name="button" />
-    <a-button v-else :loading="uploading" @click.prevent>
+    <a-button v-else @click.prevent>
       <template #icon><import-outlined /></template>
       批量导入
     </a-button>
@@ -132,19 +126,18 @@ import {
   LoginOutlined
 } from '@ant-design/icons-vue'
 import { TinyEmitter as Emitter } from 'tiny-emitter'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { type WorkBook, read, utils } from 'xlsx'
 import { genRandColor } from '../types'
 import Column from '../types/column'
 import Mapper from '../types/mapper'
-import { getDftPjt, newOne, getProp } from '../utils'
+import { newOne, getProp } from '../utils'
 import FormDialog from './FormDialog.vue'
-import { message, type UploadChangeParam } from 'ant-design-vue'
+import { type UploadChangeParam } from 'ant-design-vue'
 import type { FileType } from 'ant-design-vue/es/upload/interface'
 import BatImp from '../types/batImp'
 
 const props = defineProps({
-  uploadUrl: { type: String, default: `/${getDftPjt()}/api/v1/excel/upload` },
   columns: { type: Array as () => Column[], required: true },
   ignCols: { type: Array, default: () => [] },
   copyFun: { type: Function, required: true }
@@ -179,7 +172,6 @@ const imInf = reactive<{
 const binds = reactive<Record<string, { prop: string; color: string; required: boolean }>>({})
 const dbColors = reactive<Record<string, string>>({})
 const headers = computed(() => ({ authorization: `Bearer ${localStorage.getItem('token')}` }))
-const uploading = ref(false)
 
 watch(
   () => [...props.columns],
@@ -244,20 +236,16 @@ function onSetDragonCol(column?: Column) {
   dbInf.dragon = column ? column.key : ''
 }
 function onExcelUpload(info: UploadChangeParam) {
-  uploading.value = true
-  if (info.file.status === 'done') {
-    const reader = new FileReader()
-    reader.readAsArrayBuffer(info.file.originFileObj as FileType)
-    reader.onload = () => {
-      imInf.book = read(reader.result)
-      imInf.sheets = imInf.book.SheetNames
-      imInf.actTab = imInf.book.SheetNames[0]
-      emitter.emit('update:visible', { show: true, object: { worksheet: reloadExcel() } })
-      uploading.value = false
-    }
-  } else if (info.file.status === 'error') {
-    message.error(`${info.file.name} 上传Excel失败！`)
-    uploading.value = false
+  const reader = new FileReader()
+  reader.readAsArrayBuffer(info.file.originFileObj as FileType)
+  reader.onload = () => {
+    imInf.book = read(reader.result)
+    imInf.sheets = imInf.book.SheetNames
+    imInf.actTab = imInf.book.SheetNames[0]
+    emitter.emit('update:visible', {
+      show: true,
+      object: BatImp.copy({ worksheet: reloadExcel() })
+    })
   }
 }
 function getHdColor(column: Column) {
