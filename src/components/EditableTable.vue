@@ -283,7 +283,8 @@ import {
   useSlots,
   watch,
   type PropType,
-  type FunctionalComponent
+  type FunctionalComponent,
+  nextTick
 } from 'vue'
 
 import Batch from '../types/batch'
@@ -712,21 +713,24 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
       return
     }
   } else if (opera === 'export') {
-    const tables = tableRef.value?.$el.getElementsByTagName('table')
-    const workbook = utils.book_new()
-    const worksheet = utils.table_to_sheet(tables[1])
-    utils.sheet_add_dom(worksheet, tables[0])
-    utils.book_append_sheet(workbook, worksheet, 'Sheet1')
-    const fileName = ((props.imExport as any)['expName'] || props.title || 'test') + '.xlsx'
-    const data = write(workbook, { type: 'array', bookType: 'xlsx' })
-    const blob = new Blob([data], { type: 'application/octet-stream' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.download = fileName
-    a.href = url
-    a.style.display = 'none'
-    document.body.appendChild(a)
-    a.click()
+    colsState.splice(colsState.findIndex(col => col.key === 'opera'), 1)
+    nextTick(() => {
+      const tables = tableRef.value?.$el.getElementsByTagName('table')
+      const workbook = utils.book_new()
+      const worksheet = utils.table_to_sheet(tables[1])
+      utils.sheet_add_dom(worksheet, tables[0])
+      utils.book_append_sheet(workbook, worksheet, 'Sheet1')
+      const fileName = ((props.imExport as any)['expName'] || props.title || 'test') + '.xlsx'
+      const data = write(workbook, { type: 'array', bookType: 'xlsx' })
+      const blob = new Blob([data], { type: 'application/octet-stream' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.download = fileName
+      a.href = url
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+    })
   }
   await refresh()
 }
