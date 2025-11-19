@@ -3,6 +3,7 @@ import type { MapperType } from '../types/mapper'
 import { TinyEmitter } from 'tiny-emitter'
 import { ref, type PropType } from 'vue'
 import FieldItem from './FieldItem.vue'
+import { getProp } from '../utils'
 
 const errMsgs = ref<string[]>([])
 const props = defineProps({
@@ -14,17 +15,16 @@ const props = defineProps({
   emitter: { type: TinyEmitter, default: null }
 })
 const emit = defineEmits(['update:form'])
+defineExpose({ validField })
 
-if (props.emitter) {
-  props.emitter.on('check:rules', (callback: Function) => {
-    errMsgs.value = []
-    for (const rule of props.mapper.rules) {
-      if (rule.required && !props.form[props.mapper.key]) {
-        errMsgs.value.push(rule?.message as string)
-      }
+function validField() {
+  errMsgs.value = []
+  for (const rule of props.mapper.rules) {
+    if (rule.required && !getProp(props.form, props.mapper.key)) {
+      errMsgs.value.push(rule?.message as string)
     }
-    callback(errMsgs.value.length === 0)
-  })
+  }
+  return errMsgs.value.length === 0
 }
 </script>
 

@@ -235,7 +235,7 @@ function resetState() {
   if (formState.value.reset) {
     formState.value.reset()
   } else {
-    formRef.value?.refer?.resetFields([''])
+    formRef.value?.refer?.resetFields()
   }
 }
 function onDlgClose() {

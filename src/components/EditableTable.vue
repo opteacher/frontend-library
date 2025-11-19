@@ -68,7 +68,14 @@
         :size="size"
         :rowClassName="() => 'bg-white'"
         :pagination="
-          pagable ? { showSizeChanger: true, total: records.total, pageSize: records.limit } : false
+          pagable
+            ? {
+                showSizeChanger: true,
+                total: records.total,
+                pageSize: records.limit,
+                current: records.current
+              }
+            : false
         "
         v-model:expandedRowKeys="expRowKeys"
         :loading="loading"
@@ -174,9 +181,9 @@
           <slot v-else-if="$slots[column.dataIndex]" :name="column.dataIndex" v-bind="{ record }" />
           <DirectField
             v-else-if="fmDlg.editing && fmDlg.object.key === record.key"
+            :ref="el => (el ? setProp(drctFldRefs, column.dataIndex, el) : undefined)"
             :mapper="getProp(mapper, column.dataIndex)"
             :form="fmDlg.object"
-            :emitter="emitter"
             @update:form="onEditFormUpdate"
           />
           <CellCard
@@ -209,9 +216,9 @@
             <a-table-summary-row>
               <a-table-summary-cell v-for="[key, value] in Object.entries(mapper)" :index="key">
                 <DirectField
+                  :ref="el => (el ? setProp(drctFldRefs, key, el) : undefined)"
                   :mapper="value"
                   :form="fmDlg.object"
-                  :emitter="emitter"
                   @update:form="onEditFormUpdate"
                 />
               </a-table-summary-cell>
@@ -372,6 +379,7 @@ const records = reactive({
   data: [] as unknown[],
   total: 0,
   offset: 0,
+  current: 1,
   limit: props.pageSize,
   filters: undefined as any
 })
@@ -413,6 +421,7 @@ const showHeader = computed(
 const isDrctAdd = computed(
   () => props.editMode === 'direct' && props.addable && props.columns.length
 )
+const drctFldRefs = ref<Record<string, InstanceType<typeof DirectField>>>({})
 const tbodyHgt = ref(0)
 const tableHgt = ref(0)
 const expable = computed(() => {
@@ -479,8 +488,11 @@ fmtColumns()
 
 async function refresh(data?: any[], params?: any) {
   loading.value = true
-  records.offset = 0
-  records.limit = props.pageSize
+  if (!params?.pagination?.keepOrg) {
+    records.offset = 0
+    records.current = 1
+    records.limit = props.pageSize
+  }
   records.filters = undefined
   let ignPams = new Set(['data', 'total', 'filters', 'offset', 'limit'])
   if (props.pagable) {
@@ -524,6 +536,10 @@ async function refresh(data?: any[], params?: any) {
     }
   }
   records.total = props.api.count ? await props.api.count() : 0
+  if (params?.pagination?.toEnd) {
+    records.current = Math.ceil(records.total / records.limit)
+    records.offset = records.total - (records.total % records.limit)
+  }
   let orgData = []
   if (data) {
     orgData = data
@@ -620,18 +636,19 @@ function onEditClicked(record?: any) {
 async function onRecordSave(record: any, reset: Function) {
   loading.value = true
   emit('before-save', record)
-  if (props.emitter && props.editMode === 'direct') {
-    try {
-      await new Promise((resolve, reject) =>
-        props.emitter.emit('check:rules', (checked: boolean) => (checked ? resolve('') : reject()))
-      )
-    } catch (e) {
+  if (props.editMode === 'direct') {
+    let validRes = true
+    for (const [_k, { validField }] of Object.entries(drctFldRefs.value)) {
+      validRes &&= validField()
+    }
+    if (!validRes) {
       loading.value = false
       return
     }
   }
   let result = null
-  if (editKey.value === '' || editKey.value === -1) {
+  const isNewRcd = editKey.value === '' || editKey.value === -1
+  if (isNewRcd) {
     result = props.api.add ? await props.api.add(record) : undefined
   } else {
     result = props.api.update
@@ -640,7 +657,9 @@ async function onRecordSave(record: any, reset: Function) {
   }
   emit('save', record, refresh)
   reset()
-  await refresh()
+  if (loading.value) {
+    await refresh(undefined, { pagination: isNewRcd ? { toEnd: true } : { keepOrg: true } })
+  }
   emit('after-save', result)
 }
 async function onRecordDel(record: any) {
@@ -655,7 +674,9 @@ async function onRecordDel(record: any) {
   } else {
     fmDlg.visible = false
   }
-  await refresh()
+  if (loading.value) {
+    await refresh(undefined, { pagination: { keepOrg: true } })
+  }
 }
 function onRowClick(record: any) {
   if (props.emitter) {
@@ -713,7 +734,10 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
       return
     }
   } else if (opera === 'export') {
-    colsState.splice(colsState.findIndex(col => col.key === 'opera'), 1)
+    colsState.splice(
+      colsState.findIndex(col => col.key === 'opera'),
+      1
+    )
     nextTick(() => {
       const tables = tableRef.value?.$el.getElementsByTagName('table')
       const workbook = utils.book_new()
@@ -862,6 +886,7 @@ async function onEditFormSubmit() {
 function onEditFormUpdate(vals: any) {
   Object.entries(vals).map(([key, val]) => setProp(fmDlg.object, key, val))
 }
+function pageToRecord(key: string) {}
 </script>
 
 <style>
