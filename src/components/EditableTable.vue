@@ -73,7 +73,8 @@
                 showSizeChanger: true,
                 total: records.total,
                 pageSize: records.limit,
-                current: records.current
+                current: records.current,
+                pageSizeOptions: pgConfig.pageSizeOptions?.map(n => n.toString())
               }
             : false
         "
@@ -312,6 +313,7 @@ import type { ColumnType } from 'ant-design-vue/es/table'
 import type { ButtonType } from 'ant-design-vue/es/button'
 import DirectField from './DirectField.vue'
 import { type WorkSheet, utils, write } from 'xlsx'
+import type { PaginationConfig } from 'ant-design-vue/es/pagination'
 
 const emit = defineEmits([
   'add',
@@ -348,7 +350,10 @@ const props = defineProps({
   description: { type: String, default: '' },
   size: { type: String as PropType<SizeType>, default: undefined },
   pagable: { type: Boolean, default: false },
-  pageSize: { type: Number, default: 10 },
+  pgConfig: {
+    type: Object as PropType<PaginationConfig>,
+    default: () => ({ pageSize: 10, pageSizeOptions: [10, 20, 50, 100] })
+  },
   filter: { type: Function, default: () => true },
   editable: { type: [Boolean, Function], default: true },
   addable: { type: Boolean, default: true },
@@ -380,7 +385,7 @@ const records = reactive({
   total: 0,
   offset: 0,
   current: 1,
-  limit: props.pageSize,
+  limit: props.pgConfig.pageSize || 10,
   filters: undefined as any
 })
 const expRowKeys = ref([] as string[])
@@ -491,7 +496,7 @@ async function refresh(data?: any[], params?: any) {
   if (!params?.pagination?.keepOrg) {
     records.offset = 0
     records.current = 1
-    records.limit = props.pageSize
+    records.limit = props.pgConfig.pageSize || 10
   }
   records.filters = undefined
   let ignPams = new Set(['data', 'total', 'filters', 'offset', 'limit'])
@@ -517,8 +522,9 @@ async function refresh(data?: any[], params?: any) {
     }
     if (params.pagination) {
       records.limit = params.pagination.pageSize || records.limit
-      if (params.pagination.current) {
-        records.offset = (params.pagination.current - 1) * records.limit
+      if (typeof params.pagination.current !== 'undefined') {
+        records.current = params.pagination.current
+        records.offset = (records.current - 1) * records.limit
       }
     }
   } else {
@@ -638,8 +644,8 @@ async function onRecordSave(record: any, reset: Function) {
   emit('before-save', record)
   if (props.editMode === 'direct') {
     let validRes = true
-    for (const [_k, { validField }] of Object.entries(drctFldRefs.value)) {
-      validRes &&= validField()
+    for (const { validField } of Object.values(drctFldRefs.value)) {
+      validRes = validField() && validRes
     }
     if (!validRes) {
       loading.value = false
@@ -886,7 +892,6 @@ async function onEditFormSubmit() {
 function onEditFormUpdate(vals: any) {
   Object.entries(vals).map(([key, val]) => setProp(fmDlg.object, key, val))
 }
-function pageToRecord(key: string) {}
 </script>
 
 <style>
