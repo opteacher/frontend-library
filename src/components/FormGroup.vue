@@ -4,7 +4,7 @@ import { type FormInstance, type TourProps } from 'ant-design-vue'
 import { type PropType, ref } from 'vue'
 
 import Mapper, { type MapperType } from '../types/mapper'
-import { validConds } from '../utils'
+import { validConds, getProp } from '../utils'
 import FormItem from './FormItem.vue'
 
 const props = defineProps({
@@ -71,8 +71,27 @@ function onFpropUpdate(obj: any) {
           >
             <template #icon><minus-outlined /></template>
           </a-button>
+          {{ value.items }}
+          <FormGroup
+            v-for="[k, v] in Object.entries(value.items).filter(([_k, { type }]: any) => type === 'FormGroup')"
+            :mapper="(v as any).items"
+            :form="getProp(form, k)"
+            :rules="formRules"
+            :editable="editable"
+            :viewOnly="viewOnly"
+            :lblWid="lblWid"
+            :lblAlgn="lblAlgn"
+            @update:fprop="onFpropUpdate"
+          >
+            <template #FormDialog>
+              <slot name="FormDialog" v-bind="{ value: v, key: k }" />
+            </template>
+            <template v-for="name in Object.keys($slots).filter(k => k !== 'FormDialog')" #[name]>
+              <slot :name="name" v-bind="{ formState: form }" />
+            </template>
+          </FormGroup>
           <FormItem
-            v-for="[k, v] in Object.entries(value.items)"
+            v-for="[k, v] in Object.entries(value.items).filter(([_k, { type }]: any) => type !== 'FormGroup')"
             :ref="k"
             :form="form"
             :skey="value.prefix ? [key, k].join('.') : k"
