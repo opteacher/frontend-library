@@ -71,7 +71,6 @@ function onFpropUpdate(obj: any) {
           >
             <template #icon><minus-outlined /></template>
           </a-button>
-          {{ value.items }}
           <FormGroup
             v-for="[k, v] in Object.entries(value.items).filter(([_k, { type }]: any) => type === 'FormGroup')"
             :mapper="(v as any).items"
