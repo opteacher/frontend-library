@@ -29,7 +29,7 @@ const emit = defineEmits(['update:value'])
 const props = defineProps({
   form: { type: Object, required: true },
   path: { type: String, default: '' },
-  params: { type: Object, default: () => ({}) },
+  params: { type: [Object, Function], default: () => ({}) },
   directory: { type: Boolean, default: false },
   headers: { type: Object, default: undefined },
   value: { type: Array, required: true },
