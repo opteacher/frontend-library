@@ -673,7 +673,7 @@ async function onExecOpersEmit(opers: PgOper[], callback = () => undefined, pare
       console.error('未找到指定元素', JSON.stringify(e))
       continue
     }
-    await new Promise(resolve => setTimeout(resolve, oper.timeout))
+    await new Promise(resolve => setTimeout(resolve, typeof oper.timeout !== 'undefined' ? oper.timeout : 200))
     try {
       switch (oper.otype) {
         case 'input':
