@@ -9,12 +9,8 @@
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'opera'">
         <template v-if="edtRow">
-          <a-button type="link" size="small" @click="onAddSubmit">
-            确定
-          </a-button>
-          <a-button type="text" size="small" @click="() => (edtRow = null)">
-            取消
-          </a-button>
+          <a-button type="link" size="small" @click="onAddSubmit">确定</a-button>
+          <a-button type="text" size="small" @click="() => (edtRow = null)">取消</a-button>
         </template>
         <template v-else>
           <a-button
@@ -27,9 +23,7 @@
             编辑
           </a-button>
           <a-popconfirm v-if="delable" title="确定删除该字段" @confirm="() => onDelSubmit(record)">
-            <a-button danger type="text" size="small" :disabled="mapper.disabled">
-              删除
-            </a-button>
+            <a-button danger type="text" size="small" :disabled="mapper.disabled">删除</a-button>
           </a-popconfirm>
         </template>
       </template>
@@ -40,6 +34,17 @@
         :emitter="mapper.emitter"
         @update:form="onEditFormUpdate"
       />
+      <template v-else-if="column.dataIndex in mapper.lblDict">
+        {{
+          getProp(mapper.lblDict, column.dataIndex)[getProp(record, column.dataIndex)] ||
+          getProp(record, column.dataIndex)
+        }}
+      </template>
+      <a-tooltip v-else-if="['Checkbox', 'Switch'].includes(getProp(mapper.mapper, column.dataIndex).type)">
+        <template #title>{{ getProp(record, column.dataIndex) ? 'True' : 'False' }}</template>
+        <CheckOutlined v-if="getProp(record, column.dataIndex)" />
+        <CloseOutlined v-else />
+      </a-tooltip>
     </template>
     <template v-if="addable && !edtRow" #footer>
       <a-button
@@ -55,17 +60,17 @@
 </template>
 
 <script setup lang="ts" name="FormTable">
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons-vue'
 import Column from '../types/column'
-import { ref, toRef } from 'vue'
+import { ref, toRef, type PropType } from 'vue'
 import DirectField from './DirectField.vue'
 import { getProp, setProp } from '../utils'
-import { newObjByMapper } from '../types/mapper'
+import { newObjByMapper, TableMapper } from '../types/mapper'
 import { cloneDeep } from 'lodash'
 
 const props = defineProps({
   value: { type: Array, required: true },
-  mapper: { type: Object, required: true },
+  mapper: { type: Object as PropType<TableMapper>, required: true },
   addable: { type: Boolean, default: true },
   edtable: { type: Boolean, default: true },
   delable: { type: Boolean, default: true }
@@ -106,7 +111,10 @@ async function onAddSubmit() {
   edtRow.value = null
 }
 function onDelSubmit(record: any) {
-  valState.value.splice(valState.value.findIndex((row: any) => row.key === record.key), 1)
+  valState.value.splice(
+    valState.value.findIndex((row: any) => row.key === record.key),
+    1
+  )
   emit('delete', record.key, valState.value)
 }
 function fmtCols() {
@@ -116,7 +124,7 @@ function fmtCols() {
 }
 function onEditFormUpdate(vals: any) {
   if (edtRow.value) {
-    Object.entries(vals).map(([key, val]) => setProp(edtRow.value, key, val))
+    Object.entries(vals).map(([k, v]) => setProp(edtRow.value, k, v))
   }
 }
 </script>

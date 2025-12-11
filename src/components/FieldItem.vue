@@ -135,7 +135,7 @@ function onTblRcdDeleted(key: any, val: any) {
           : '否'
       }}&nbsp;
       <a-typography-text type="secondary">
-        {{ mapper.placeholder || '请确认' }}
+        {{ typeof mapper.placeholder !== 'undefined' ? mapper.placeholder : '请确认' }}
       </a-typography-text>
     </a-checkbox>
   </template>

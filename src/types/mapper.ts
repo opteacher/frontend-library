@@ -219,6 +219,7 @@ export class TableMapper extends BaseMapper {
   mapper: Mapper
   columns: Column[]
   emitter: Emitter
+  lblDict: Record<string, Record<any, string>>
   newFun: () => any
   genIdFun: (editing: any) => Promise<any>
   onEdit: (record: any) => void
@@ -234,6 +235,7 @@ export class TableMapper extends BaseMapper {
     this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
+    this.lblDict = {}
     this.newFun = () => ({})
     this.genIdFun = () => Promise.resolve()
     this.onEdit = () => undefined
@@ -250,6 +252,7 @@ export class TableMapper extends BaseMapper {
     this.mapper = new Mapper()
     this.columns = []
     this.emitter = new Emitter()
+    this.lblDict = {}
     this.newFun = () => ({})
     this.genIdFun = () => Promise.resolve()
     this.onEdit = () => undefined
