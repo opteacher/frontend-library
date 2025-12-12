@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as antdIcons from '@ant-design/icons-vue'
-import type { MapperType } from '../types/mapper'
+import type { MapperType, TableMapper } from '../types/mapper'
 import { computed, type PropType, h } from 'vue'
 import { getProp, validConds } from '../utils'
 import { fieldDftVal } from '../types/field'
@@ -270,7 +270,7 @@ function onTblRcdDeleted(key: any, val: any) {
   <FormTable
     v-else-if="mapper.type === 'Table'"
     :value="getProp(form, skey, fieldDftVal(mapper.type))"
-    :mapper="mapper"
+    :mapper="mapper.mapper"
     :addable="validConds(form, mapper.addable, true)"
     :edtable="validConds(form, mapper.edtable, true)"
     :delable="validConds(form, mapper.delable, true)"
