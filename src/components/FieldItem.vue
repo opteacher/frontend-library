@@ -270,7 +270,7 @@ function onTblRcdDeleted(key: any, val: any) {
   <FormTable
     v-else-if="mapper.type === 'Table'"
     :value="getProp(form, skey, fieldDftVal(mapper.type))"
-    :mapper="mapper.mapper"
+    :mapper="mapper as TableMapper"
     :addable="validConds(form, mapper.addable, true)"
     :edtable="validConds(form, mapper.edtable, true)"
     :delable="validConds(form, mapper.delable, true)"

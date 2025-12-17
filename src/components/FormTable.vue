@@ -56,6 +56,7 @@
         <template #icon><PlusOutlined /></template>
       </a-button>
     </template>
+    <template #emptyText />
   </a-table>
 </template>
 
@@ -118,7 +119,13 @@ function onDelSubmit(record: any) {
   emit('delete', record.key, valState.value)
 }
 function fmtCols() {
-  return props.mapper.columns.concat(
+  let columns = props.mapper.columns
+  if (!columns) {
+    columns = Object.entries(props.mapper.mapper).map(
+      ([k, v]) => new Column(v.label || k, k, { width: v.width || 120 })
+    )
+  }
+  return columns.concat(
     props.delable || props.edtable ? [new Column('操作', 'opera', { width: 80 })] : []
   )
 }
