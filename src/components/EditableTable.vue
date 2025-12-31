@@ -24,14 +24,14 @@
             v-if="expable"
             :columns="colsState.filter(col => col.dataIndex !== 'opera')"
             :copyFun="genCpyFun(BatExp, () => ({ column: '', compare: '==' }))"
-            @submit="(info: any) => onBatchSubmit(info, 'export')"
+            @submit="(info: any, next: Function) => onBatchSubmit(info, 'export', next)"
           />
           <BatImpBox
             v-if="addable && impable"
             :columns="colsState.filter(col => col.dataIndex !== 'opera')"
             :ignCols="fmtIeIgnCols"
             :copyFun="genCpyFun(BatImp, () => '')"
-            @submit="(info: any) => onBatchSubmit(info, 'import')"
+            @submit="(info: any, next: Function) => onBatchSubmit(info, 'import', next)"
           />
           <a-button
             v-if="addable && editMode === 'form'"
@@ -649,6 +649,7 @@ async function onRecordSave(record: any, reset: Function) {
     }
     if (!validRes) {
       loading.value = false
+      reset()
       return
     }
   }
@@ -697,7 +698,7 @@ function onRowClick(record: any) {
     fmDlg.object = record
   }
 }
-async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') {
+async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export', next: Function) {
   loading.value = true
   const data = pickOrIgnore(info, ['worksheet'])
   if (props.api.batch && opera in props.api.batch) {
@@ -737,6 +738,7 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
       notification.error({
         message: '批量导入既为定义接口，也没事新增接口！'
       })
+      next()
       return
     }
   } else if (opera === 'export') {
@@ -762,6 +764,7 @@ async function onBatchSubmit(info: BatImp | BatExp, opera: 'import' | 'export') 
       a.click()
     })
   }
+  next()
   await refresh()
 }
 function genCpyFun<B extends Batch>(b: { new (): B; copy: Function }, genDft: () => any) {
