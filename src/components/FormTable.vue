@@ -34,7 +34,7 @@
         :emitter="mapper.emitter"
         @update:form="onEditFormUpdate"
       />
-      <template v-else-if="column.dataIndex in mapper.lblDict">
+      <template v-else-if="mapper.lblDict && column.dataIndex in mapper.lblDict">
         {{
           getProp(mapper.lblDict, column.dataIndex)[getProp(record, column.dataIndex)] ||
           getProp(record, column.dataIndex)

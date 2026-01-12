@@ -224,6 +224,7 @@ async function onOkClick() {
       onCclClick()
     })
   } catch (e) {
+    okLoading.value = false
     console.log(e)
   }
 }
