@@ -8,11 +8,11 @@
   >
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'opera'">
-        <template v-if="edtRow">
+        <template v-if="edtRow && record.key === edtRow.key">
           <a-button type="link" size="small" @click="onAddSubmit">确定</a-button>
           <a-button type="text" size="small" @click="() => (edtRow = null)">取消</a-button>
         </template>
-        <template v-else>
+        <template v-else-if="!edtRow">
           <a-button
             v-if="edtable"
             size="small"
@@ -68,6 +68,7 @@ import DirectField from './DirectField.vue'
 import { getProp, setProp } from '../utils'
 import { newObjByMapper, TableMapper } from '../types/mapper'
 import { cloneDeep } from 'lodash'
+import { v4 as uuid } from 'uuid'
 
 const props = defineProps({
   value: { type: Array, required: true },
@@ -99,6 +100,9 @@ async function onAddSubmit() {
     const newRow = cloneDeep(edtRow.value)
     if (props.mapper.genIdFun) {
       newRow.key = await props.mapper.genIdFun(newRow)
+    }
+    if (newRow.key === ADD_ROW) {
+      newRow.key = uuid()
     }
     valState.value.push(newRow)
   } else {
